@@ -1,0 +1,29 @@
+{
+  "name": "kahajaane",
+  "version": "1.0.0",
+  "description": "guide to visit new places while also helping new settlers",
+  "main": "frontend/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./backend/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anishkn04/KahaJaane.git"
+  },
+  "keywords": [
+    "tour",
+    "guide",
+    "tourism"
+  ],
+  "author": "rishav chapagain, anish kumar neupane, rushab risal, nishan paudel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anishkn04/KahaJaane/issues"
+  },
+  "homepage": "https://github.com/anishkn04/KahaJaane#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "type": "module"
+}
