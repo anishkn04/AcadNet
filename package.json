@@ -5,11 +5,11 @@
   "main": "frontend/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./backend/index.js"
+    "start": "nodemon --env-file=.env ./backend/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anishkn04/KahaJaane.git"
+    "url": "git+https://github.com/anishkn04/AcadNet.git"
   },
   "keywords": [
     "tour",
@@ -19,11 +19,14 @@
   "author": "rishav chapagain, anish kumar neupane, rushab risal, nishan paudel",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/anishkn04/KahaJaane/issues"
+    "url": "https://github.com/anishkn04/AcadNet/issues"
   },
-  "homepage": "https://github.com/anishkn04/KahaJaane#readme",
+  "homepage": "https://github.com/anishkn04/AcadNet",
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
