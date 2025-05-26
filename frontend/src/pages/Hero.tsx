@@ -1,9 +1,8 @@
 // import React from 'react'
 
-
 const Hero = () => {
   return (
-    <div className="text-red-500">Hero</div>
+    <div>Hero</div>
   )
 }
 
