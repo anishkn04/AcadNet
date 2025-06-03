@@ -1,19 +1,18 @@
 import { Outlet } from 'react-router-dom'
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from '@/components/app-sidebar'
+
+import { Header } from '@/components/own_components/Header'
+import { Footer } from '@/components/own_components/Footer'
 
 const MainLayout = () => {
  
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <main className="flex-1 p-4">
-          <SidebarTrigger />
-          <Outlet />
-        </main>
-      </div>
-    </SidebarProvider>
+    <div>
+      <Header/>
+      <main>
+        <Outlet/>
+      </main>
+      <Footer/>
+    </div>
   )
 }
 

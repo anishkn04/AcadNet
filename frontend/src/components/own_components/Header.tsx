@@ -1,0 +1,68 @@
+import React, { useState } from 'react';
+import { AcademicCapIcon, XIcon, MenuIcon } from './Icons';
+
+export const Header: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 bg-slate-50/80 backdrop-blur-md">
+      <div className="container mx-auto flex items-center justify-between whitespace-nowrap px-4 py-4 sm:px-6 lg:px-10">
+        <div className="flex items-center gap-3 text-slate-900">
+          <div className="size-8 text-[#1993e5]">
+            <AcademicCapIcon />
+          </div>
+          <h2 className="text-xl font-bold leading-tight tracking-tight">AcadNet</h2>
+        </div>
+        
+        <nav className="hidden lg:flex items-center gap-8">
+          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Home</a>
+          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Groups</a>
+          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Resources</a>
+          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">About</a>
+        </nav>
+        
+        <div className="flex items-center gap-3">
+          <button 
+            className="flex lg:hidden items-center justify-center size-10 rounded-full text-slate-700 hover:bg-slate-200 transition-colors"
+            onClick={toggleMenu}
+          >
+            <span className="sr-only">Toggle menu</span>
+            {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
+          </button>
+          
+          <button className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#137abd] transition-colors">
+            <span className="truncate">Sign Up</span>
+          </button>
+          
+          <button className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
+            <span className="truncate">Log In</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden absolute top-[72px] left-0 right-0 bg-white shadow-lg z-50 p-4">
+          <nav className="flex flex-col space-y-4">
+            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Home</a>
+            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Groups</a>
+            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
+            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
+            <div className="flex space-x-3 pt-2">
+              <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
+                Sign Up
+              </button>
+              <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold hover:bg-slate-300 transition-colors">
+                Log In
+              </button>
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+};
