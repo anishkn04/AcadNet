@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { AcademicCapIcon, XIcon, MenuIcon } from './Icons';
-
+import { Link } from 'react-router-dom';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  // NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  // NavigationMenuViewport,
+} from "@/components/ui/navigation-menu"
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [studyGroupOpen, setStudyGroupOpen] = useState(false); // Added for mobile Study Group
 
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -19,8 +30,18 @@ export const Header: React.FC = () => {
         </div>
         
         <nav className="hidden lg:flex items-center gap-8">
-          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Home</a>
-          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Groups</a>
+          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="/">Home</a>
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Study Group</NavigationMenuTrigger>
+                <NavigationMenuContent className='cursor-pointer'>
+                  <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'/create'} >Create Group</Link></NavigationMenuLink>
+                  <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'join'}>Join Group</Link></NavigationMenuLink>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
           <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Resources</a>
           <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">About</a>
         </nav>
@@ -48,8 +69,35 @@ export const Header: React.FC = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-[72px] left-0 right-0 bg-white shadow-lg z-50 p-4">
           <nav className="flex flex-col space-y-4">
-            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Home</a>
-            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Groups</a>
+            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="/">Home</a>
+            {/* Collapsible Study Group for mobile */}
+            <div>
+              <button
+                className="w-full flex items-center justify-between text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                onClick={() => setStudyGroupOpen(open => !open)}
+              >
+                <span>Study Group</span>
+                {/* <span>{studyGroupOpen ? "▲" : "▼"}</span> */}
+              </button>
+              {studyGroupOpen && (
+                <div className="pl-4 flex flex-col space-y-2">
+                  <Link
+                    to={'/create'}
+                    className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-1 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Create Group
+                  </Link>
+                  <Link
+                    to={'/join'}
+                    className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-1 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Join Group
+                  </Link>
+                </div>
+              )}
+            </div>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
             <div className="flex space-x-3 pt-2">
