@@ -1,0 +1,492 @@
+<html><head>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="bg-slate-100">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="flex flex-1">
+<div class="bg-white shadow-lg layout-content-container flex flex-col w-80 p-6 space-y-6">
+<div class="flex items-center space-x-3">
+<div class="p-2 bg-blue-600 rounded-full text-white">
+<span class="material-icons"> school </span>
+</div>
+<div>
+<h1 class="text-slate-900 text-lg font-semibold leading-tight">AcadNet Admin</h1>
+<p class="text-slate-500 text-sm font-normal leading-normal">System Admin</p>
+</div>
+</div>
+<nav class="flex flex-col space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-100 text-blue-700" href="#">
+<span class="material-icons-outlined text-blue-700"> dashboard </span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> people_outline </span>
+<p class="text-sm font-medium">User Management</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> groups </span>
+<p class="text-sm font-medium">Study Groups</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> folder_managed </span>
+<p class="text-sm font-medium">Resource Moderation</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> flag </span>
+<p class="text-sm font-medium">Reports</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> link </span>
+<p class="text-sm font-medium">Recommendations</p>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700" href="#">
+<span class="material-icons-outlined"> settings </span>
+<p class="text-sm font-medium">Settings</p>
+</a>
+</nav>
+</div>
+<div class="layout-content-container flex flex-col flex-1 p-8 bg-slate-100">
+<header class="mb-8">
+<p class="text-slate-900 text-4xl font-bold leading-tight">Dashboard</p>
+</header>
+<section class="mb-8">
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Overview</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white shadow border border-slate-200">
+<p class="text-slate-700 text-base font-medium">Total Users</p>
+<p class="text-slate-900 text-3xl font-bold">1,234</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white shadow border border-slate-200">
+<p class="text-slate-700 text-base font-medium">Active Study Groups</p>
+<p class="text-slate-900 text-3xl font-bold">567</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white shadow border border-slate-200">
+<p class="text-slate-700 text-base font-medium">Pending Reports</p>
+<p class="text-slate-900 text-3xl font-bold">23</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-white shadow border border-slate-200">
+<p class="text-slate-700 text-base font-medium">Uploaded Resources</p>
+<p class="text-slate-900 text-3xl font-bold">890</p>
+</div>
+</div>
+</section>
+<div class="space-y-8">
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">User Management</h3>
+<div class="mb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+<div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+<span class="material-icons-outlined text-xl"> search </span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search users..." value=""/>
+</div>
+</label>
+</div>
+<div class="@container">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+<table class="w-full">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">User</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Email</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Role</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Ethan Harper</td>
+<td class="px-4 py-3 text-slate-500 text-sm">ethan.harper@email.com</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"> Student </span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Active </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+<span class="material-icons-outlined text-lg">block</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-indigo-600 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+<span class="material-icons-outlined text-lg">lock_reset</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+<span class="material-icons-outlined text-lg">admin_panel_settings</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Olivia Bennett</td>
+<td class="px-4 py-3 text-slate-500 text-sm">olivia.bennett@email.com</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"> Professor </span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Active </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+<span class="material-icons-outlined text-lg">block</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-indigo-600 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+<span class="material-icons-outlined text-lg">lock_reset</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+<span class="material-icons-outlined text-lg">admin_panel_settings</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Noah Carter</td>
+<td class="px-4 py-3 text-slate-500 text-sm">noah.carter@email.com</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"> Student </span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"> Suspended </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+<span class="material-icons-outlined text-lg">block</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-indigo-600 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+<span class="material-icons-outlined text-lg">lock_reset</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+<span class="material-icons-outlined text-lg">admin_panel_settings</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Study Group Management</h3>
+<div class="mb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+<div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+<span class="material-icons-outlined text-xl"> search </span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search study groups..." value=""/>
+</div>
+</label>
+</div>
+<div class="@container">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+<table class="w-full">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Group Name</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Members</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Moderator</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reports</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Math 101 Study Group</td>
+<td class="px-4 py-3 text-slate-500 text-sm">25</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Professor Davis</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800"> None </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">delete</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+<span class="material-icons-outlined text-lg">person_add</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">History Club</td>
+<td class="px-4 py-3 text-slate-500 text-sm">40</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Professor Clark</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800"> 2 </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">delete</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-purple-600 rounded-md hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+<span class="material-icons-outlined text-lg">person_add</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Resource Moderation</h3>
+<div class="mb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+<div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+<span class="material-icons-outlined text-xl"> search </span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search resources..." value=""/>
+</div>
+</label>
+</div>
+<div class="@container">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+<table class="w-full">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Resource Name</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploader</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded Date</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Calculus Notes</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Ethan Harper</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-15</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Approved </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">delete</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+<span class="material-icons-outlined text-lg">report</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Science Presentation</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Noah Carter</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-05</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">delete</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+<span class="material-icons-outlined text-lg">report</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Complaint &amp; Report Center</h3>
+<div class="mb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+<div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+<span class="material-icons-outlined text-xl"> search </span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search reports..." value=""/>
+</div>
+</label>
+</div>
+<div class="@container">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+<table class="w-full">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reported User</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reporting User</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reason</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Date</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Ethan Harper</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Olivia Bennett</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Inappropriate Content</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-20</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">task_alt</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-slate-800 text-sm">Noah Carter</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Ava Morgan</td>
+<td class="px-4 py-3 text-slate-500 text-sm">Harassment</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-18</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Resolved </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+<span class="material-icons-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">task_alt</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Recommendation Review</h3>
+<div class="mb-4">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+<div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+<span class="material-icons-outlined text-xl"> search </span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search recommendations..." value=""/>
+</div>
+</label>
+</div>
+<div class="@container">
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+<table class="w-full">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Link</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Submitted By</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Date</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+<th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr>
+<td class="px-4 py-3 text-blue-600 hover:underline text-sm"><a href="#">example.com/resource1</a></td>
+<td class="px-4 py-3 text-slate-500 text-sm">Ethan Harper</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-22</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"> Pending </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">check_circle</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">cancel</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 text-blue-600 hover:underline text-sm"><a href="#">example.com/resource4</a></td>
+<td class="px-4 py-3 text-slate-500 text-sm">Ava Morgan</td>
+<td class="px-4 py-3 text-slate-500 text-sm">2023-08-15</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"> Rejected </span>
+</td>
+<td class="px-4 py-3 space-x-1">
+<button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+<span class="material-icons-outlined text-lg">check_circle</span>
+</button>
+<button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+<span class="material-icons-outlined text-lg">cancel</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">System Settings</h3>
+<div class="bg-white shadow rounded-xl border border-slate-200 p-6 space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 py-3 border-b border-slate-200 last:border-b-0">
+<p class="text-slate-600 text-sm font-medium">File Size Limit</p>
+<p class="text-slate-800 text-sm col-span-2">100MB</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 py-3 border-b border-slate-200 last:border-b-0">
+<p class="text-slate-600 text-sm font-medium">Group Permissions</p>
+<p class="text-slate-800 text-sm col-span-2">All members can create groups</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 py-3 border-b border-slate-200 last:border-b-0">
+<p class="text-slate-600 text-sm font-medium">Notifications</p>
+<div class="col-span-2 flex items-center justify-between">
+<p class="text-slate-800 text-sm">Email notifications enabled</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 py-3 border-b border-slate-200 last:border-b-0">
+<p class="text-slate-600 text-sm font-medium">Maintenance Mode</p>
+<div class="col-span-2 flex items-center justify-between">
+<p class="text-slate-800 text-sm">Off</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>
