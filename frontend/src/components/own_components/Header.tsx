@@ -31,11 +31,11 @@ export const Header: React.FC = () => {
         
         <nav className="hidden lg:flex items-center gap-8">
           <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="/">Home</a>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Study Group</NavigationMenuTrigger>
-                <NavigationMenuContent className='cursor-pointer'>
+          <NavigationMenu >
+            <NavigationMenuList >
+              <NavigationMenuItem >
+                <NavigationMenuTrigger className='bg-transparent'>Study Group</NavigationMenuTrigger>
+                <NavigationMenuContent className='cursor-pointer '>
                   <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'/create'} >Create Group</Link></NavigationMenuLink>
                   <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'join'}>Join Group</Link></NavigationMenuLink>
                 </NavigationMenuContent>
@@ -55,13 +55,13 @@ export const Header: React.FC = () => {
             {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
           </button>
           
-          <button className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#137abd] transition-colors">
+          <Link to={'/register'} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#137abd] transition-colors">
             <span className="truncate">Sign Up</span>
-          </button>
+          </Link>
           
-          <button className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
+          <Link to={'/login'} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Log In</span>
-          </button>
+          </Link>
         </div>
       </div>
       
