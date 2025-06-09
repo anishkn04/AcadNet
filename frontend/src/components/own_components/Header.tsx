@@ -11,9 +11,11 @@ import {
   NavigationMenuTrigger,
   // NavigationMenuViewport,
 } from "@/components/ui/navigation-menu"
+import { useAuth } from '@/hooks/userContext';
 export const Header: React.FC = () => {
+  const {isLoggedIn,user,logout} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [studyGroupOpen, setStudyGroupOpen] = useState(false); // Added for mobile Study Group
+  const [studyGroupOpen, setStudyGroupOpen] = useState(false); 
 
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -26,7 +28,7 @@ export const Header: React.FC = () => {
           <div className="size-8 text-[#1993e5]">
             <AcademicCapIcon />
           </div>
-          <h2 className="text-xl font-bold leading-tight tracking-tight">AcadNet</h2>
+          <a href='/' className="text-xl font-bold leading-tight tracking-tight">AcadNet</a>
         </div>
         
         <nav className="hidden lg:flex items-center gap-8">
@@ -54,20 +56,29 @@ export const Header: React.FC = () => {
             <span className="sr-only">Toggle menu</span>
             {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
           </button>
-          
+      {isLoggedIn() ? (
+        <>
+          <h1 className='hidden lg:block'>Welcome! {user?.userName}</h1>
+          <a href='' onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
+            <span className="truncate">Logout</span>
+          </a>
+          </>
+      ):(
+        <>
           <Link to={'/register'} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#137abd] transition-colors">
             <span className="truncate">Sign Up</span>
           </Link>
           
           <Link to={'/login'} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Log In</span>
-          </Link>
+          </Link></>
+      )}
         </div>
       </div>
       
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-[72px] left-0 right-0 bg-white shadow-lg z-50 p-4">
+        <div className="lg:hidden absolute top-[72px] left-0 right-0 bg-white/90 backdrop-blur-2xl shadow-lg z-50 p-4">
           <nav className="flex flex-col space-y-4">
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="/">Home</a>
             {/* Collapsible Study Group for mobile */}
@@ -101,12 +112,24 @@ export const Header: React.FC = () => {
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
             <div className="flex space-x-3 pt-2">
-              <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
-                Sign Up
-              </button>
-              <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold hover:bg-slate-300 transition-colors">
-                Log In
-              </button>
+              {isLoggedIn() ? (
+                  <button onClick={logout} className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
+                  Logout
+                </button>
+              ):(
+                <>
+              <Link to={'/register'}>
+                <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
+                  Sign Up
+                </button>
+              </Link>
+              <Link to={'/login'}>
+                <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold hover:bg-slate-300 transition-colors">
+                  Log In
+                </button>
+              </Link>
+              </>
+              )}
             </div>
           </nav>
         </div>
