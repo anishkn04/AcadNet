@@ -1,33 +1,59 @@
 import passport from 'passport';
-import { Strategy as GithubStrategy } from "passport-github2";
+import { Strategy as GithubStrategy } from 'passport-github2';
 import User from '../models/user.model.js';
+
+// Helper to fetch verified primary email from GitHub API
+const getGitHubEmail = async (accessToken) => {
+  try {
+    const res = await fetch('https://api.github.com/user/emails', {
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    const data = await res.json();
+    const primary = data.find(email => email.primary && email.verified);
+    return primary?.email?.toLowerCase();
+  } catch (err) {
+    console.error('Error fetching GitHub email:', err);
+    return null;
+  }
+};
 
 passport.use(
   new GithubStrategy(
     {
       clientID: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_PASSPORT,
-      callbackURL: 'https://localhost:3000/api/v1/auth/github/callback'
+      callbackURL: 'http://localhost:3000/api/v1/auth/github/callback',
+      scope: ['user:email'],
+      userAgent: 'RishavOp',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const baseUsername = profile.username;
         const fullName = profile.displayName || '';
-        const email = profile.emails?.[0]?.value?.toLowerCase();
+
+     
+        let email = profile.emails?.[0]?.value?.toLowerCase();
+
+      
+        if (!email) {
+          email = await getGitHubEmail(accessToken);
+        }
 
         if (!email || !baseUsername) {
           return done(new Error('GitHub account does not provide necessary details'), null);
         }
 
-        // Check if user with this email already exists
+        // Check if user exists
         let user = await User.findOne({ email });
 
         if (user) {
-          // Prevent login if email is used for non-GitHub auth
           if (user.authProvider !== 'github') {
             return done(new Error('Email already used with a different auth method'), null);
           }
-
           return done(null, user); // GitHub user logging in again
         }
 
@@ -38,26 +64,17 @@ passport.use(
           username = `${baseUsername}_${suffix++}`;
         }
 
-        // Create new user
+        // Create user
         user = new User({
           username,
           email,
-          password: 'OAuth-Login', // Dummy password, won't be hashed
+          password: 'OAuth-Login', // Not hashed, just a placeholder
           authProvider: 'github',
-          fullName
+          fullName,
         });
 
-        try {
-          await user.save();
-          return done(null, user);
-        } catch (err) {
-          // Catch duplicate key error (in case of race condition)
-          if (err.code === 11000 && err.keyPattern?.email) {
-            return done(new Error('Email already exists'), null);
-          }
-          return done(err, null);
-        }
-
+        await user.save();
+        return done(null, user);
       } catch (error) {
         return done(error, null);
       }

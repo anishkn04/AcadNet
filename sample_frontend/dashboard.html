@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <p>You're logged in!</p>
+
+  <button id="refreshBtn">Refresh Token</button>
+  <button id="logoutBtn">Logout</button>
+  <button id="logoutAllBtn">Logout from All Devices</button>
+
+  <p id="msg"></p>
+
+  <script>
+    const baseURL = "http://localhost:3000/api/v1/auth";
+
+    const csrfToken = getCookie("csrfToken");
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${baseURL}/refresh-token`, {
+          method: "POST",
+          credentials: "include",
+        });
+        const data = await res.json();
+        document.getElementById("msg").innerText = data.message;
+      } catch (err) {
+        document.getElementById("msg").innerText = "Error refreshing token.";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${baseURL}/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+        console.log("Reached Here")
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || "Logout failed");
+          return;
+        }
+
+        alert(data.message);
+        window.location.href = "http://localhost:5500/sample_frontend/index.html";
+      } catch (err) {
+        console.error("Logout error:", err);
+        alert("Logout failed (network or parsing issue)");
+      }
+    });
+
+    document.getElementById("logoutAllBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${baseURL}/logout-all`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${getAccessTokenFromCookie()}`,
+            "CSRF-Token": csrfToken
+          }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || "Logout from all devices failed");
+          return;
+        }
+
+        alert(data.message);
+        window.location.href = "http://localhost:5500/sample_frontend/index.html";
+      } catch (err) {
+        console.error("Logout all error:", err);
+        alert("Logout from all failed (network or parsing issue)");
+      }
+    });
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+
+    function getAccessTokenFromCookie() {
+      return getCookie("accessToken");
+    }
+  </script>
+</body>
+</html>
