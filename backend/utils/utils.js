@@ -10,13 +10,13 @@ export const generateAccessToken = (payload) => {
   };
 
 
-  return jwt.sign(tokenPayload, process.env.ACCESS_TOKEN_SECRET, {
+  return jwt.sign(tokenPayload,ACCESS_SECRET, {
     expiresIn: '15m'
   });
 };
 
 export const generateRefreshToken = (payload) => {
-  return jwt.sign(payload,ACCESS_SECRET,{expiresIn: "15m"});
+  return jwt.sign(payload,REFRESH_SECRET,{expiresIn: "15m"});
 };
 
 export const verifyAccessToken = (token) => {return jwt.verify(token, ACCESS_SECRET);};

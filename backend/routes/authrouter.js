@@ -1,6 +1,6 @@
 import express from 'express'
 import passport from 'passport'
-import { oAuthCallback } from '../controllers/authcontroller.js'
+import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken } from '../controllers/authcontroller.js'
 const router = express.Router()
 
 // Placeholder for authentication-related endpoints
@@ -13,5 +13,10 @@ router.get(
   oAuthCallback
 );
 
+router.post('/refresh-token', refreshAccessToken);
+
+router.post('/logout', logoutCont);
+
+router.post('/logout-all', passport.authenticate('jwt', { session: false }), logoutAllCont);
 
 export default router
