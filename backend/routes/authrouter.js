@@ -7,7 +7,11 @@ const router = express.Router()
 
 router.get('/github',passport.authenticate('github',{scope: ['user:email']}))
 
-router.get('/github/callback',passport.authenticate('github',{failureRedirect: '/failure',session: false},oAuthCallback)
-)
+router.get(
+  '/github/callback',
+  passport.authenticate('github', { failureRedirect: '/failure', session: false }),
+  oAuthCallback
+);
+
 
 export default router
