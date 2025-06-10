@@ -1,6 +1,7 @@
 import RefreshToken from "../models/refresh.model.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/utils.js";
 import { randomBytes } from "crypto";
+import User from "../models/user.model.js";
 
 export const loginOauth = async (user) => {
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
@@ -27,7 +28,6 @@ export const refreshTokens = async (oldRefreshToken) => {
     throw new Error("Invalid refresh token");
   }
 
-  // Check token existence in DB
   const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
   if (!savedToken) {
     throw new Error("Refresh token revoked or not found");
@@ -36,10 +36,9 @@ export const refreshTokens = async (oldRefreshToken) => {
   const user = await User.findById(decoded.id);
   if (!user) throw new Error("User not found");
 
-  // Token rotation: delete old refresh token
+
   await RefreshToken.deleteOne({ token: oldRefreshToken });
 
-  // Generate new tokens
   const accessToken = generateAccessToken({ id: user._id, role: user.role });
   const refreshToken = generateRefreshToken(user._id);
   const expiresAt = new Date(
@@ -57,5 +56,12 @@ export const logout = async (refreshToken) => {
 };
 
 export const logoutAll = async (userId) => {
+  try{
+    console.log("Champo")
+    console.log(userId)
+    console.log("Apple")
   await RefreshToken.deleteMany({ user: userId });
+  }catch(err){
+    console.log(err)
+  }
 };

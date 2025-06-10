@@ -11,7 +11,8 @@ const authMiddleware = (req, res, next) => {
   }
   try {
     const decoded = verifyAccessToken(token);
-    req.Id = decoded.Id;
+    console.log(`Its here ${decoded.id}`)
+    req.id = decoded.id;
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {

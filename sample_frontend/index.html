@@ -57,11 +57,132 @@
     <h1>Welcome</h1>
     <button id="loginBtn">Login with GitHub</button>
 
-    <script>
-        document.getElementById("loginBtn").addEventListener("click", () => {
-            // Redirect to your backend's GitHub OAuth initiation endpoint
-            window.location.href = "http://localhost:3000/api/v1/auth/github/";
+  <script>
+
+     async function fetchWithInterceptor(url, options = {}) {
+            let originalRequest = { url, options }; // Store original request details
+
+            try {
+                // Ensure CSRF token is always sent for requests that need it
+                const csrfToken = getCookie('csrfToken');
+                const headers = new Headers(options.headers || {});
+                if (csrfToken && !headers.has('X-CSRF-Token')) {
+                    headers.set('X-CSRF-Token', csrfToken);
+                }
+                options.headers = headers;
+                options.credentials = 'include'; // Ensure cookies are always sent with this interceptor
+
+                const response = await fetch(url, options);
+
+                // If unauthorized (401) and not already a retry attempt
+                if (response.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true; // Mark this request as retried
+                    console.warn('Access token expired or unauthorized. Attempting to refresh token...');
+
+                    // If a refresh is already in progress, queue this request
+                    if (isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.push({ resolve, reject });
+                        })
+                        .then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options))
+                        .catch(err => Promise.reject(err));
+                    }
+
+                    isRefreshing = true; // Set flag to indicate refresh is starting
+
+                    try {
+                        const refreshRes = await fetch(`${baseURL}/refresh-token`, {
+                            method: "POST",
+                            credentials: "include",
+                            headers: {
+                                'X-CSRF-Token': getCookie('csrfToken')
+                            }
+                        });
+
+                        if (refreshRes.ok) {
+                            console.log('Token refreshed successfully. Retrying original request.');
+                            processQueue(null);
+                            return fetchWithInterceptor(originalRequest.url, originalRequest.options);
+                        } else {
+                            const refreshErrorData = await refreshRes.json();
+                            console.error('Failed to refresh token:', refreshRes.status, refreshErrorData.message);
+                            alert('Session expired. Please log in again.');
+                            processQueue(new Error('Refresh token failed.'));
+                            window.location.href = frontendRedirectURL;
+                            return Promise.reject(new Error('Session expired, redirecting to login.'));
+                        }
+                    } catch (refreshErr) {
+                        console.error('Network error during token refresh:', refreshErr);
+                        alert('Could not refresh session. Please check your internet connection or log in again.');
+                        processQueue(refreshErr);
+                        window.location.href = frontendRedirectURL;
+                        return Promise.reject(new Error('Network error during refresh, redirecting to login.'));
+                    } finally {
+                        isRefreshing = false;
+                    }
+                }
+                return response;
+            } catch (error) {
+                console.error('Fetch operation failed:', error);
+                throw error;
+            }
+        }
+
+    async function isUserLoggedIn() {
+        try {
+            const res = await fetch("http://localhost:3000/api/v1/auth/authorizedPage", {
+                method: "GET",
+                credentials: "include", 
+                headers: {
+                    'X-CSRF-Token': getCookie('csrfToken') || ''
+                }
+            });
+
+            if (res.ok) {
+                // User is logged in
+                window.location.href = "http://localhost:5500/sample_frontend/dashboard.html";
+            }
+        } catch (err) {
+            console.error("Authorization check failed:", err);
+            // Do nothing, stay on login page
+        }
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+        return null;
+    }
+
+    // Call it on page load
+    document.addEventListener("DOMContentLoaded", isUserLoggedIn);
+
+    // Login button redirect
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        window.location.href = "http://localhost:3000/api/v1/auth/github/";
+    });
+
+    async function checkAuthorization() {
+    try {
+        const res = await fetchWithInterceptor(`${baseURL}/authorizedPage`, {
+            method: "GET",
+            credentials: "include"
         });
-    </script>
+
+        if (res.ok) {
+            // User already logged in — redirect to dashboard
+            window.location.href = `${baseURL}/dashboard`;
+        }
+    } catch (err) {
+        // Not logged in or refresh failed — stay on login page
+        console.log("User is not logged in or session expired.");
+    }
+}
+
+checkAuthorization();
+</script>
+
+
 </body>
 </html>

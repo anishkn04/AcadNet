@@ -3,6 +3,7 @@ import passport from 'passport'
 import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken,checkedRes} from '../controllers/authcontroller.js'
 import csrfMiddleware from '../middlewares/csrf.js'
 import authMiddleware from '../middlewares/authmiddleware.js'
+import addUser from '../middlewares/addUsertoReq.js'
 const router = express.Router()
 
 
@@ -18,7 +19,7 @@ router.post('/refresh-token', refreshAccessToken);
 
 router.post('/logout', logoutCont);
 
-router.post('/logout-all', passport.authenticate('github', { session: false }), logoutAllCont);
+router.post('/logout-all',authMiddleware,csrfMiddleware,addUser,logoutAllCont);
 
 
 router.get('/authorizedPage',authMiddleware,csrfMiddleware,checkedRes)
