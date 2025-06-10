@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        #refreshBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #refreshBtn:hover {
+            background-color: #218838;
+        }
+        #logoutBtn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        #logoutBtn:hover {
+            background-color: #e0a800;
+        }
+        #logoutAllBtn {
+            background-color: #dc3545;
+            color: white;
+        }
+        #logoutAllBtn:hover {
+            background-color: #c82333;
+        }
+        #msg {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>You're logged in!</p>
+
+    <button id="refreshBtn">Manually Refresh Token</button>
+    <button id="logoutBtn">Logout</button>
+    <button id="logoutAllBtn">Logout from All Devices</button>
+
+    <p id="msg"></p>
+
+    <script>
+        // --- Helper Functions ---
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return null;
+        }
+
+        // --- Constants ---
+        const baseURL = "http://localhost:3000/api/v1/auth";
+        const frontendRedirectURL = "http://localhost:5500/sample_frontend/index.html";
+
+        // A flag to prevent multiple refresh token requests simultaneously
+        let isRefreshing = false;
+        // A queue to hold pending requests while a token refresh is in progress
+        let failedQueue = [];
+
+        // Function to process the queue after token refresh
+        function processQueue(error, token = null) {
+            failedQueue.forEach(prom => {
+                if (error) {
+                    prom.reject(error);
+                } else {
+                    prom.resolve(token);
+                }
+            });
+            failedQueue = [];
+        }
+
+        /**
+         * Custom fetch wrapper to handle access token expiration and refresh.
+         * This function will retry the request once if it fails with a 401.
+         * @param {string} url - The URL to fetch.
+         * @param {RequestInit} options - Fetch options.
+         * @returns {Promise<Response>} - The fetch response.
+         */
+        async function fetchWithInterceptor(url, options = {}) {
+            let originalRequest = { url, options }; // Store original request details
+
+            try {
+                // Ensure CSRF token is always sent for requests that need it
+                const csrfToken = getCookie('csrfToken');
+                const headers = new Headers(options.headers || {});
+                if (csrfToken && !headers.has('X-CSRF-Token')) {
+                    headers.set('X-CSRF-Token', csrfToken);
+                }
+                options.headers = headers;
+                options.credentials = 'include'; // Ensure cookies are always sent with this interceptor
+
+                const response = await fetch(url, options);
+
+                // If unauthorized (401) and not already a retry attempt
+                if (response.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true; // Mark this request as retried
+                    console.warn('Access token expired or unauthorized. Attempting to refresh token...');
+
+                    // If a refresh is already in progress, queue this request
+                    if (isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.push({ resolve, reject });
+                        })
+                        .then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options))
+                        .catch(err => Promise.reject(err));
+                    }
+
+                    isRefreshing = true; // Set flag to indicate refresh is starting
+
+                    try {
+                        const refreshRes = await fetch(`${baseURL}/refresh-token`, {
+                            method: "POST",
+                            credentials: "include",
+                            headers: {
+                                'X-CSRF-Token': getCookie('csrfToken')
+                            }
+                        });
+
+                        if (refreshRes.ok) {
+                            console.log('Token refreshed successfully. Retrying original request.');
+                            processQueue(null);
+                            return fetchWithInterceptor(originalRequest.url, originalRequest.options);
+                        } else {
+                            const refreshErrorData = await refreshRes.json();
+                            console.error('Failed to refresh token:', refreshRes.status, refreshErrorData.message);
+                            alert('Session expired. Please log in again.');
+                            processQueue(new Error('Refresh token failed.'));
+                            window.location.href = frontendRedirectURL;
+                            return Promise.reject(new Error('Session expired, redirecting to login.'));
+                        }
+                    } catch (refreshErr) {
+                        console.error('Network error during token refresh:', refreshErr);
+                        alert('Could not refresh session. Please check your internet connection or log in again.');
+                        processQueue(refreshErr);
+                        window.location.href = frontendRedirectURL;
+                        return Promise.reject(new Error('Network error during refresh, redirecting to login.'));
+                    } finally {
+                        isRefreshing = false;
+                    }
+                }
+                return response;
+            } catch (error) {
+                console.error('Fetch operation failed:', error);
+                throw error;
+            }
+        }
+
+        // --- Core Authorization Check ---
+        async function checkAuthorization() {
+            try {
+                const res = await fetchWithInterceptor(`${baseURL}/authorizedPage`, {
+                    method: "GET",
+                });
+
+                const data = await res.json();
+                console.log("Authorization Check Response:", res);
+
+                if (!res.ok) {
+                    alert(`Authorization failed: ${res.status} - ${data.message || 'Unknown error'}`);
+                } else {
+                    alert(`Authorized: ${res.status}`);
+                    document.getElementById('msg').innerText = `Welcome! Data: ${JSON.stringify(data)}`;
+                    console.log('Authorized page data:', data);
+                }
+            } catch (error) {
+                console.error('Error during initial authorization check:', error);
+            }
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAuthorization();
+
+            document.getElementById("refreshBtn").addEventListener("click", async () => {
+                const csrfToken = getCookie('csrfToken');
+                if (!csrfToken) {
+                    alert('CSRF token missing. Cannot manually refresh.');
+                    window.location.href = frontendRedirectURL;
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${baseURL}/refresh-token`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(`Manual Refresh failed: ${res.status} - ${data.message || 'Unknown error'}`);
+                        document.getElementById("msg").innerText = data.message || "Error refreshing token.";
+                        if (res.status === 401 || res.status === 403) {
+                             window.location.href = frontendRedirectURL;
+                        }
+                    } else {
+                        alert(`Manual Refresh successful: ${res.status}`);
+                        document.getElementById("msg").innerText = data.message || "Token refreshed successfully.";
+                    }
+                } catch (err) {
+                    console.error("Error refreshing token manually:", err);
+                    document.getElementById("msg").innerText = "Error refreshing token (network issue).";
+                }
+            });
+
+            document.getElementById("logoutBtn").addEventListener("click", async () => {
+                const csrfToken = getCookie('csrfToken');
+                if (!csrfToken) {
+                    alert('CSRF token missing. Cannot logout.');
+                    window.location.href = frontendRedirectURL;
+                    return;
+                }
+                try {
+                    const res = await fetch(`${baseURL}/logout`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(`Logout failed: ${res.status} - ${data.message || "Logout failed"}`);
+                        return;
+                    }
+
+                    alert(data.message || "Logged out successfully!");
+                    window.location.href = frontendRedirectURL;
+                } catch (err) {
+                    console.error("Logout error:", err);
+                    alert("Logout failed (network or parsing issue)");
+                }
+            });
+
+            document.getElementById("logoutAllBtn").addEventListener("click", async () => {
+                const csrfToken = getCookie('csrfToken');
+                console.log(csrfToken)
+
+                if (!csrfToken) { // Changed this check to not include accessToken initially
+                    alert("Missing CSRF token");
+                    window.location.href = frontendRedirectURL;
+                    return;
+                }
+
+                try {
+                    console.log("reached here")
+                   
+                  const res = await fetch(`${baseURL}/logout-all`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    });
+
+
+                    console.log("CHECKET-1")
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(`Logout from all devices failed: ${res.status} - ${data.message || "Unknown error"}`);
+                        return;
+                    }
+
+                    alert(data.message || "Logged out from all devices successfully!");
+                    window.location.href = frontendRedirectURL;
+                } catch (err) {
+                    console.error("Logout all error:", err);
+                    alert("Logout from all devices failed (network or parsing issue)");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

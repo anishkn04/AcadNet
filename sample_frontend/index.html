@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+        #loginBtn {
+            background-color: #333; /* GitHub-like dark color */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between text and icon */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #loginBtn:hover {
+            background-color: #555;
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+        #loginBtn:active {
+            background-color: #111;
+            transform: translateY(0);
+        }
+        /* Optional: GitHub icon - you'd typically use an SVG or FontAwesome */
+        #loginBtn::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%23fff" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2.0 2.21.05.46.55.38C13.71 14.53 16 11.54 16 8c0-4.42-3.58-8-8-8z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome</h1>
+    <button id="loginBtn">Login with GitHub</button>
+
+  <script>
+
+     async function fetchWithInterceptor(url, options = {}) {
+            let originalRequest = { url, options }; // Store original request details
+
+            try {
+                // Ensure CSRF token is always sent for requests that need it
+                const csrfToken = getCookie('csrfToken');
+                const headers = new Headers(options.headers || {});
+                if (csrfToken && !headers.has('X-CSRF-Token')) {
+                    headers.set('X-CSRF-Token', csrfToken);
+                }
+                options.headers = headers;
+                options.credentials = 'include'; // Ensure cookies are always sent with this interceptor
+
+                const response = await fetch(url, options);
+
+                // If unauthorized (401) and not already a retry attempt
+                if (response.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true; // Mark this request as retried
+                    console.warn('Access token expired or unauthorized. Attempting to refresh token...');
+
+                    // If a refresh is already in progress, queue this request
+                    if (isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.push({ resolve, reject });
+                        })
+                        .then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options))
+                        .catch(err => Promise.reject(err));
+                    }
+
+                    isRefreshing = true; // Set flag to indicate refresh is starting
+
+                    try {
+                        const refreshRes = await fetch(`${baseURL}/refresh-token`, {
+                            method: "POST",
+                            credentials: "include",
+                            headers: {
+                                'X-CSRF-Token': getCookie('csrfToken')
+                            }
+                        });
+
+                        if (refreshRes.ok) {
+                            console.log('Token refreshed successfully. Retrying original request.');
+                            processQueue(null);
+                            return fetchWithInterceptor(originalRequest.url, originalRequest.options);
+                        } else {
+                            const refreshErrorData = await refreshRes.json();
+                            console.error('Failed to refresh token:', refreshRes.status, refreshErrorData.message);
+                            alert('Session expired. Please log in again.');
+                            processQueue(new Error('Refresh token failed.'));
+                            window.location.href = frontendRedirectURL;
+                            return Promise.reject(new Error('Session expired, redirecting to login.'));
+                        }
+                    } catch (refreshErr) {
+                        console.error('Network error during token refresh:', refreshErr);
+                        alert('Could not refresh session. Please check your internet connection or log in again.');
+                        processQueue(refreshErr);
+                        window.location.href = frontendRedirectURL;
+                        return Promise.reject(new Error('Network error during refresh, redirecting to login.'));
+                    } finally {
+                        isRefreshing = false;
+                    }
+                }
+                return response;
+            } catch (error) {
+                console.error('Fetch operation failed:', error);
+                throw error;
+            }
+        }
+
+    async function isUserLoggedIn() {
+        try {
+            const res = await fetch("http://localhost:3000/api/v1/auth/authorizedPage", {
+                method: "GET",
+                credentials: "include", 
+                headers: {
+                    'X-CSRF-Token': getCookie('csrfToken') || ''
+                }
+            });
+
+            if (res.ok) {
+                // User is logged in
+                window.location.href = "http://localhost:5500/sample_frontend/dashboard.html";
+            }
+        } catch (err) {
+            console.error("Authorization check failed:", err);
+            // Do nothing, stay on login page
+        }
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+        return null;
+    }
+
+    // Call it on page load
+    document.addEventListener("DOMContentLoaded", isUserLoggedIn);
+
+    // Login button redirect
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        window.location.href = "http://localhost:3000/api/v1/auth/github/";
+    });
+
+    async function checkAuthorization() {
+    try {
+        const res = await fetchWithInterceptor(`${baseURL}/authorizedPage`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (res.ok) {
+            // User already logged in — redirect to dashboard
+            window.location.href = `${baseURL}/dashboard`;
+        }
+    } catch (err) {
+        // Not logged in or refresh failed — stay on login page
+        console.log("User is not logged in or session expired.");
+    }
+}
+
+checkAuthorization();
+</script>
+
+
+</body>
+</html>
