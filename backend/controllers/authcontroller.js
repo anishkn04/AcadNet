@@ -1,6 +1,6 @@
 import jsonRes from '../utils/response.js';
 import { loginOauth,refreshTokens,logout,logoutAll} from '../services/authservices.js'
-
+import RefreshToken from '../models/refresh.model.js';
 
 
 
@@ -66,6 +66,8 @@ export const refreshAccessToken = async (req, res) => {
     res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
     res.cookie('csrfToken', csrfToken, { httpOnly: false, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
+    await RefreshToken.deleteOne({ token: oldRefreshToken });
+
     return jsonRes(res, 200, true, 'Token refreshed');
   } catch (err) {
     console.error(err);
@@ -97,9 +99,10 @@ export const logoutCont = async (req, res) => {
 };
 
 export const logoutAllCont = async (req, res) => {
+  console.log("Heyy Heyy Heyy")
   try {
     const userId = req.user._id; 
-
+    console.log(userId)
     await logoutAll(userId);
 
     // Clear cookies
@@ -113,3 +116,7 @@ export const logoutAllCont = async (req, res) => {
     return jsonRes(res, 500, false, 'Logout all failed');
   }
 };
+
+export const checkedRes = (req,res)=>{
+   return jsonRes(res, 200, true, 'Logged In');
+}

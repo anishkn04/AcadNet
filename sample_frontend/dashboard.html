@@ -1,93 +1,212 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        #refreshBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #refreshBtn:hover {
+            background-color: #218838;
+        }
+        #logoutBtn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        #logoutBtn:hover {
+            background-color: #e0a800;
+        }
+        #logoutAllBtn {
+            background-color: #dc3545;
+            color: white;
+        }
+        #logoutAllBtn:hover {
+            background-color: #c82333;
+        }
+        #msg {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
-  <h1>Dashboard</h1>
-  <p>You're logged in!</p>
+    <h1>Dashboard</h1>
+    <p>You're logged in!</p>
 
-  <button id="refreshBtn">Refresh Token</button>
-  <button id="logoutBtn">Logout</button>
-  <button id="logoutAllBtn">Logout from All Devices</button>
+    <button id="refreshBtn">Refresh Token</button>
+    <button id="logoutBtn">Logout</button>
+    <button id="logoutAllBtn">Logout from All Devices</button>
 
-  <p id="msg"></p>
+    <p id="msg"></p>
 
-  <script>
-    const baseURL = "http://localhost:3000/api/v1/auth";
-
-    const csrfToken = getCookie("csrfToken");
-
-    document.getElementById("refreshBtn").addEventListener("click", async () => {
-      try {
-        const res = await fetch(`${baseURL}/refresh-token`, {
-          method: "POST",
-          credentials: "include",
-        });
-        const data = await res.json();
-        document.getElementById("msg").innerText = data.message;
-      } catch (err) {
-        document.getElementById("msg").innerText = "Error refreshing token.";
-      }
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      try {
-        const res = await fetch(`${baseURL}/logout`, {
-          method: "POST",
-          credentials: "include",
-        });
-        console.log("Reached Here")
-        const data = await res.json();
-
-        if (!res.ok) {
-          alert(data.message || "Logout failed");
-          return;
+    <script>
+        // --- Helper Functions ---
+        // Decodes and retrieves a cookie by name
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return null;
         }
 
-        alert(data.message);
-        window.location.href = "http://localhost:5500/sample_frontend/index.html";
-      } catch (err) {
-        console.error("Logout error:", err);
-        alert("Logout failed (network or parsing issue)");
-      }
-    });
+        // --- Constants ---
+        const baseURL = "http://localhost:3000/api/v1/auth";
+        const frontendRedirectURL = "http://localhost:5500/sample_frontend/index.html";
 
-    document.getElementById("logoutAllBtn").addEventListener("click", async () => {
-      try {
-        const res = await fetch(`${baseURL}/logout-all`, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Authorization": `Bearer ${getAccessTokenFromCookie()}`,
-            "CSRF-Token": csrfToken
-          }
-        });
+        // --- Core Authentication Check ---
+        async function checkAuthorization() {
+            const csrfToken = getCookie('csrfToken');
 
-        const data = await res.json();
+            if (!csrfToken) {
+                console.error('CSRF token cookie not found. Redirecting to login.');
+                alert('Session expired or invalid. Please log in again.');
+                window.location.href = frontendRedirectURL;
+                return;
+            }
 
-        if (!res.ok) {
-          alert(data.message || "Logout from all devices failed");
-          return;
+            try {
+                const res = await fetch(`${baseURL}/authorizedPage`, {
+                    method: "GET",
+                    credentials: "include", // Send existing cookies (including csrfToken cookie)
+                    headers: {
+                        'X-CSRF-Token': csrfToken // Send CSRF token in custom header
+                    }
+                });
+
+                const data = await res.json();
+                console.log("Authorization Check Response:", res);
+
+                if (!res.ok) {
+                    // If not authorized, display error and redirect
+                    alert(`Authorization failed: ${res.status} - ${data.message || 'Unknown error'}`);
+                    window.location.href = frontendRedirectURL;
+                } else {
+                    // If authorized, display success and optional data
+                    alert(`Authorized: ${res.status}`);
+                    document.getElementById('msg').innerText = `Welcome! Data: ${JSON.stringify(data)}`;
+                    console.log('Authorized page data:', data);
+                }
+            } catch (error) {
+                console.error('Network or server error during authorization check:', error);
+                alert('Could not connect to the server. Please try again.');
+                window.location.href = frontendRedirectURL;
+            }
         }
 
-        alert(data.message);
-        window.location.href = "http://localhost:5500/sample_frontend/index.html";
-      } catch (err) {
-        console.error("Logout all error:", err);
-        alert("Logout from all failed (network or parsing issue)");
-      }
-    });
+        // --- Event Listeners ---
+        document.addEventListener("DOMContentLoaded", () => {
+            // Run authorization check when the page loads
+            checkAuthorization();
 
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(";").shift();
-    }
+            document.getElementById("refreshBtn").addEventListener("click", async () => {
+                try {
+                    const res = await fetch(`${baseURL}/refresh-token`, {
+                        method: "POST",
+                        credentials: "include", // Essential for sending refresh token cookie
+                        headers: {
+                            'X-CSRF-Token': getCookie('csrfToken') // Include CSRF token for POST
+                        }
+                    });
+                    const data = await res.json();
 
-    function getAccessTokenFromCookie() {
-      return getCookie("accessToken");
-    }
-  </script>
+                    if (!res.ok) {
+                        alert(`Refresh failed: ${res.status} - ${data.message || 'Unknown error'}`);
+                        document.getElementById("msg").innerText = data.message || "Error refreshing token.";
+                        // Optionally redirect on specific refresh token errors
+                        if (res.status === 401 || res.status === 403) {
+                             window.location.href = frontendRedirectURL;
+                        }
+                    } else {
+                        alert(`Refresh successful: ${res.status}`);
+                        document.getElementById("msg").innerText = data.message || "Token refreshed successfully.";
+                    }
+                } catch (err) {
+                    console.error("Error refreshing token:", err);
+                    document.getElementById("msg").innerText = "Error refreshing token (network issue).";
+                }
+            });
+
+            document.getElementById("logoutBtn").addEventListener("click", async () => {
+                try {
+                    const res = await fetch(`${baseURL}/logout`, {
+                        method: "POST",
+                        credentials: "include", // Essential for sending session cookie
+                        headers: {
+                            'X-CSRF-Token': getCookie('csrfToken') // Include CSRF token for POST
+                        }
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(`Logout failed: ${res.status} - ${data.message || "Logout failed"}`);
+                        return;
+                    }
+
+                    alert(data.message || "Logged out successfully!");
+                    window.location.href = frontendRedirectURL;
+                } catch (err) {
+                    console.error("Logout error:", err);
+                    alert("Logout failed (network or parsing issue)");
+                }
+            });
+
+            document.getElementById("logoutAllBtn").addEventListener("click", async () => {
+                const csrfToken = getCookie('csrfToken');
+                const accessToken = getCookie('accessToken'); // Assuming accessToken is a cookie for this.
+
+                if (!csrfToken || !accessToken) {
+                    alert("Missing authentication tokens. Please log in again.");
+                    window.location.href = frontendRedirectURL;
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${baseURL}/logout-all`, {
+                        method: "POST",
+                        credentials: "include", // Send session cookie for backend to identify user
+                        headers: {
+                            "Authorization": `Bearer ${accessToken}`, // Send access token if required by backend
+                            "X-CSRF-Token": csrfToken // Send CSRF token for protection
+                        }
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(`Logout from all devices failed: ${res.status} - ${data.message || "Unknown error"}`);
+                        return;
+                    }
+
+                    alert(data.message || "Logged out from all devices successfully!");
+                    window.location.href = frontendRedirectURL;
+                } catch (err) {
+                    console.error("Logout all error:", err);
+                    alert("Logout from all devices failed (network or parsing issue)");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
