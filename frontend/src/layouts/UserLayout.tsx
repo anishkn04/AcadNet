@@ -1,8 +1,9 @@
-import React from 'react'
+// import React from 'react'
+import { Outlet } from 'react-router-dom'
 
 const UserLayout = () => {
   return (
-    <div>UserLayout</div>
+    <div><Outlet/>hello</div>
   )
 }
 
