@@ -35,7 +35,7 @@ export const generateRefreshToken = (payload) => {
 
   console.log('Refresh Token Payload:', sanitizedPayload);
   console.log(sanitizedPayload)
-  return jwt.sign(sanitizedPayload,REFRESH_SECRET,{expiresIn: "15m"});
+  return jwt.sign(sanitizedPayload,REFRESH_SECRET,{expiresIn: "7d"});
 };
 
 export const verifyAccessToken = (token) => {return jwt.verify(token, ACCESS_SECRET);};

@@ -2,12 +2,14 @@ import RefreshToken from "../models/refresh.model.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/utils.js";
 import { randomBytes } from "crypto";
 import User from "../models/user.model.js";
+import jwt from 'jsonwebtoken'
+
 
 export const loginOauth = async (user) => {
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
   const userId = user._id;
   const accessToken = generateAccessToken({ id: userId, role: user.role });
-  const refreshToken = generateRefreshToken({ id: userId });
+  const refreshToken = generateRefreshToken({ id: userId, role: user.role });
   const csrfToken = randomBytes(20).toString("hex");
 
   const expiresAt = new Date(
@@ -20,27 +22,31 @@ export const loginOauth = async (user) => {
 };
 
 export const refreshTokens = async (oldRefreshToken) => {
+  const REFRESH_TOKEN_EXPIRY_DAYS = 7
   // Verify old token
   let decoded;
+  console.log(`decoded ${decoded}`)
+  console.log(oldRefreshToken)
   try {
     decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
     throw new Error("Invalid refresh token");
   }
-
   const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
   if (!savedToken) {
     throw new Error("Refresh token revoked or not found");
   }
+  
+  console.log("DEBUG POINTER REACHED HERE")
 
   const user = await User.findById(decoded.id);
   if (!user) throw new Error("User not found");
 
-
+  console.log(`THE USER WAS FOUND: ${user}`)
   await RefreshToken.deleteOne({ token: oldRefreshToken });
 
   const accessToken = generateAccessToken({ id: user._id, role: user.role });
-  const refreshToken = generateRefreshToken(user._id);
+  const refreshToken = generateRefreshToken({ id: user._id, role: user.role });
   const expiresAt = new Date(
     Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
   );
@@ -52,7 +58,12 @@ export const refreshTokens = async (oldRefreshToken) => {
 };
 
 export const logout = async (refreshToken) => {
+  try{
   await RefreshToken.deleteOne({ token: refreshToken });
+  } catch(err){
+    console.log(err)
+    console.log("Logout error")
+  }
 };
 
 export const logoutAll = async (userId) => {

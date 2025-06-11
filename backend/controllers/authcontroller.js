@@ -19,8 +19,10 @@ export const oAuthCallback = async (req, res) => {
 
   try {
     const { accessToken, refreshToken, csrfToken } = await loginOauth(user);
+    console.log("THE REF IS")
+    console.log(refreshToken)
 
-    console.log(accessToken);
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "Lax",
@@ -54,8 +56,12 @@ export const refreshAccessToken = async (req, res) => {
     const oldRefreshToken = req.cookies.refreshToken;
     if (!oldRefreshToken)
       return jsonRes(res, 401, false, "No refresh token provided");
-
+    
     const { accessToken, refreshToken, csrfToken } = await refreshTokens(oldRefreshToken);
+    console.log("Its reaching here")
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.clearCookie("csrfToken");
 
     // Set new tokens cookies
     res.cookie("accessToken", accessToken, {

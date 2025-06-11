@@ -60,7 +60,6 @@
     <p id="msg"></p>
 
     <script>
-        // --- Helper Functions ---
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
@@ -70,16 +69,12 @@
             return null;
         }
 
-        // --- Constants ---
         const baseURL = "http://localhost:3000/api/v1/auth";
         const frontendRedirectURL = "http://localhost:5500/sample_frontend/index.html";
 
-        // A flag to prevent multiple refresh token requests simultaneously
         let isRefreshing = false;
-        // A queue to hold pending requests while a token refresh is in progress
         let failedQueue = [];
 
-        // Function to process the queue after token refresh
         function processQueue(error, token = null) {
             failedQueue.forEach(prom => {
                 if (error) {
@@ -91,43 +86,30 @@
             failedQueue = [];
         }
 
-        /**
-         * Custom fetch wrapper to handle access token expiration and refresh.
-         * This function will retry the request once if it fails with a 401.
-         * @param {string} url - The URL to fetch.
-         * @param {RequestInit} options - Fetch options.
-         * @returns {Promise<Response>} - The fetch response.
-         */
         async function fetchWithInterceptor(url, options = {}) {
-            let originalRequest = { url, options }; // Store original request details
+            let originalRequest = { url, options };
 
             try {
-                // Ensure CSRF token is always sent for requests that need it
                 const csrfToken = getCookie('csrfToken');
                 const headers = new Headers(options.headers || {});
                 if (csrfToken && !headers.has('X-CSRF-Token')) {
                     headers.set('X-CSRF-Token', csrfToken);
                 }
                 options.headers = headers;
-                options.credentials = 'include'; // Ensure cookies are always sent with this interceptor
+                options.credentials = 'include';
 
                 const response = await fetch(url, options);
 
-                // If unauthorized (401) and not already a retry attempt
                 if (response.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true; // Mark this request as retried
-                    console.warn('Access token expired or unauthorized. Attempting to refresh token...');
+                    originalRequest._retry = true;
 
-                    // If a refresh is already in progress, queue this request
                     if (isRefreshing) {
                         return new Promise((resolve, reject) => {
                             failedQueue.push({ resolve, reject });
-                        })
-                        .then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options))
-                        .catch(err => Promise.reject(err));
+                        }).then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options));
                     }
 
-                    isRefreshing = true; // Set flag to indicate refresh is starting
+                    isRefreshing = true;
 
                     try {
                         const refreshRes = await fetch(`${baseURL}/refresh-token`, {
@@ -139,35 +121,32 @@
                         });
 
                         if (refreshRes.ok) {
-                            console.log('Token refreshed successfully. Retrying original request.');
                             processQueue(null);
                             return fetchWithInterceptor(originalRequest.url, originalRequest.options);
                         } else {
                             const refreshErrorData = await refreshRes.json();
-                            console.error('Failed to refresh token:', refreshRes.status, refreshErrorData.message);
                             alert('Session expired. Please log in again.');
                             processQueue(new Error('Refresh token failed.'));
                             window.location.href = frontendRedirectURL;
-                            return Promise.reject(new Error('Session expired, redirecting to login.'));
+                            return Promise.reject(new Error('Session expired, redirecting.'));
                         }
                     } catch (refreshErr) {
-                        console.error('Network error during token refresh:', refreshErr);
-                        alert('Could not refresh session. Please check your internet connection or log in again.');
+                        alert('Could not refresh session. Please check your connection or log in again.');
                         processQueue(refreshErr);
                         window.location.href = frontendRedirectURL;
-                        return Promise.reject(new Error('Network error during refresh, redirecting to login.'));
+                        return Promise.reject(new Error('Network error during refresh.'));
                     } finally {
                         isRefreshing = false;
                     }
                 }
+
                 return response;
             } catch (error) {
-                console.error('Fetch operation failed:', error);
+                console.error('Fetch error:', error);
                 throw error;
             }
         }
 
-        // --- Core Authorization Check ---
         async function checkAuthorization() {
             try {
                 const res = await fetchWithInterceptor(`${baseURL}/authorizedPage`, {
@@ -175,23 +154,52 @@
                 });
 
                 const data = await res.json();
-                console.log("Authorization Check Response:", res);
-
                 if (!res.ok) {
                     alert(`Authorization failed: ${res.status} - ${data.message || 'Unknown error'}`);
                 } else {
-                    alert(`Authorized: ${res.status}`);
                     document.getElementById('msg').innerText = `Welcome! Data: ${JSON.stringify(data)}`;
-                    console.log('Authorized page data:', data);
                 }
             } catch (error) {
-                console.error('Error during initial authorization check:', error);
+                console.error('Authorization error:', error);
             }
         }
 
-        // --- Event Listeners ---
         document.addEventListener("DOMContentLoaded", () => {
             checkAuthorization();
+
+            // 🔁 Auto-refresh access token every 20 seconds
+            setInterval(async () => {
+                const csrfToken = getCookie('csrfToken');
+                if (!csrfToken) {
+                    console.warn("Missing CSRF token, cannot auto-refresh.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${baseURL}/refresh-token`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        console.warn(`Auto-refresh failed: ${res.status} - ${data.message}`);
+                        if (res.status === 401 || res.status === 403) {
+                            alert('Session expired. Redirecting to login.');
+                            window.location.href = frontendRedirectURL;
+                        }
+                    } else {
+                        console.log(`🔄 Auto-refresh at ${new Date().toLocaleTimeString()}`);
+                        document.getElementById("msg").innerText = `Auto-refreshedioo: ${data.message}`;
+                    }
+                } catch (err) {
+                    console.error("Auto-refresh error:", err);
+                }
+            }, 10005000); // every 20 seconds
 
             document.getElementById("refreshBtn").addEventListener("click", async () => {
                 const csrfToken = getCookie('csrfToken');
@@ -212,18 +220,18 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        alert(`Manual Refresh failed: ${res.status} - ${data.message || 'Unknown error'}`);
-                        document.getElementById("msg").innerText = data.message || "Error refreshing token.";
+                        alert(`Manual refresh failed: ${res.status} - ${data.message}`);
+                        document.getElementById("msg").innerText = data.message || "Manual refresh failed.";
                         if (res.status === 401 || res.status === 403) {
-                             window.location.href = frontendRedirectURL;
+                            window.location.href = frontendRedirectURL;
                         }
                     } else {
-                        alert(`Manual Refresh successful: ${res.status}`);
-                        document.getElementById("msg").innerText = data.message || "Token refreshed successfully.";
+                        alert("Manual token refresh successful.");
+                        document.getElementById("msg").innerText = data.message || "Token refreshed manually.";
                     }
                 } catch (err) {
-                    console.error("Error refreshing token manually:", err);
-                    document.getElementById("msg").innerText = "Error refreshing token (network issue).";
+                    console.error("Manual refresh error:", err);
+                    document.getElementById("msg").innerText = "Manual refresh failed (network error).";
                 }
             });
 
@@ -245,32 +253,28 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        alert(`Logout failed: ${res.status} - ${data.message || "Logout failed"}`);
+                        alert(`Logout failed: ${res.status} - ${data.message}`);
                         return;
                     }
 
-                    alert(data.message || "Logged out successfully!");
+                    alert(data.message || "Logged out.");
                     window.location.href = frontendRedirectURL;
                 } catch (err) {
                     console.error("Logout error:", err);
-                    alert("Logout failed (network or parsing issue)");
+                    alert("Logout failed (network error)");
                 }
             });
 
             document.getElementById("logoutAllBtn").addEventListener("click", async () => {
                 const csrfToken = getCookie('csrfToken');
-                console.log(csrfToken)
-
-                if (!csrfToken) { // Changed this check to not include accessToken initially
+                if (!csrfToken) {
                     alert("Missing CSRF token");
                     window.location.href = frontendRedirectURL;
                     return;
                 }
 
                 try {
-                    console.log("reached here")
-                   
-                  const res = await fetch(`${baseURL}/logout-all`, {
+                    const res = await fetch(`${baseURL}/logout-all`, {
                         method: "POST",
                         credentials: "include",
                         headers: {
@@ -278,20 +282,18 @@
                         }
                     });
 
-
-                    console.log("CHECKET-1")
                     const data = await res.json();
 
                     if (!res.ok) {
-                        alert(`Logout from all devices failed: ${res.status} - ${data.message || "Unknown error"}`);
+                        alert(`Logout all failed: ${res.status} - ${data.message}`);
                         return;
                     }
 
-                    alert(data.message || "Logged out from all devices successfully!");
+                    alert(data.message || "Logged out from all devices.");
                     window.location.href = frontendRedirectURL;
                 } catch (err) {
                     console.error("Logout all error:", err);
-                    alert("Logout from all devices failed (network or parsing issue)");
+                    alert("Logout from all devices failed (network error)");
                 }
             });
         });
