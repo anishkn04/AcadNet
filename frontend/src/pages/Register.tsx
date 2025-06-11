@@ -43,7 +43,7 @@ export default function Register() {
       const success = await registerUser(form.email, form.userName, form.password);
   
       if (success) {
-        navigate("/user");
+        navigate("/");
       } else {
         toast.error("Sorry! Unable to register at a moment");
       }
