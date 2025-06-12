@@ -4,9 +4,12 @@ import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken,checkedRes,
 import csrfMiddleware from '../middlewares/csrf.js'
 import authMiddleware from '../middlewares/authmiddleware.js'
 import addUser from '../middlewares/addUsertoReq.js'
+import validateSignup from '../validator/validate.js'
+import handleValidationError from '../validator/errorvalidation.js'
+
 const router = express.Router()
 
-router.post('/signup',signup)
+router.post('/signup',validateSignup, signup)
 
 router.post('/login',login)
 

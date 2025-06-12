@@ -169,7 +169,10 @@ export const signup = async (req, res) => {
     await signupService(email,username, password);
      return jsonRes(res, 200, true, "Signup Success");
   } catch (err) {
-    return jsonRes(res, 500, false, err.message);
+    if(err.message === 'MongoServerError: E11000 duplicate key error collection: acadnetest.users index: email_1 dup key: { email: "gainrishavchap@gmail.com" }'){
+      return jsonRes(res, 404, false, "Email already in use");
+    }
+    return jsonRes(res, 500, false, "Internal Server Error");
   }
 };
 

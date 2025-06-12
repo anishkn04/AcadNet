@@ -10,34 +10,80 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        .validation-icon {
+            display: none;
+        }
+        .valid .validation-icon.valid-icon {
+            display: inline-block;
+        }
+        .invalid .validation-icon.invalid-icon {
+            display: inline-block;
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
 
-    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <div class="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-md">
         <div>
             <h1 class="text-2xl font-bold text-center text-gray-800">Create an Account</h1>
             <p class="text-center text-gray-500">Join us today!</p>
         </div>
         
-        <div id="message-div" class="hidden p-3 text-sm rounded-lg" role="alert">
-            <!-- Message content will be injected here -->
+        <div id="form-message-div" class="hidden p-3 text-sm rounded-lg" role="alert">
+            <!-- Form-level message content will be injected here -->
         </div>
 
-        <form id="signup-form" class="space-y-6">
+        <form id="signup-form" class="space-y-4" novalidate>
+            <!-- Email Field -->
             <div>
                 <label for="email" class="block mb-2 text-sm font-medium text-gray-600">Email</label>
                 <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="name@example.com" required>
+                <p id="email-error" class="mt-1 text-xs text-red-600 hidden">Please enter a valid email address.</p>
             </div>
+
+            <!-- Username Field -->
             <div>
                 <label for="username" class="block mb-2 text-sm font-medium text-gray-600">Username</label>
                 <input type="text" id="username" name="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="yourusername" required>
+                <p id="username-error" class="mt-1 text-xs text-red-600 hidden">Invalid username format.</p>
             </div>
+
+            <!-- Password Field -->
             <div>
                 <label for="password" class="block mb-2 text-sm font-medium text-gray-600">Password</label>
                 <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">Create Account</button>
+            
+            <!-- Password Requirements -->
+            <div id="password-reqs" class="text-xs text-gray-500 space-y-1">
+                <p id="req-length" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 validation-icon invalid-icon text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-4 h-4 mr-2 validation-icon valid-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    At least 8 characters long
+                </p>
+                <p id="req-lowercase" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 validation-icon invalid-icon text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-4 h-4 mr-2 validation-icon valid-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    One lowercase letter
+                </p>
+                <p id="req-uppercase" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 validation-icon invalid-icon text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-4 h-4 mr-2 validation-icon valid-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    One uppercase letter
+                </p>
+                <p id="req-number" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 validation-icon invalid-icon text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-4 h-4 mr-2 validation-icon valid-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    One number
+                </p>
+                <p id="req-special" class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 validation-icon invalid-icon text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-4 h-4 mr-2 validation-icon valid-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    One special character
+                </p>
+            </div>
+            
+            <button type="submit" id="submit-button" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">Create Account</button>
         </form>
         
         <p class="text-sm text-center text-gray-500">
@@ -51,7 +97,132 @@
 
         // --- DOM Elements ---
         const signupForm = document.getElementById('signup-form');
-        const messageDiv = document.getElementById('message-div');
+        const submitButton = document.getElementById('submit-button');
+        const formMessageDiv = document.getElementById('form-message-div');
+        const emailInput = document.getElementById('email');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('email-error');
+        const usernameError = document.getElementById('username-error');
+        
+        // --- Validation State ---
+        let isEmailValid = false;
+        let isUsernameValid = false;
+        let isPasswordValid = false;
+        
+        // --- Validation Logic ---
+
+        const validateEmail = () => {
+            const email = emailInput.value;
+            // Simple regex for email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            isEmailValid = emailRegex.test(email);
+            if (isEmailValid) {
+                emailError.classList.add('hidden');
+                emailInput.classList.remove('border-red-500');
+            } else {
+                emailError.classList.remove('hidden');
+                emailError.textContent = 'Please enter a valid email address.';
+                emailInput.classList.add('border-red-500');
+            }
+            updateSubmitButtonState();
+        };
+
+        const validateUsername = () => {
+            const username = usernameInput.value;
+            const usernameRegex = /^[A-Za-z][A-Za-z0-9_]*$/;
+            let errorMessage = '';
+
+            if (username.length > 15) {
+                errorMessage = 'Username must be at most 15 characters long.';
+            } else if (!usernameRegex.test(username)) {
+                errorMessage = 'Must start with a letter and contain only letters, numbers, and underscores.';
+            }
+            
+            isUsernameValid = errorMessage === '';
+
+            if (isUsernameValid) {
+                usernameError.classList.add('hidden');
+                usernameInput.classList.remove('border-red-500');
+            } else {
+                usernameError.textContent = errorMessage;
+                usernameError.classList.remove('hidden');
+                usernameInput.classList.add('border-red-500');
+            }
+            updateSubmitButtonState();
+        };
+
+        const validatePassword = () => {
+            const password = passwordInput.value;
+            let requirementsMet = 0;
+            
+            // Rule 1: Length
+            const lengthReq = document.getElementById('req-length');
+            if (password.length >= 8) {
+                lengthReq.classList.add('valid');
+                lengthReq.classList.remove('invalid');
+                requirementsMet++;
+            } else {
+                lengthReq.classList.add('invalid');
+                lengthReq.classList.remove('valid');
+            }
+
+            // Rule 2: Lowercase
+            const lowercaseReq = document.getElementById('req-lowercase');
+            if (/[a-z]/.test(password)) {
+                lowercaseReq.classList.add('valid');
+                lowercaseReq.classList.remove('invalid');
+                requirementsMet++;
+            } else {
+                lowercaseReq.classList.add('invalid');
+                lowercaseReq.classList.remove('valid');
+            }
+
+            // Rule 3: Uppercase
+            const uppercaseReq = document.getElementById('req-uppercase');
+            if (/[A-Z]/.test(password)) {
+                uppercaseReq.classList.add('valid');
+                uppercaseReq.classList.remove('invalid');
+                requirementsMet++;
+            } else {
+                uppercaseReq.classList.add('invalid');
+                uppercaseReq.classList.remove('valid');
+            }
+            
+            // Rule 4: Number
+            const numberReq = document.getElementById('req-number');
+            if (/\d/.test(password)) {
+                numberReq.classList.add('valid');
+                numberReq.classList.remove('invalid');
+                requirementsMet++;
+            } else {
+                numberReq.classList.add('invalid');
+                numberReq.classList.remove('valid');
+            }
+            
+            // Rule 5: Special Character
+            const specialReq = document.getElementById('req-special');
+            if (/[^A-Za-z0-9]/.test(password)) {
+                specialReq.classList.add('valid');
+                specialReq.classList.remove('invalid');
+                requirementsMet++;
+            } else {
+                specialReq.classList.add('invalid');
+                specialReq.classList.remove('valid');
+            }
+
+            isPasswordValid = requirementsMet === 5;
+            updateSubmitButtonState();
+        };
+        
+        const updateSubmitButtonState = () => {
+            if (isEmailValid && isUsernameValid && isPasswordValid) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        };
+
 
         /**
          * Displays a message in the designated div.
@@ -59,14 +230,14 @@
          * @param {boolean} isSuccess Whether the message is a success or error message.
          */
         const show_message = (message, isSuccess) => {
-            messageDiv.textContent = message;
-            messageDiv.classList.remove('hidden');
+            formMessageDiv.textContent = message;
+            formMessageDiv.classList.remove('hidden');
             if (isSuccess) {
-                messageDiv.classList.remove('bg-red-100', 'text-red-700');
-                messageDiv.classList.add('bg-green-100', 'text-green-700');
+                formMessageDiv.classList.remove('bg-red-100', 'text-red-700');
+                formMessageDiv.classList.add('bg-green-100', 'text-green-700');
             } else {
-                messageDiv.classList.remove('bg-green-100', 'text-green-700');
-                messageDiv.classList.add('bg-red-100', 'text-red-700');
+                formMessageDiv.classList.remove('bg-green-100', 'text-green-700');
+                formMessageDiv.classList.add('bg-red-100', 'text-red-700');
             }
         };
 
@@ -76,7 +247,12 @@
          */
         const handleSignup = async (event) => {
             event.preventDefault();
-            messageDiv.classList.add('hidden'); // Hide previous messages
+            formMessageDiv.classList.add('hidden'); // Hide previous messages
+
+            if (!isEmailValid || !isUsernameValid || !isPasswordValid) {
+                show_message('Please fix the errors before submitting.', false);
+                return;
+            }
 
             const formData = new FormData(signupForm);
             const data = Object.fromEntries(formData.entries());
@@ -97,6 +273,7 @@
                         window.location.href = './index.html';
                     }, 2000);
                 } else {
+                    // Display the specific error message from the backend
                     show_message(result.message || 'An unknown error occurred.', false);
                 }
             } catch (error) {
@@ -106,7 +283,16 @@
         };
 
         // --- Event Listeners ---
+        emailInput.addEventListener('input', validateEmail);
+        usernameInput.addEventListener('input', validateUsername);
+        passwordInput.addEventListener('input', validatePassword);
         signupForm.addEventListener('submit', handleSignup);
+        
+        // --- Initial Check ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSubmitButtonState(); // Initially disable button
+        });
+
     </script>
 </body>
 </html>
