@@ -3,7 +3,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/utils.js";
 import { randomBytes } from "crypto";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import passport from "passport";
+import bcrypt from 'bcrypt'
 
 export const loginOauth = async (user) => {
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
@@ -110,6 +110,35 @@ export const signupService = async (email, username, password) => {
   }
 };
 
-export const loginService = async (email, username, password)=>{
+export const loginService = async (email,password)=>{
+  let REFRESH_TOKEN_EXPIRY_DAYS = 7
+   let user = await User.findOne({ email });
+   if(!user){
+    throw new Error('Login Error: User not Found')
+   }
+
+   if(user.authProvider != 'local'){
+    throw new Error("Please Login via GitHub")
+   }
+
+   const verify = await bcrypt.compare(password, user.password);
+
+    if (!verify) {
+     throw new Error('Login Error: Wrong Credentials')
+    }
+
+  const userId = user._id;
+  const accessToken = generateAccessToken({ id: userId, role: user.role });
+  const refreshToken = generateRefreshToken({ id: userId, role: user.role });
+  const csrfToken = randomBytes(20).toString("hex");
+
+  const expiresAt = new Date(
+    Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
+
+  return { accessToken, refreshToken, csrfToken };
+
 
 }

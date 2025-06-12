@@ -5,7 +5,8 @@ import {
   logout,
   logoutAll,
   sessionService,
-  signupService
+  signupService,
+  loginService
 } from "../services/authservices.js";
 import RefreshToken from "../models/refresh.model.js";
 
@@ -171,3 +172,44 @@ export const signup = async (req, res) => {
     return jsonRes(res, 500, false, err.message);
   }
 };
+
+export const login = async (req,res) =>{
+  try{   
+   let { email, password } = req.body;
+   email = email.toLowerCase()
+    
+   const {accessToken, refreshToken, csrfToken }= await loginService(email,password)
+
+   res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.cookie("csrfToken", csrfToken, {
+      httpOnly: false,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 15 * 60 * 1000
+    });
+
+    jsonRes(res,200,true,"Login Success")
+
+  }catch(err){
+    if(err.message == "Login Error: User not Found" || err.message == "Login Error: Wrong Credentials"){
+      return jsonRes(res,401,false,err.message)
+    }else if(err.message == "Please Login via GitHub"){
+      return jsonRes(res,409,false,err.message)
+    }else{
+    return jsonRes(res, 500, false, err.message);
+    }
+  }
+  }
