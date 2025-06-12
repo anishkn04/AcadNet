@@ -4,7 +4,8 @@ import {
   refreshTokens,
   logout,
   logoutAll,
-  sessionService
+  sessionService,
+  signupService
 } from "../services/authservices.js";
 import RefreshToken from "../models/refresh.model.js";
 
@@ -160,10 +161,13 @@ export const checkedRes = (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    console.log("Reached here")
+    let { email, username, password } = req.body;
+    email = email.toLowerCase();
+    username = username.toLowerCase();
     await signupService(email,username, password);
      return jsonRes(res, 200, true, "Signup Success");
   } catch (err) {
-    return jsonRes(res, 500, false, err);
+    return jsonRes(res, 500, false, err.message);
   }
 };
