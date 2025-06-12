@@ -61,17 +61,17 @@
               credentials: "include",
               headers: {
                 "Content-Type": "application/json",
-                // 👇 THE CRITICAL FIX: Include the CSRF token as a header
+         
                 "X-CSRF-Token": csrfToken
               }
             }
           );
 
-          alert(res.status);
+  
 
-          const data = await res.json(); 
-          console.log(data.message);
-          alert(`Message: ${data.message}`)
+
+       
+        
           if (res.ok) {
             // If session is valid, redirect immediately
             window.location.href = "dashboard.html";

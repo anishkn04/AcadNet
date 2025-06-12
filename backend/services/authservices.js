@@ -23,8 +23,10 @@ export const loginOauth = async (user) => {
 
 export const sessionService = async (oldRefreshToken) => {
   try {
+    let decoded
+    console.log(oldRefreshToken)
     decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-    console.log("Heoolo!n")
+    
     const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
     if (!savedToken) {
       throw new Error("Refresh token revoked or not found");

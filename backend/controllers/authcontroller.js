@@ -55,9 +55,11 @@ export const oAuthCallback = async (req, res) => {
 export const sessionChecker = async (req,res) =>{
   try{
   const oldRefreshToken = req.cookies.refreshToken;
-   if (!oldRefreshToken)
+   if (!oldRefreshToken){
       return jsonRes(res, 401, false, "No refresh token provided");
-   const isSession = await sessionService(oldRefreshToken)
+    }
+    const isSession = await sessionService(oldRefreshToken)
+   
    if(isSession == true){
       return jsonRes(res, 200, false, "Ref Token is Valid");
    }else {
