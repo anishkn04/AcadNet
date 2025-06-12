@@ -3,7 +3,8 @@ import {
   loginOauth,
   refreshTokens,
   logout,
-  logoutAll
+  logoutAll,
+  sessionService
 } from "../services/authservices.js";
 import RefreshToken from "../models/refresh.model.js";
 
@@ -51,6 +52,21 @@ export const oAuthCallback = async (req, res) => {
   }
 };
 
+export const sessionChecker = async (req,res) =>{
+  try{
+  const oldRefreshToken = req.cookies.refreshToken;
+   if (!oldRefreshToken)
+      return jsonRes(res, 401, false, "No refresh token provided");
+  
+   const isSession = await sessionService(oldRefreshToken)
+   if(isSession == true){
+      return jsonRes(res, 200, false, "Ref Token is Valid");
+   }
+    }
+  catch(err){
+return jsonRes(res, 200, false, "Ref Token is Valid");
+  }
+}
 export const refreshAccessToken = async (req, res) => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
@@ -134,4 +150,15 @@ export const logoutAllCont = async (req, res) => {
 
 export const checkedRes = (req, res) => {
   return jsonRes(res, 200, true, "Logged In");
+};
+
+
+export const signup = async (req, res) => {
+  try {
+    const { email, username, password } = req.body;
+    await signupService(email,username, password);
+     return jsonRes(res, 200, true, "Signup Success");
+  } catch (err) {
+    return jsonRes(res, 500, false, err);
+  }
 };
