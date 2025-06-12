@@ -1,301 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        h1 {
-            color: #0056b3;
-        }
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-        }
-        #refreshBtn {
-            background-color: #28a745;
-            color: white;
-        }
-        #refreshBtn:hover {
-            background-color: #218838;
-        }
-        #logoutBtn {
-            background-color: #ffc107;
-            color: #333;
-        }
-        #logoutBtn:hover {
-            background-color: #e0a800;
-        }
-        #logoutAllBtn {
-            background-color: #dc3545;
-            color: white;
-        }
-        #logoutAllBtn:hover {
-            background-color: #c82333;
-        }
-        #msg {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #007bff;
-        }
+        body { font-family: sans-serif; padding: 20px; }
+        button { background-color: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        #logout-all-btn { background-color: #6c757d; }
     </style>
 </head>
 <body>
     <h1>Dashboard</h1>
-    <p>You're logged in!</p>
-
-    <button id="refreshBtn">Manually Refresh Token</button>
-    <button id="logoutBtn">Logout</button>
-    <button id="logoutAllBtn">Logout from All Devices</button>
-
-    <p id="msg"></p>
+    <p>Welcome! You are logged in.</p>
+    <button id="logout-btn">Logout</button>
+    <button id="logout-all-btn">Logout from All Sessions</button>
 
     <script>
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) {
-                return decodeURIComponent(parts.pop().split(';').shift());
-            }
-            return null;
-        }
+        const getCookie = (name) => document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
 
-        const baseURL = "http://localhost:3000/api/v1/auth";
-        const frontendRedirectURL = "http://localhost:5500/sample_frontend/index.html";
+        const fetchWithCredentials = async (url, options = {}) => {
+            const defaultOptions = {
+                method: 'POST',
+                // 👇 This line is critical for sending cookies
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCookie('csrfToken'),
+                    ...options.headers,
+                },
+                ...options,
+            };
+            return fetch(url, defaultOptions);
+        };
 
-        let isRefreshing = false;
-        let failedQueue = [];
-
-        function processQueue(error, token = null) {
-            failedQueue.forEach(prom => {
-                if (error) {
-                    prom.reject(error);
-                } else {
-                    prom.resolve(token);
-                }
-            });
-            failedQueue = [];
-        }
-
-        async function fetchWithInterceptor(url, options = {}) {
-            let originalRequest = { url, options };
-
+        const checkSession = async () => {
             try {
-                const csrfToken = getCookie('csrfToken');
-                const headers = new Headers(options.headers || {});
-                if (csrfToken && !headers.has('X-CSRF-Token')) {
-                    headers.set('X-CSRF-Token', csrfToken);
-                }
-                options.headers = headers;
-                options.credentials = 'include';
-
-                const response = await fetch(url, options);
-
-                if (response.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-
-                    if (isRefreshing) {
-                        return new Promise((resolve, reject) => {
-                            failedQueue.push({ resolve, reject });
-                        }).then(() => fetchWithInterceptor(originalRequest.url, originalRequest.options));
-                    }
-
-                    isRefreshing = true;
-
-                    try {
-                        const refreshRes = await fetch(`${baseURL}/refresh-token`, {
-                            method: "POST",
-                            credentials: "include",
-                            headers: {
-                                'X-CSRF-Token': getCookie('csrfToken')
-                            }
-                        });
-
-                        if (refreshRes.ok) {
-                            processQueue(null);
-                            return fetchWithInterceptor(originalRequest.url, originalRequest.options);
-                        } else {
-                            const refreshErrorData = await refreshRes.json();
-                            alert('Session expired. Please log in again.');
-                            processQueue(new Error('Refresh token failed.'));
-                            window.location.href = frontendRedirectURL;
-                            return Promise.reject(new Error('Session expired, redirecting.'));
-                        }
-                    } catch (refreshErr) {
-                        alert('Could not refresh session. Please check your connection or log in again.');
-                        processQueue(refreshErr);
-                        window.location.href = frontendRedirectURL;
-                        return Promise.reject(new Error('Network error during refresh.'));
-                    } finally {
-                        isRefreshing = false;
-                    }
-                }
-
-                return response;
-            } catch (error) {
-                console.error('Fetch error:', error);
-                throw error;
+                const res = await fetchWithCredentials('http://localhost:3000/api/v1/auth/check-session');
+                if (!res.ok) window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Session check failed:', err);
+                window.location.href = 'index.html';
             }
-        }
+        };
 
-        async function checkAuthorization() {
+        const refreshToken = async () => {
             try {
-                const res = await fetchWithInterceptor(`${baseURL}/authorizedPage`, {
-                    method: "GET",
-                });
-
-                const data = await res.json();
-                if (!res.ok) {
-                    alert(`Authorization failed: ${res.status} - ${data.message || 'Unknown error'}`);
-                } else {
-                    document.getElementById('msg').innerText = `Welcome! Data: ${JSON.stringify(data)}`;
-                }
-            } catch (error) {
-                console.error('Authorization error:', error);
+                const res = await fetchWithCredentials('http://localhost:3000/api/v1/auth/refresh-token');
+                if (!res.ok) window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Token refresh failed:', err);
+                window.location.href = 'index.html';
             }
-        }
+        };
 
-        document.addEventListener("DOMContentLoaded", () => {
-            checkAuthorization();
+        checkSession();
+        setInterval(checkSession, 20 * 1000);
+        setInterval(refreshToken, 10 * 60 * 1000);
 
-            // 🔁 Auto-refresh access token every 20 seconds
-            setInterval(async () => {
-                const csrfToken = getCookie('csrfToken');
-                if (!csrfToken) {
-                    console.warn("Missing CSRF token, cannot auto-refresh.");
-                    return;
-                }
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await fetchWithCredentials('http://localhost:3000/api/v1/auth/logout');
+            window.location.href = 'index.html';
+        });
 
-                try {
-                    const res = await fetch(`${baseURL}/refresh-token`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        }
-                    });
-
-                    const data = await res.json();
-
-                    if (!res.ok) {
-                        console.warn(`Auto-refresh failed: ${res.status} - ${data.message}`);
-                        if (res.status === 401 || res.status === 403) {
-                            alert('Session expired. Redirecting to login.');
-                            window.location.href = frontendRedirectURL;
-                        }
-                    } else {
-                        console.log(`🔄 Auto-refresh at ${new Date().toLocaleTimeString()}`);
-                        document.getElementById("msg").innerText = `Auto-refreshedioo: ${data.message}`;
-                    }
-                } catch (err) {
-                    console.error("Auto-refresh error:", err);
-                }
-            }, 10005000); // every 20 seconds
-
-            document.getElementById("refreshBtn").addEventListener("click", async () => {
-                const csrfToken = getCookie('csrfToken');
-                if (!csrfToken) {
-                    alert('CSRF token missing. Cannot manually refresh.');
-                    window.location.href = frontendRedirectURL;
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`${baseURL}/refresh-token`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        }
-                    });
-                    const data = await res.json();
-
-                    if (!res.ok) {
-                        alert(`Manual refresh failed: ${res.status} - ${data.message}`);
-                        document.getElementById("msg").innerText = data.message || "Manual refresh failed.";
-                        if (res.status === 401 || res.status === 403) {
-                            window.location.href = frontendRedirectURL;
-                        }
-                    } else {
-                        alert("Manual token refresh successful.");
-                        document.getElementById("msg").innerText = data.message || "Token refreshed manually.";
-                    }
-                } catch (err) {
-                    console.error("Manual refresh error:", err);
-                    document.getElementById("msg").innerText = "Manual refresh failed (network error).";
-                }
-            });
-
-            document.getElementById("logoutBtn").addEventListener("click", async () => {
-                const csrfToken = getCookie('csrfToken');
-                if (!csrfToken) {
-                    alert('CSRF token missing. Cannot logout.');
-                    window.location.href = frontendRedirectURL;
-                    return;
-                }
-                try {
-                    const res = await fetch(`${baseURL}/logout`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        }
-                    });
-                    const data = await res.json();
-
-                    if (!res.ok) {
-                        alert(`Logout failed: ${res.status} - ${data.message}`);
-                        return;
-                    }
-
-                    alert(data.message || "Logged out.");
-                    window.location.href = frontendRedirectURL;
-                } catch (err) {
-                    console.error("Logout error:", err);
-                    alert("Logout failed (network error)");
-                }
-            });
-
-            document.getElementById("logoutAllBtn").addEventListener("click", async () => {
-                const csrfToken = getCookie('csrfToken');
-                if (!csrfToken) {
-                    alert("Missing CSRF token");
-                    window.location.href = frontendRedirectURL;
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`${baseURL}/logout-all`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            'X-CSRF-Token': csrfToken
-                        }
-                    });
-
-                    const data = await res.json();
-
-                    if (!res.ok) {
-                        alert(`Logout all failed: ${res.status} - ${data.message}`);
-                        return;
-                    }
-
-                    alert(data.message || "Logged out from all devices.");
-                    window.location.href = frontendRedirectURL;
-                } catch (err) {
-                    console.error("Logout all error:", err);
-                    alert("Logout from all devices failed (network error)");
-                }
-            });
+        document.getElementById('logout-all-btn').addEventListener('click', async () => {
+            await fetchWithCredentials('http://localhost:3000/api/v1/auth/logout-all');
+            window.location.href = 'index.html';
         });
     </script>
 </body>

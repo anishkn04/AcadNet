@@ -24,7 +24,7 @@ export const loginOauth = async (user) => {
 export const sessionService = async (oldRefreshToken) => {
   try {
     decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-
+    console.log("Heoolo!n")
     const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
     if (!savedToken) {
       throw new Error("Refresh token revoked or not found");
@@ -38,10 +38,10 @@ export const sessionService = async (oldRefreshToken) => {
 
 export const refreshTokens = async (oldRefreshToken) => {
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
-  // Verify old token
+  
   let decoded;
-  console.log(`decoded ${decoded}`);
-  console.log(oldRefreshToken);
+
+
   try {
     decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
@@ -52,12 +52,12 @@ export const refreshTokens = async (oldRefreshToken) => {
     throw new Error("Refresh token revoked or not found");
   }
 
-  console.log("DEBUG POINTER REACHED HERE");
+
 
   const user = await User.findById(decoded.id);
   if (!user) throw new Error("User not found");
 
-  console.log(`THE USER WAS FOUND: ${user}`);
+
   await RefreshToken.deleteOne({ token: oldRefreshToken });
 
   const accessToken = generateAccessToken({ id: user._id, role: user.role });
@@ -83,9 +83,9 @@ export const logout = async (refreshToken) => {
 
 export const logoutAll = async (userId) => {
   try {
-    console.log("Champo");
+
     console.log(userId);
-    console.log("Apple");
+
     await RefreshToken.deleteMany({ user: userId });
   } catch (err) {
     console.log(err);
@@ -97,7 +97,7 @@ export const signupService = async (email, username, password) => {
     let newusername = username;
 
     let suffix = 1;
-    // Check against newusername, not the original username
+
     while (await User.findOne({ username: newusername })) {
       newusername = `${username}_${suffix++}`;
     }
@@ -108,4 +108,6 @@ export const signupService = async (email, username, password) => {
   }
 };
 
-export const loginService = async(email, username, password);
+export const loginService = async (email, username, password)=>{
+
+}

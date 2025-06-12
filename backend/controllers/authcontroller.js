@@ -13,15 +13,15 @@ const dashPath = "http://localhost:5500/sample_frontend/dashboard.html";
 
 export const oAuthCallback = async (req, res) => {
   const user = req.user;
-  console.log(user);
+
   if (!user) {
     return res.redirect(indexPath);
   }
 
   try {
     const { accessToken, refreshToken, csrfToken } = await loginOauth(user);
-    console.log("THE REF IS")
-    console.log(refreshToken)
+
+
 
 
     res.cookie("accessToken", accessToken, {
@@ -57,16 +57,19 @@ export const sessionChecker = async (req,res) =>{
   const oldRefreshToken = req.cookies.refreshToken;
    if (!oldRefreshToken)
       return jsonRes(res, 401, false, "No refresh token provided");
-  
    const isSession = await sessionService(oldRefreshToken)
    if(isSession == true){
       return jsonRes(res, 200, false, "Ref Token is Valid");
-   }
+   }else {
+      return jsonRes(res, 401, false, "Session is invalid");
     }
+  }
   catch(err){
-return jsonRes(res, 200, false, "Ref Token is Valid");
+    return jsonRes(res, 401, false, "Session is invalid or expired");
   }
 }
+
+
 export const refreshAccessToken = async (req, res) => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
@@ -74,7 +77,7 @@ export const refreshAccessToken = async (req, res) => {
       return jsonRes(res, 401, false, "No refresh token provided");
     
     const { accessToken, refreshToken, csrfToken } = await refreshTokens(oldRefreshToken);
-    console.log("Its reaching here")
+
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     res.clearCookie("csrfToken");
@@ -106,11 +109,11 @@ export const refreshAccessToken = async (req, res) => {
 };
 
 export const logoutCont = async (req, res) => {
-  console.log("S");
+
   try {
-    console.log("SAA");
+
     const refreshToken = req.cookies.refreshToken;
-    console.log(refreshToken);
+
     if (!refreshToken)
       return jsonRes(res, 400, false, "No refresh token provided");
 
@@ -120,7 +123,7 @@ export const logoutCont = async (req, res) => {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     res.clearCookie("csrfToken");
-    console.log("Hello");
+
     return jsonRes(res, 200, true, "Logged out successfully");
   } catch (err) {
     console.error(err);
@@ -129,11 +132,11 @@ export const logoutCont = async (req, res) => {
 };
 
 export const logoutAllCont = async (req, res) => {
-  console.log("Heyy Heyy Heyy");
+
   try {
-    console.log(req.user)
+
     const userId = req.user._id;
-    console.log(userId);
+
     await logoutAll(userId);
 
     // Clear cookies
