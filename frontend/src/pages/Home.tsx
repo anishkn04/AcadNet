@@ -27,8 +27,8 @@ const StepCard: React.FC<StepCardProps> = ({ number, title, description }) => {
   );
 };
 export const Home: React.FC = () => {
-  const {isAuthenticated} = useAuth()
-  console.log(isAuthenticated)
+  const {isLoggedIn} = useAuth()
+  console.log(isLoggedIn())
   return (
     <>
       <section className="relative py-20 sm:py-28 lg:py-36">

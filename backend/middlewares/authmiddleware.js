@@ -3,15 +3,13 @@ import { verifyAccessToken } from "../utils/utils.js";
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.accessToken;
-  console.log("AA")
-  console.log(token)
-  console.log("AA")
+
   if (!token) {
     return jsonRes(res, 401, false, "Unauthorized Access");
   }
   try {
     const decoded = verifyAccessToken(token);
-    console.log(`Its here ${decoded.id}`)
+
     req.id = decoded.id;
     next();
   } catch (err) {

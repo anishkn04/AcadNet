@@ -1,25 +1,25 @@
 import apiClient from "@/lib/apiClient";
 import { handleError } from "@/helper/ErrorHandler";
-import type { AuthResponse } from "@/models/User";
+;
 
 export const loginAPI = async (email: string, password: string) => {
   try {
-    const { data } = await apiClient.post<AuthResponse>('/login', {
+    const response = await apiClient.post<any>('/login', {
       email: email,
       password: password
     });
-    return data;
+    return { data: response.data, status: response.status };
   } catch (error) {
     handleError(error);
     throw error;
   }
 }
 
-export const registerAPI = async (email: string, userName: string, password: string) => {
+export const registerAPI = async (email: string, username: string, password: string) => {
   try {
     const { data } = await apiClient.post('/signup', {
       email: email,
-      userName: userName,
+      username: username,
       password: password
     });
     return data;
@@ -38,7 +38,12 @@ export const logoutAPI = async () => {
   }
 }
 
-export const checkSessionAPI = async (): Promise<AuthResponse> => {
-  const { data } = await apiClient.get<AuthResponse>('/authorizedPage');
-  return data;
+export const checkSessionAPI = async () => {
+  try {
+    const response = await apiClient.get<any>('/authorizedPage');
+    return { data: response.data, status: response.status };
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 };

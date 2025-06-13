@@ -64,6 +64,10 @@ passport.use(
           username = `${baseUsername}_${suffix++}`;
         }
 
+         email = email.toLowerCase();
+         username = username.toLowerCase();
+
+         
         // Create user
         user = new User({
           username,
