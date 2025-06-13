@@ -9,8 +9,9 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+// import { toast } from "react-toastify";
+import apiClient from "@/lib/apiClient";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type LoginFormsInputs = {
   email: string;
@@ -28,6 +29,9 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const { loginUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/user";
 
   const {
     register,
@@ -39,11 +43,8 @@ export function LoginForm({
 
   const handleLogin = async (form: LoginFormsInputs) => {
     const success = await loginUser(form.email, form.password);
-
     if (success) {
-      navigate("/");
-    } else {
-      toast.error("Invalid email or password");
+      navigate(from, { replace: true });
     }
   };
 
@@ -68,7 +69,7 @@ export function LoginForm({
                   placeholder="Email"
                   {...register("email")}
                 />
-           {errors.email ? <p className="text-red-500 -mt-3 -mb-3 ml-2">{errors.email.message}</p>:""}
+                {errors.email ? <p className="text-red-500 -mt-3 -mb-3 ml-2">{errors.email.message}</p> : ""}
               </div>
 
               <div className="grid gap-3">
@@ -87,7 +88,7 @@ export function LoginForm({
                   placeholder="Password"
                   {...register("password")}
                 />
-                   {errors.password ? <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p>:""}
+                {errors.password ? <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p> : ""}
               </div>
 
               <Button type="submit" className="w-full">
@@ -101,10 +102,12 @@ export function LoginForm({
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                <Button variant="outline" type="button" className="w-full">
-                  <FontAwesomeIcon icon={faGithub} className="mr-2" />
-                  Login with GitHub
-                </Button>
+                <a href={(apiClient.defaults.baseURL ?? "") + "/github"}>
+                  <Button variant="outline" type="button" className="w-full">
+                    <FontAwesomeIcon icon={faGithub} className="mr-2" />
+                    Login with GitHub
+                  </Button>
+                </a>
               </div>
 
               <div className="text-center text-sm">

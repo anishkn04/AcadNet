@@ -1,16 +1,15 @@
 import type { UserProfile } from "@/models/User";
 import React, { createContext, useEffect, useState } from "react";
-import { loginAPI, registerAPI } from "@/services/AuthServices";
+import { loginAPI, registerAPI, logoutAPI, checkSessionAPI } from "@/services/AuthServices";
 import { toast } from "react-toastify";
-import axios from "axios";
 
 type UserContextType = {
   user: UserProfile | null;
-  token: string | null;
   registerUser: (email: string, username: string, password: string) => Promise<boolean>;
   loginUser: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoggedIn: () => boolean;
+  isLoading: boolean;
 };
 
 type Props = { children: React.ReactNode };
@@ -18,81 +17,67 @@ type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider = ({ children }: Props) => {
-  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-      axios.defaults.headers.common["Authorization"] = "Bearer " + storedToken;
-    }
-    setIsReady(true);
+    const verifyUser = async () => {
+      try {
+        const response = await checkSessionAPI();
+        if (response && response.user) {
+          setUser(response.user);
+        }
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    verifyUser();
   }, []);
 
   const registerUser = async (email: string, username: string, password: string): Promise<boolean> => {
     try {
-      const res = await registerAPI(email, username, password);
-      if (res) {
-        localStorage.setItem("token", res.data.token);
-        const userObj = {
-          userName: res.data.userName,
-          email: res.data.email,
-        };
-        localStorage.setItem("user", JSON.stringify(userObj));
-        setToken(res.data.token);
-        setUser(userObj);
-        toast.success("Register Success!", {
-  draggable:true
-});
-        return true;
-      }
+      await registerAPI(email, username, password);
+      toast.success("Register Success! Please log in.");
+      return true;
     } catch (e) {
-      toast.warning("Server error occurred");
+      toast.error("Registration failed.");
+      return false;
     }
-    return false;
   };
 
   const loginUser = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await loginAPI(email, password);
-      if (res) {
-        localStorage.setItem("token", res.data.token);
-        const userObj = {
-          userName: res.data.userName,
-          email: res.data.email,
-        };
-        localStorage.setItem("user", JSON.stringify(userObj));
-        setToken(res.data.token);
-        setUser(userObj);
-        toast.success("Login Success!", {
-  draggable:true
-        });
+      const response = await loginAPI(email, password);
+      if (response && response.user) {
+        setUser(response.user);
+        toast.success("Login Success!");
         return true;
       }
+      return false;
     } catch (e) {
-      toast.warning("Server error occurred");
+      return false;
     }
-    return false;
   };
 
   const isLoggedIn = () => {
     return !!user;
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setToken(null);
+  const logout = async () => {
+    try {
+      await logoutAPI();
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
-    <UserContext.Provider value={{ loginUser, user, token, logout, isLoggedIn, registerUser }}>
-      {isReady ? children : null}
+    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading }}>
+      {!isLoading && children}
     </UserContext.Provider>
   );
 };

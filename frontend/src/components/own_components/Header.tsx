@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/userContext';
 export const Header: React.FC = () => {
-  const {isLoggedIn,user,logout} = useAuth();
+  const {isAuthenticated,user,logout} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [studyGroupOpen, setStudyGroupOpen] = useState(false); 
 
@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
             <span className="sr-only">Toggle menu</span>
             {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
           </button>
-      {isLoggedIn() ? (
+      {isAuthenticated ? (
         <>
           <h1 className='hidden lg:block'>Welcome! {user?.userName}</h1>
           <a href='' onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
@@ -112,7 +112,7 @@ export const Header: React.FC = () => {
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
             <div className="flex space-x-3 pt-2">
-              {isLoggedIn() ? (
+              {isAuthenticated ? (
                   <button onClick={logout} className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
                   Logout
                 </button>
