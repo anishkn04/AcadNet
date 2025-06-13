@@ -66,7 +66,7 @@ passport.use(
 
          email = email.toLowerCase();
          username = username.toLowerCase();
-
+         const isVerified = true
          
         // Create user
         user = new User({
@@ -75,6 +75,7 @@ passport.use(
           password: 'OAuth-Login', // Not hashed, just a placeholder
           authProvider: 'github',
           fullName,
+          isVerified
         });
 
         await user.save();

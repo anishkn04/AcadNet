@@ -176,6 +176,14 @@ export const signup = async (req, res) => {
   }
 };
 
+export const otpAuth =async (req,res) =>{
+  try{
+    
+  } catch(err){
+    
+  }
+}
+
 export const login = async (req,res) =>{
   try{   
    let { email, password } = req.body;
