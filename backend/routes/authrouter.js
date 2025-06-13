@@ -1,34 +1,76 @@
-import express from 'express'
-import passport from 'passport'
-import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken,checkedRes, signup, sessionChecker, login, otpAuthGenerator, otpAuthChecker} from '../controllers/authcontroller.js'
-import csrfMiddleware from '../middlewares/csrf.js'
-import authMiddleware from '../middlewares/authmiddleware.js'
-import addUser from '../middlewares/addUsertoReq.js'
-import validateSignup from '../validator/validate.js'
-import handleValidationError from '../validator/errorvalidation.js'
+import express from "express";
+import passport from "passport";
+import {
+  logoutAllCont,
+  logoutCont,
+  oAuthCallback,
+  refreshAccessToken,
+  checkedRes,
+  signup,
+  sessionChecker,
+  login,
+  otpAuthGenerator,
+  otpAuthChecker,
+  resetPasswordSender,
+  resetVerifier,
+  changePassword
+} from "../controllers/authcontroller.js";
+import csrfMiddleware from "../middlewares/csrf.js";
+import authMiddleware from "../middlewares/authmiddleware.js";
+import addUser from "../middlewares/addUsertoReq.js";
+import validateSignup from "../validator/validate.js";
+import handleValidationError from "../validator/errorvalidation.js";
 
-const router = express.Router()
 
-router.post('/signup',validateSignup,handleValidationError, signup)
+const router = express.Router();
 
-router.post('/login',login)
+router.post("/signup", validateSignup, handleValidationError, signup);
 
-router.get('/github',passport.authenticate('github',{scope: ['user:email']}))
+router.post("/login", login);
 
-router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/failure', session: false }), oAuthCallback);
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
 
-router.post('/check-session',authMiddleware,csrfMiddleware,sessionChecker)
+router.get(
+  "/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/failure",
+    session: false
+  }),
+  oAuthCallback
+);
 
-router.post('/refresh-token', authMiddleware,csrfMiddleware,refreshAccessToken);
+router.post("/checkSession", authMiddleware, csrfMiddleware, sessionChecker);
 
-router.post('/logout', logoutCont);
+router.post(
+  "/refresh-token",
+  authMiddleware,
+  csrfMiddleware,
+  refreshAccessToken
+);
 
-router.post('/logout-all',authMiddleware,csrfMiddleware,addUser,logoutAllCont);
+router.post("/logout", logoutCont);
 
-router.get('/authorizedPage',authMiddleware,csrfMiddleware,checkedRes)
+router.post(
+  "/logout-all",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  logoutAllCont
+);
 
-router.post('/otp-auth',otpAuthGenerator)
+router.get("/authorizedPage", authMiddleware, csrfMiddleware, checkedRes);
 
-router.post('/otp-verify',otpAuthChecker)
+router.post("/otp-auth", otpAuthGenerator);
 
-export default router
+router.post("/otp-verify", otpAuthChecker);
+
+router.post("/password-reset",resetPasswordSender);
+
+router.post("/password-verify",resetVerifier)
+
+router.post("/change-password", changePassword);
+
+export default router;

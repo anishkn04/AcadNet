@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Auth System</title>
+    <title>Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,164 +12,173 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div id="loader" class="text-center">
-        <p class="text-lg font-semibold text-gray-700">Checking session...</p>
-    </div>
+<body class="bg-gray-100">
 
-    <div id="login-container" class="hidden w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <div>
-            <h1 class="text-2xl font-bold text-center text-gray-800">Welcome Back!</h1>
-            <p class="text-center text-gray-500">Sign in to continue</p>
+    <div class="flex min-h-screen items-center justify-center">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div id="loading-spinner" class="text-center">
+                <svg class="animate-spin h-10 w-10 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">Checking your session...</p>
+            </div>
+
+            <div id="login-form-container" class="hidden">
+                <h2 class="text-2xl font-bold text-center text-gray-900">Login to Your Account</h2>
+                <form id="login-form" class="mt-8 space-y-6">
+                    <div class="relative">
+                        <label for="email" class="sr-only">Email address</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required
+                            class="w-full px-4 py-3 text-gray-900 placeholder-gray-500 bg-gray-100 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                            placeholder="Email address">
+                    </div>
+
+                    <div class="relative">
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required
+                            class="w-full px-4 py-3 text-gray-900 placeholder-gray-500 bg-gray-100 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                            placeholder="Password">
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm">
+                            <a href="./forgot-password.html" class="font-medium text-indigo-600 hover:text-indigo-500">
+                                Forgot your password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit"
+                            class="w-full px-4 py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
+                            Sign in
+                        </button>
+                    </div>
+                </form>
+
+                 <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600">
+                        Or sign in with
+                    </p>
+                    <button id="github-login" class="mt-2 w-full flex items-center justify-center px-4 py-3 font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300">
+                       <svg class="w-5 h-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10c0 4.418 2.865 8.166 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.942.359.308.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.577.688.482A10.001 10.001 0 0020 10c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
+                        GitHub
+                    </button>
+                </div>
+
+                <p class="mt-6 text-center text-sm text-gray-600">
+                    Not a member?
+                    <a href="signup.html" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Sign up now
+                    </a>
+                </p>
+                <div id="message" class="mt-4 text-center text-sm p-2 rounded-md"></div>
+            </div>
         </div>
-        
-        <div id="error-message" class="hidden p-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-            </div>
-
-        <form id="login-form" class="space-y-6">
-            <div>
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-600">Email</label>
-                <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="name@example.com" required>
-            </div>
-            <div>
-                <label for="password" class="block mb-2 text-sm font-medium text-gray-600">Password</label>
-                <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">Login</button>
-        </form>
-
-        <div class="relative flex items-center justify-center my-4">
-            <div class="flex-grow border-t border-gray-300"></div>
-            <span class="flex-shrink mx-4 text-sm text-gray-500">Or</span>
-            <div class="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <a href="http://localhost:3000/api/v1/auth/github" class="w-full flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">
-            <svg class="w-5 h-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.397.1 2.65.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.942.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.577.688.482A10.001 10.001 0 0020 10c0-5.523-4.477-10-10-10z" clip-rule="evenodd" />
-            </svg>
-            Sign in with GitHub
-        </a>
-        
-        <p class="text-sm text-center text-gray-500">
-            Don't have an account? <a href="./signup.html" class="font-medium text-blue-600 hover:underline">Sign up</a>
-        </p>
     </div>
 
     <script>
-        // --- Configuration ---
-        const API_BASE_URL = 'http://localhost:3000/api/v1/auth';
-        const DASHBOARD_URL = './dashboard.html';
-        const OTP_URL = './otp.html';
-
-        // --- DOM Elements ---
-        const loader = document.getElementById('loader');
-        const loginContainer = document.getElementById('login-container');
-        const loginForm = document.getElementById('login-form');
-        const errorMessageDiv = document.getElementById('error-message');
-
-        // --- Helper Functions ---
         
-        /**
-         * Reads a cookie by name.
-         * @param {string} name The name of the cookie.
-         * @returns {string|null} The cookie value or null if not found.
-         */
-        const getCookie = (name) => {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
-        }
+        function getCookie(name) {
+    const cookieArr = document.cookie.split(";");
 
-        /**
-         * Displays an error message in the designated div.
-         * @param {string} message The error message to display.
-         */
-        const show_error = (message) => {
-            errorMessageDiv.textContent = message;
-            errorMessageDiv.classList.remove('hidden');
+    for (let cookie of cookieArr) {
+        cookie = cookie.trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.startsWith(name + "=")) {
+            return cookie.substring((name + "=").length);
+        }
+    }
+    return null;
+}
+        const API_URL = 'http://localhost:3000/api/v1/auth';
+        const messageDiv = document.getElementById('message');
+        const loginForm = document.getElementById('login-form');
+        const loginFormContainer = document.getElementById('login-form-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const githubLoginButton = document.getElementById('github-login');
+
+
+        // Function to display messages
+        const showMessage = (message, isError = false) => {
+            messageDiv.textContent = message;
+            messageDiv.className = isError 
+                ? 'mt-4 text-center text-sm p-2 rounded-md bg-red-100 text-red-700' 
+                : 'mt-4 text-center text-sm p-2 rounded-md bg-green-100 text-green-700';
+            
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = 'mt-4 text-center text-sm p-2 rounded-md';
+            }, 5000);
         };
 
-        // --- Core Logic ---
-
-        /**
-         * Checks if the user has a valid session on page load.
-         * If the session is valid, redirects to the dashboard.
-         * Otherwise, it shows the login form.
-         */
-        const checkSession = async () => {
+        // Check session on page load
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const csrfToken = getCookie('csrfToken');
-                const response = await fetch(`${API_BASE_URL}/check-session`, {
+                const response = await fetch(`${API_URL}/checkSession`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Include CSRF token from cookie if needed by your backend for session checks
-                         'X-CSRF-Token': csrfToken 
+                        'x-csrf-token': getCookie('csrfToken')
                     },
-                    credentials: 'include' // Important: sends cookies
+                     credentials: 'include'
                 });
-                console.log(response.status)
+
                 if (response.ok) {
-                    console.log('Session is valid. Redirecting to dashboard...');
-                    window.location.href = DASHBOARD_URL;
+                    window.location.href = 'dashboard.html';
                 } else {
-                    console.log('Session is not valid. Showing login page.');
-                    loader.classList.add('hidden');
-                    loginContainer.classList.remove('hidden');
+                    loadingSpinner.style.display = 'none';
+                    loginFormContainer.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Error checking session:', error);
-                loader.classList.add('hidden');
-                loginContainer.classList.remove('hidden');
+                console.error('Session check failed:', error);
+                loadingSpinner.style.display = 'none';
+                loginFormContainer.style.display = 'block';
+                showMessage('Could not connect to the server. Please try again later.', true);
             }
-        };
+        });
 
-        /**
-         * Handles the login form submission.
-         * @param {Event} event The form submission event.
-         */
-        const handleLogin = async (event) => {
-            event.preventDefault();
-            const csrfToken = getCookie('csrfToken');
-            errorMessageDiv.classList.add('hidden'); // Hide previous errors
+        // Handle Login Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            const formData = new FormData(loginForm);
-            const data = Object.fromEntries(formData.entries());
-            alert(data)
-            console.log(data)
             try {
-                const response = await fetch(`${API_BASE_URL}/login`, {
+                const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json',
-                                'X-CSRF-Token': csrfToken  },
-                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-csrf-token': getCookie('csrfToken')
+                    },
+                    body: JSON.stringify({ email, password }),
                     credentials: 'include'
                 });
 
-                const result = await response.json();
+                const data = await response.json();
 
                 if (response.ok) {
-                    console.log('Login successful');
-                    window.location.href = DASHBOARD_URL;
-                } else if (response.status === 303 && result.message === "Redirecting to /otp-auth") {
-                    // User needs to verify OTP
-                    console.log('User not verified. Redirecting to OTP page.');
-                    window.location.href = OTP_URL;
+                    showMessage('Login successful! Redirecting...', false);
+                    window.location.href = './dashboard.html';
+                } else if (response.status === 303) {
+                     // Not verified, redirect to OTP
+                    sessionStorage.setItem('emailForOtp', email);
+                    window.location.href = './otp.html';
                 }
                 else {
-                    show_error(result.message || 'An unknown error occurred.');
+                    showMessage(data.message || 'Login failed.', true);
                 }
             } catch (error) {
-                console.error('Login request failed:', error);
-                show_error('Could not connect to the server.');
+                console.error('Login error:', error);
+                showMessage('An error occurred during login. Please try again.', true);
             }
-        };
+        });
 
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', checkSession);
-        loginForm.addEventListener('submit', handleLogin);
+        // Handle GitHub Login
+        githubLoginButton.addEventListener('click', () => {
+            window.location.href = `${API_URL}/github`;
+        });
     </script>
 </body>
 </html>
