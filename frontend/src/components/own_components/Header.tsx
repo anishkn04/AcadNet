@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/userContext';
 export const Header: React.FC = () => {
-  const {isLoggedIn,user,logout} = useAuth();
+  const {isLoggedIn,logout} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [studyGroupOpen, setStudyGroupOpen] = useState(false); 
 
@@ -58,7 +58,7 @@ export const Header: React.FC = () => {
           </button>
       {isLoggedIn() ? (
         <>
-          <h1 className='hidden lg:block'>Welcome! {user?.userName}</h1>
+          
           <a href='' onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Logout</span>
           </a>

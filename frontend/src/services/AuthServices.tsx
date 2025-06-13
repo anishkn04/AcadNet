@@ -1,29 +1,49 @@
-import axios from "axios"
+import apiClient from "@/lib/apiClient";
 import { handleError } from "@/helper/ErrorHandler";
-import type { UserProfileToken } from "@/models/User";
+;
 
+export const loginAPI = async (email: string, password: string) => {
+  try {
+    const response = await apiClient.post<any>('/login', {
+      email: email,
+      password: password
+    });
+    return { data: response.data, status: response.status };
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+}
 
-const api = "http://localhost:5000/api";
-export const loginAPI = async (email:string,password:string)=>{
-    try{
-        const data  = await axios.post<UserProfileToken>(api+'/login',{
-            email:email,
-            password:password
-        })
-        return data
-    }catch(error){
-        handleError(error)
-    }
+export const registerAPI = async (email: string, username: string, password: string) => {
+  try {
+    const { data } = await apiClient.post('/signup', {
+      email: email,
+      username: username,
+      password: password
+    });
+    return data;
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 }
-export const registerAPI = async (email:string,userName:string,password:string)=>{
-    try{
-        const data  = await axios.post<UserProfileToken>(api+'/signup',{
-            email:email,
-            userName:userName,
-            password:password
-        })
-        return data
-    }catch(error){
-        handleError(error)
-    }
+
+export const logoutAPI = async () => {
+  try {
+    await apiClient.post('/logout');
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
 }
+
+export const checkSessionAPI = async () => {
+  try {
+    const response = await apiClient.get<any>('/authorizedPage');
+    return { data: response.data, status: response.status };
+  } catch (error) {
+    handleError(error);
+    throw error;
+  }
+};
