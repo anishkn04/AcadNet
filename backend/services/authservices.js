@@ -114,11 +114,37 @@ export const signupService = async (email, username, password) => {
   }
 };
 
-export const loginService = async (email,password)=>{
+export const loginService = async (res,email,password)=>{
   let REFRESH_TOKEN_EXPIRY_DAYS = 7
+   console.log("Login Reached")
+   console.log(email)
    let user = await User.findOne({ email });
    if(!user){
     throw new Error('Login Error: User not Found')
+   }
+
+   if(user.isVerified === false){
+
+    const otpToken = randomBytes(20).toString("hex");
+    const username = user.username
+
+    res.cookie("otpToken", otpToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 60 * 60 * 1000
+    });
+    
+
+     res.cookie("username", username, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 60 * 60 * 1000
+    });
+
+
+    throwWithCode("Redirecting to /otp-auth", 303); 
    }
 
    if(user.authProvider != 'local'){
@@ -147,11 +173,10 @@ export const loginService = async (email,password)=>{
 
 }
 
-export const otpGenerator = async (username)=>{
+export const otpGenerator = async (username,otpToken)=>{
   try{
     const OTP_COOLDOWN_PERIOD_MS = 1000 * 60 * 1
-    const OTP_TOKEN_EXPIRY = 5;
-    const otpToken = randomBytes(20).toString("hex");
+    const OTP_TOKEN_EXPIRY = 7;
 
     if (!username) {
       throwWithCode("Username unreachable",401)
@@ -204,8 +229,36 @@ export const otpGenerator = async (username)=>{
 
 export const otpSender = async (otp,username,email)=>{
 try{
-  const success= mailSender(email, username, otp);
+  const success= await mailSender(email, username, otp);
 }catch(err){
   throw err
 }
+}
+
+export const otpChecker = async(username,otpToken,otp)=>{
+  if(!username || !otpToken){
+    throwWithCode("Credential Error",401)
+  }
+
+  const user = await User.findOne({username})
+  const userId = user._id
+
+  const correct_otp = await otpModel.findOne({user: userId, otpToken})
+   if(!correct_otp){
+    throwWithCode("Credential Error",401)
+  }
+
+  const isMatch = await bcrypt.compare(otp, correct_otp.otp);
+
+  if(!isMatch){
+    throwWithCode("Wrong OTP",401)
+  }
+
+  user.isVerified = true;
+  await user.save()
+  return true
+
+
+
+
 }

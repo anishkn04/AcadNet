@@ -8,11 +8,12 @@ import {
   signupService,
   loginService,
   otpGenerator,
-  otpSender
+  otpSender,
+  otpChecker
 } from "../services/authservices.js";
 import { randomBytes } from "crypto";
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
-const dashPath = "http://localhost:5500/";
+const dashPath = "http://localhost:5500/sample_frontend/dashboard.html";
 
 export const oAuthCallback = async (req, res) => {
   const user = req.user;
@@ -170,8 +171,23 @@ export const signup = async (req, res) => {
     await signupService(email,username, password);
 
     const otpToken = randomBytes(20).toString("hex");
+
+    res.cookie("otpToken", otpToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 60 * 60 * 1000
+    });
     
-     return jsonRes(res, 200, true, "Signup Success");
+
+     res.cookie("username", username, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 60 * 60 * 1000
+    });
+    
+    return jsonRes(res, 303, true, "Redirect to /otp-auth");
   } catch (err) {
     if(err.message === 'MongoServerError: E11000 duplicate key error collection: acadnetest.users index: email_1 dup key: { email: "gainrishavchap@gmail.com" }'){
       return jsonRes(res, 404, false, "Email already in use");
@@ -182,8 +198,9 @@ export const signup = async (req, res) => {
 
 export const otpAuthGenerator =async (req,res) =>{
   try{
-    const {username} = req.body
-    const {otp,email} = await otpGenerator(username)
+    const username = req.cookies.username
+    const otpToken = req.cookies.otpToken
+    const {otp,email} = await otpGenerator(username,otpToken)
     console.log(`cont: ${email}`)
     await otpSender(otp,username,email)
     jsonRes(res,200,true,"OTP Sent")
@@ -193,16 +210,31 @@ export const otpAuthGenerator =async (req,res) =>{
 }
 
 export const otpAuthChecker = async (req,res) =>{
+  try{
+  const username = req.cookies.username
+  const otpToken = req.cookies.otpToken
+  const {otp} = req.body
+  const check = await otpChecker(username,otpToken,otp)
+  if(check){
+    jsonRes(res, 200, true, "Verified")
+  }else{
+    jsonRes(res, err.code, false, "Not Verified")
+  }
+
+  }catch(err){
+    return jsonRes(res, err.code, false, err.message)
+  }
 
 }
 
 export const login = async (req,res) =>{
 
   try{   
-   let { email, password } = req.body;
-   email = email.toLowerCase()
+    let { email, password } = req.body;
+    email = email.toLowerCase()
     
-   const {accessToken, refreshToken, csrfToken }= await loginService(email,password)
+    const {accessToken, refreshToken, csrfToken }= await loginService(res,email,password)
+
 
    res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -232,6 +264,8 @@ export const login = async (req,res) =>{
       return jsonRes(res,401,false,err.message)
     }else if(err.message == "Please Login via GitHub"){
       return jsonRes(res,409,false,err.message)
+    }else if(err.message == "Redirecting to /otp-auth"){
+      return jsonRes(res,303,false,err.message)
     }else{
     return jsonRes(res, 500, false, err.message);
     }
