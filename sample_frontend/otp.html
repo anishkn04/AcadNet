@@ -103,12 +103,9 @@
 
         resendOtpBtn.addEventListener('click', generateOtp);
 
-        // Immediately request OTP when the page loads if it's for signup or unverified login
-        // This is based on the assumption that the backend sets the necessary cookies (username, otpToken)
-        // when a user is redirected to otp.html (e.g., after signup or an unverified login attempt).
+   
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if 'username' or 'otpToken' cookies exist to determine if OTP generation is needed
-            // This is a simple heuristic; your backend's redirection logic might be more precise.
+
             if (getCookie('username') || getCookie('otpToken')) {
                 generateOtp();
             } else {
