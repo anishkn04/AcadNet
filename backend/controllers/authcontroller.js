@@ -11,7 +11,7 @@ import {
 import RefreshToken from "../models/refresh.model.js";
 
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
-const dashPath = "http://localhost:5500/sample_frontend/dashboard.html";
+const dashPath = "http://localhost:5500/";
 
 export const oAuthCallback = async (req, res) => {
   const user = req.user;
@@ -175,6 +175,14 @@ export const signup = async (req, res) => {
     return jsonRes(res, 500, false, "Internal Server Error");
   }
 };
+
+export const otpAuth =async (req,res) =>{
+  try{
+    
+  } catch(err){
+
+  }
+}
 
 export const login = async (req,res) =>{
   try{   
