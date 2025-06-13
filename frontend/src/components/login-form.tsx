@@ -9,8 +9,10 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import apiClient from "@/lib/apiClient";
 
 type LoginFormsInputs = {
   email: string;
@@ -18,7 +20,7 @@ type LoginFormsInputs = {
 };
 
 const validation = Yup.object().shape({
-  email: Yup.string().required("Email is required"),
+  email: Yup.string().email("Invalid email format").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
 
@@ -26,8 +28,12 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { loginUser } = useAuth();
+  const { loginUser, isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [formError, setFormError] = useState('');
+
+  const from = location.state?.from?.pathname || "/";
 
   const {
     register,
@@ -37,15 +43,35 @@ export function LoginForm({
     resolver: yupResolver(validation),
   });
 
-  const handleLogin = async (form: LoginFormsInputs) => {
-    const success = await loginUser(form.email, form.password);
+  useEffect(() => {
+    if (!isLoading && isLoggedIn()) {
+      navigate(from, { replace: true });
+    }
+  }, [isLoading, isLoggedIn, navigate, from]);
 
-    if (success) {
-      navigate("/");
-    } else {
-      toast.error("Invalid email or password");
+  const handleLogin = async (form: LoginFormsInputs) => {
+    setFormError('');
+    try {
+      const success = await loginUser(form.email, form.password);
+      if (success) {
+        navigate(from, { replace: true });
+      } else {
+        setFormError('Login failed. Please check your credentials or try again.');
+      }
+    } catch (error) {
+      setFormError('Could not connect to the server. Please try again.');
+      toast.error("Network error. Please try again.");
+      console.error("Login request failed:", error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-lg font-semibold text-gray-700">Checking session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -60,6 +86,12 @@ export function LoginForm({
                 </p>
               </div>
 
+              {formError && (
+                <div className="p-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                  {formError}
+                </div>
+              )}
+
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -68,7 +100,7 @@ export function LoginForm({
                   placeholder="Email"
                   {...register("email")}
                 />
-           {errors.email ? <p className="text-red-500 -mt-3 -mb-3 ml-2">{errors.email.message}</p>:""}
+                {errors.email && <p className="text-red-500 -mt-3 -mb-3 ml-2">{errors.email.message}</p>}
               </div>
 
               <div className="grid gap-3">
@@ -87,7 +119,7 @@ export function LoginForm({
                   placeholder="Password"
                   {...register("password")}
                 />
-                   {errors.password ? <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p>:""}
+                {errors.password && <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p>}
               </div>
 
               <Button type="submit" className="w-full">
@@ -101,10 +133,12 @@ export function LoginForm({
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                <Button variant="outline" type="button" className="w-full">
-                  <FontAwesomeIcon icon={faGithub} className="mr-2" />
-                  Login with GitHub
-                </Button>
+                <a href={(apiClient.defaults.baseURL ?? "") + "/github"}>
+                  <Button variant="outline" type="button" className="w-full">
+                    <FontAwesomeIcon icon={faGithub} className="mr-2" />
+                    Login with GitHub
+                  </Button>
+                </a>
               </div>
 
               <div className="text-center text-sm">
