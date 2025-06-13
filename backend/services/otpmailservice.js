@@ -38,7 +38,7 @@ const mailSender = async (recipientEmail, userName, otp) => {
                         <strong style="font-size: 32px; color: #007bff; letter-spacing: 3px;">${otp}</strong>
                     </div>
                     <p style="font-size: 16px; color: #555;">
-                        This OTP is valid for a short period (e.g., 5 minutes) and will expire soon.
+                        This OTP is valid for a short period and will expire soon.
                     </p>
                 </div>
 
