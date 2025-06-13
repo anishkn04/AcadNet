@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: false
+  },
+  lastOtp: {
+    type: Date, 
+    default: () => new Date('1980-01-01T00:00:00.000Z')
   }
 }, {
   timestamps: true

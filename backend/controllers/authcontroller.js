@@ -6,10 +6,11 @@ import {
   logoutAll,
   sessionService,
   signupService,
-  loginService
+  loginService,
+  otpGenerator,
+  otpSender
 } from "../services/authservices.js";
-import RefreshToken from "../models/refresh.model.js";
-
+import { randomBytes } from "crypto";
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
 const dashPath = "http://localhost:5500/";
 
@@ -167,6 +168,9 @@ export const signup = async (req, res) => {
     email = email.toLowerCase();
     username = username.toLowerCase();
     await signupService(email,username, password);
+
+    const otpToken = randomBytes(20).toString("hex");
+    
      return jsonRes(res, 200, true, "Signup Success");
   } catch (err) {
     if(err.message === 'MongoServerError: E11000 duplicate key error collection: acadnetest.users index: email_1 dup key: { email: "gainrishavchap@gmail.com" }'){
@@ -176,15 +180,24 @@ export const signup = async (req, res) => {
   }
 };
 
-export const otpAuth =async (req,res) =>{
+export const otpAuthGenerator =async (req,res) =>{
   try{
-    
+    const {username} = req.body
+    const {otp,email} = await otpGenerator(username)
+    console.log(`cont: ${email}`)
+    await otpSender(otp,username,email)
+    jsonRes(res,200,true,"OTP Sent")
   } catch(err){
-
+    return jsonRes(res, err.code, false, err.message)
   }
 }
 
+export const otpAuthChecker = async (req,res) =>{
+
+}
+
 export const login = async (req,res) =>{
+
   try{   
    let { email, password } = req.body;
    email = email.toLowerCase()
