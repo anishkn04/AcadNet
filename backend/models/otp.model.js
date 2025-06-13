@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-const refreshTokenSchema = new mongoose.Schema({
+const otpModelSchema = new mongoose.Schema({
   user: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
@@ -9,8 +10,17 @@ const refreshTokenSchema = new mongoose.Schema({
   otp: { 
     type: String, 
     required: true, 
-    unique: true 
   },
+  otpToken: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  tries:{
+    type:String,
+    default: 0
+  }
+  ,
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -20,3 +30,21 @@ const refreshTokenSchema = new mongoose.Schema({
     required: true
   }
 });
+
+otpModelSchema.pre('save', async function(next) {
+  if (this.isModified('otp')) {
+    try {
+      const saltRounds = 10;
+      this.otp = await bcrypt.hash(this.otp, saltRounds);
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
+});
+
+otpModelSchema.index({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
+
+const otpModel = mongoose.model('otpModel', otpModelSchema);
+
+export default otpModel;

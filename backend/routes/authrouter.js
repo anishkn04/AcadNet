@@ -1,6 +1,6 @@
 import express from 'express'
 import passport from 'passport'
-import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken,checkedRes, signup, sessionChecker, login} from '../controllers/authcontroller.js'
+import { logoutAllCont,logoutCont, oAuthCallback, refreshAccessToken,checkedRes, signup, sessionChecker, login, otpAuthGenerator, otpAuthChecker} from '../controllers/authcontroller.js'
 import csrfMiddleware from '../middlewares/csrf.js'
 import authMiddleware from '../middlewares/authmiddleware.js'
 import addUser from '../middlewares/addUsertoReq.js'
@@ -9,7 +9,7 @@ import handleValidationError from '../validator/errorvalidation.js'
 
 const router = express.Router()
 
-router.post('/signup',validateSignup, signup)
+router.post('/signup',validateSignup,handleValidationError, signup)
 
 router.post('/login',login)
 
@@ -26,5 +26,9 @@ router.post('/logout', logoutCont);
 router.post('/logout-all',authMiddleware,csrfMiddleware,addUser,logoutAllCont);
 
 router.get('/authorizedPage',authMiddleware,csrfMiddleware,checkedRes)
+
+router.post('/otp-auth',otpAuthGenerator)
+
+router.post('/otp-verify',otpAuthChecker)
 
 export default router

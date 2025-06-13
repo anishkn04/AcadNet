@@ -24,8 +24,7 @@
         </div>
         
         <div id="error-message" class="hidden p-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-            <!-- Error content will be injected here -->
-        </div>
+            </div>
 
         <form id="login-form" class="space-y-6">
             <div>
@@ -60,6 +59,8 @@
     <script>
         // --- Configuration ---
         const API_BASE_URL = 'http://localhost:3000/api/v1/auth';
+        const DASHBOARD_URL = './dashboard.html';
+        const OTP_URL = './otp.html';
 
         // --- DOM Elements ---
         const loader = document.getElementById('loader');
@@ -104,14 +105,15 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken // Send CSRF token from cookie
+                        // Include CSRF token from cookie if needed by your backend for session checks
+                         'X-CSRF-Token': csrfToken 
                     },
                     credentials: 'include' // Important: sends cookies
                 });
-
+                console.log(response.status)
                 if (response.ok) {
                     console.log('Session is valid. Redirecting to dashboard...');
-                    window.location.href = './dashboard.html';
+                    window.location.href = DASHBOARD_URL;
                 } else {
                     console.log('Session is not valid. Showing login page.');
                     loader.classList.add('hidden');
@@ -130,15 +132,18 @@
          */
         const handleLogin = async (event) => {
             event.preventDefault();
+            const csrfToken = getCookie('csrfToken');
             errorMessageDiv.classList.add('hidden'); // Hide previous errors
 
             const formData = new FormData(loginForm);
             const data = Object.fromEntries(formData.entries());
-
+            alert(data)
+            console.log(data)
             try {
                 const response = await fetch(`${API_BASE_URL}/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json',
+                                'X-CSRF-Token': csrfToken  },
                     body: JSON.stringify(data),
                     credentials: 'include'
                 });
@@ -147,8 +152,13 @@
 
                 if (response.ok) {
                     console.log('Login successful');
-                    window.location.href = './dashboard.html';
-                } else {
+                    window.location.href = DASHBOARD_URL;
+                } else if (response.status === 303 && result.message === "Redirecting to /otp-auth") {
+                    // User needs to verify OTP
+                    console.log('User not verified. Redirecting to OTP page.');
+                    window.location.href = OTP_URL;
+                }
+                else {
                     show_error(result.message || 'An unknown error occurred.');
                 }
             } catch (error) {

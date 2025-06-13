@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard - Auth System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,48 +12,44 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
-
-    <div id="loader" class="flex items-center justify-center h-screen">
-        <p class="text-lg font-semibold text-gray-700">Verifying access...</p>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div id="loader" class="text-center">
+        <p class="text-lg font-semibold text-gray-700">Loading dashboard...</p>
     </div>
 
-    <div id="dashboard-container" class="hidden container mx-auto p-4 md:p-8">
-        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p class="mt-2 text-gray-600">Welcome! You are successfully logged in.</p>
-            
-            <div id="status-message" class="mt-4 p-3 text-sm text-blue-700 bg-blue-100 rounded-lg" role="alert">
-                Session is active.
+    <div id="dashboard-container" class="hidden w-full max-w-2xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-center text-gray-800">Welcome to Your Dashboard!</h1>
+        <p class="text-center text-gray-600">You are securely logged in.</p>
+
+        <div id="message" class="hidden p-3 text-sm rounded-lg" role="alert">
             </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <button id="logout-btn" class="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 transition-colors duration-200">
-                    Logout
-                </button>
-                <button id="logout-all-btn" class="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-center text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 transition-colors duration-200">
-                    Logout From All Sessions
-                </button>
-            </div>
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+            <button id="logout-btn" class="w-full sm:w-auto text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">
+                Logout (Current Session)
+            </button>
+            <button id="logout-all-btn" class="w-full sm:w-auto text-white bg-red-800 hover:bg-red-900 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">
+                Logout from All Sessions
+            </button>
         </div>
     </div>
 
     <script>
         // --- Configuration ---
         const API_BASE_URL = 'http://localhost:3000/api/v1/auth';
-        const SESSION_CHECK_INTERVAL = 20 * 1000; // 20 seconds
-        const TOKEN_REFRESH_INTERVAL =  60 * 1000; // 10 minutes
+        const INDEX_URL = './index.html';
+        const SESSION_CHECK_INTERVAL_MS = 20 * 1000; // 20 seconds
+        const REFRESH_TOKEN_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
         // --- DOM Elements ---
         const loader = document.getElementById('loader');
         const dashboardContainer = document.getElementById('dashboard-container');
-        const statusMessage = document.getElementById('status-message');
         const logoutBtn = document.getElementById('logout-btn');
         const logoutAllBtn = document.getElementById('logout-all-btn');
-        
-        // --- Global State ---
-        let sessionInterval;
-        let tokenInterval;
+        const messageDiv = document.getElementById('message');
+
+        let sessionCheckInterval;
+        let refreshTokenInterval;
 
         // --- Helper Functions ---
         const getCookie = (name) => {
@@ -63,135 +59,104 @@
             return null;
         }
 
+        const showMessage = (message, isError = true) => {
+            messageDiv.textContent = message;
+            messageDiv.classList.remove('hidden');
+            if (isError) {
+                messageDiv.classList.remove('bg-green-100', 'text-green-700');
+                messageDiv.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                messageDiv.classList.remove('bg-red-100', 'text-red-700');
+                messageDiv.classList.add('bg-green-100', 'text-green-700');
+            }
+        };
+
         const redirectToLogin = () => {
-            console.log('Redirecting to login page.');
-            // Clear intervals before redirecting
-            clearInterval(sessionInterval);
-            clearInterval(tokenInterval);
-            window.location.href = './index.html';
+            clearInterval(sessionCheckInterval);
+            clearInterval(refreshTokenInterval);
+            window.location.href = INDEX_URL;
         };
 
         // --- Core Logic ---
 
         /**
-         * Initial check to ensure the user is authorized.
-         * If not, redirects to login page.
-         */
-        const initialAuthCheck = async () => {
-            try {
-                const csrfToken = getCookie('csrfToken');
-                const response = await fetch(`${API_BASE_URL}/authorizedPage`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    credentials: 'include'
-                });
-
-                if (response.ok) {
-                    console.log('Access granted.');
-                    loader.classList.add('hidden');
-                    dashboardContainer.classList.remove('hidden');
-                    // If authorized, start the periodic checks
-                    startPeriodicChecks();
-                } else {
-                    console.log('Access denied.');
-                    redirectToLogin();
-                }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                redirectToLogin();
-            }
-        };
-        
-        /**
-         * Periodically checks if the session is still valid.
-         * If not, it logs the user out.
+         * Checks the session validity with the backend.
+         * If invalid, redirects to the login page.
          */
         const checkSession = async () => {
-             try {
+            try {
                 const csrfToken = getCookie('csrfToken');
                 const response = await fetch(`${API_BASE_URL}/check-session`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'X-CSRF-Token': csrfToken // Send CSRF token for session checks
                     },
                     credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    console.log('Session check failed. Logging out.');
-                    statusMessage.textContent = 'Your session has expired. Redirecting...';
-                    statusMessage.classList.replace('bg-blue-100', 'bg-yellow-100');
-                    statusMessage.classList.replace('text-blue-700', 'text-yellow-700');
-                    setTimeout(redirectToLogin, 2000);
+                    console.warn('Session invalid or expired. Redirecting to login.');
+                    redirectToLogin();
                 } else {
-                    console.log('Session is still valid.');
-                    statusMessage.textContent = `Session active. Last checked: ${new Date().toLocaleTimeString()}`;
+                    console.log('Session is active.');
                 }
             } catch (error) {
-                console.error('Error during session check:', error);
-                statusMessage.textContent = 'Connection error during session check.';
-                statusMessage.classList.replace('bg-blue-100', 'bg-red-100');
-                statusMessage.classList.replace('text-blue-700', 'text-red-700');
+                console.error('Error checking session:', error);
+                redirectToLogin();
             }
         };
 
         /**
-         * Periodically refreshes the access token to keep the session alive.
+         * Attempts to refresh the access token.
+         * If unsuccessful, redirects to the login page.
          */
-        const refreshToken = async () => {
+        const refreshAccessToken = async () => {
             try {
                 const csrfToken = getCookie('csrfToken');
                 const response = await fetch(`${API_BASE_URL}/refresh-token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
+                        'X-CSRF-Token': csrfToken // Send CSRF token for token refresh
                     },
                     credentials: 'include'
                 });
 
-                if (response.ok) {
-                    console.log('Tokens refreshed successfully.');
-                    statusMessage.textContent = `Tokens refreshed at ${new Date().toLocaleTimeString()}`;
-                    statusMessage.classList.replace('bg-yellow-100', 'bg-blue-100');
-                    statusMessage.classList.replace('text-yellow-700', 'text-blue-700');
-                } else {
-                    console.log('Failed to refresh token. Session might be invalid.');
+                if (!response.ok) {
+                    console.warn('Failed to refresh token. Session might be invalid. Redirecting to login.');
                     redirectToLogin();
+                } else {
+                    console.log('Access token refreshed successfully.');
+                    showMessage('Access token refreshed.', false);
                 }
             } catch (error) {
                 console.error('Error refreshing token:', error);
+                redirectToLogin();
             }
         };
-        
+
         /**
-         * Starts the setInterval loops for session checking and token refreshing.
-         */
-        const startPeriodicChecks = () => {
-            sessionInterval = setInterval(checkSession, SESSION_CHECK_INTERVAL);
-            tokenInterval = setInterval(refreshToken, TOKEN_REFRESH_INTERVAL);
-        };
-        
-        /**
-         * Handles user logout.
+         * Handles single session logout.
          */
         const handleLogout = async () => {
             try {
-                await fetch(`${API_BASE_URL}/logout`, {
+                const response = await fetch(`${API_BASE_URL}/logout`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
+
+                if (response.ok) {
+                    console.log('Logged out from current session.');
+                    redirectToLogin();
+                } else {
+                    const result = await response.json();
+                    showMessage(result.message || 'Logout failed.', true);
+                }
             } catch (error) {
-                console.error('Logout request failed but continuing redirect:', error);
-            } finally {
-                redirectToLogin();
+                console.error('Logout request failed:', error);
+                showMessage('Could not connect to the server for logout.', true);
             }
         };
 
@@ -199,9 +164,12 @@
          * Handles logout from all sessions.
          */
         const handleLogoutAll = async () => {
+            if (!confirm('Are you sure you want to log out from all sessions? This will invalidate all your active sessions everywhere.')) {
+                return;
+            }
             try {
-                const csrfToken = getCookie('csrfToken');
-                await fetch(`${API_BASE_URL}/logout-all`, {
+                const csrfToken = getCookie('csrfToken'); // CSRF token is required for logout-all
+                const response = await fetch(`${API_BASE_URL}/logout-all`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -209,18 +177,42 @@
                     },
                     credentials: 'include'
                 });
+
+                if (response.ok) {
+                    console.log('Logged out from all sessions.');
+                    redirectToLogin();
+                } else {
+                    const result = await response.json();
+                    showMessage(result.message || 'Logout from all sessions failed.', true);
+                }
             } catch (error) {
-                console.error('Logout all request failed but continuing redirect:', error);
-            } finally {
-                redirectToLogin();
+                console.error('Logout all sessions request failed:', error);
+                showMessage('Could not connect to the server for global logout.', true);
+            }
+        };
+
+        // --- Initialization ---
+        const initDashboard = async () => {
+            // Initial session check
+            await checkSession(); 
+
+            // If still on dashboard, show it and start intervals
+            if (window.location.href.endsWith('dashboard.html')) {
+                loader.classList.add('hidden');
+                dashboardContainer.classList.remove('hidden');
+
+                // Set up periodic session checks
+                sessionCheckInterval = setInterval(checkSession, SESSION_CHECK_INTERVAL_MS);
+
+                // Set up periodic access token refresh
+                refreshTokenInterval = setInterval(refreshAccessToken, REFRESH_TOKEN_INTERVAL_MS);
             }
         };
 
         // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', initialAuthCheck);
+        document.addEventListener('DOMContentLoaded', initDashboard);
         logoutBtn.addEventListener('click', handleLogout);
         logoutAllBtn.addEventListener('click', handleLogoutAll);
-
     </script>
 </body>
 </html>
