@@ -106,11 +106,9 @@
    
         document.addEventListener('DOMContentLoaded', () => {
 
-            if (getCookie('username') || getCookie('otpToken')) {
+     
                 generateOtp();
-            } else {
-                showMessage("Please sign up or log in to receive an OTP.", true);
-            }
+           
         });
 
         // Helper to get cookie (copied from index.html)
