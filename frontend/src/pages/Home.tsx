@@ -6,7 +6,6 @@ import { testimonialsData } from '@/data/data';
 import { teamData } from '@/data/data';
 import { TeamMemberCard } from '@/components/own_components/TeamMemberCard';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/userContext';
 interface StepCardProps {
   number: number;
   title: string;
@@ -27,8 +26,6 @@ const StepCard: React.FC<StepCardProps> = ({ number, title, description }) => {
   );
 };
 export const Home: React.FC = () => {
-  const {isLoggedIn} = useAuth()
-  console.log(isLoggedIn())
   return (
     <>
       <section className="relative py-20 sm:py-28 lg:py-36">
