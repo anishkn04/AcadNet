@@ -4,7 +4,7 @@ const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET
 
 export const generateAccessToken = (payload) => {
-  console.log(payload)
+
   const sanitizedPayload = {
     role: 'user', // default role
     ...payload,
@@ -14,8 +14,6 @@ export const generateAccessToken = (payload) => {
   if (sanitizedPayload.id && typeof sanitizedPayload.id !== 'string') {
     sanitizedPayload.id = sanitizedPayload.id.toString();
   }
-
-  console.log('Access Token Payload:', sanitizedPayload);
 
   return jwt.sign(sanitizedPayload, ACCESS_SECRET, {
     expiresIn: '15m',
@@ -33,9 +31,8 @@ export const generateRefreshToken = (payload) => {
     sanitizedPayload.id = sanitizedPayload.id.toString();
   }
 
-  console.log('Refresh Token Payload:', sanitizedPayload);
-  console.log(sanitizedPayload)
-  return jwt.sign(sanitizedPayload,REFRESH_SECRET,{expiresIn: "15m"});
+
+  return jwt.sign(sanitizedPayload,REFRESH_SECRET,{expiresIn: "7d"});
 };
 
 export const verifyAccessToken = (token) => {return jwt.verify(token, ACCESS_SECRET);};
