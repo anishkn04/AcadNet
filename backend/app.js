@@ -1,6 +1,7 @@
 import express from 'express';
 import { logger } from './middlewares/middlewares.js';
 import authRouter from './routes/authrouter.js';
+import dataRouter from './routes/datarouter.js';
 import passport from 'passport';
 import './passport/passport.js'
 import cookieParser from 'cookie-parser';
@@ -28,6 +29,7 @@ app.use(cookieParser())
 app.use(express.json())
 app.use(logger)
 app.use('/api/v1/auth',authRouter)
+app.use('/api/v1/data',dataRouter)
 app.use(passport.initialize());
 
 export default app

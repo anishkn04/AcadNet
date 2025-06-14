@@ -10,7 +10,7 @@ export const generateAccessToken = (payload) => {
     ...payload,
   };
 
-  // Ensure all ObjectIds are converted to strings
+
   if (sanitizedPayload.id && typeof sanitizedPayload.id !== 'string') {
     sanitizedPayload.id = sanitizedPayload.id.toString();
   }
@@ -26,7 +26,7 @@ export const generateRefreshToken = (payload) => {
     ...payload,
   };
 
-  // Ensure all ObjectIds are converted to strings
+
   if (sanitizedPayload.id && typeof sanitizedPayload.id !== 'string') {
     sanitizedPayload.id = sanitizedPayload.id.toString();
   }

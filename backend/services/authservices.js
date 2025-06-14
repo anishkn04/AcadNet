@@ -10,6 +10,7 @@ import nodemailer from "nodemailer";
 import mailSender from "./otpmailservice.js";
 
 export const loginOauth = async (user) => {
+try{
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
   const userId = user._id;
   const accessToken = generateAccessToken({ id: userId, role: user.role });
@@ -23,6 +24,9 @@ export const loginOauth = async (user) => {
   await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
 
   return { accessToken, refreshToken, csrfToken };
+}catch(err){
+  throw err
+}
 };
 
 export const sessionService = async (oldRefreshToken) => {
@@ -43,6 +47,7 @@ export const sessionService = async (oldRefreshToken) => {
 };
 
 export const refreshTokens = async (oldRefreshToken) => {
+  try{
   const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
   let decoded;
@@ -72,6 +77,9 @@ export const refreshTokens = async (oldRefreshToken) => {
   const csrfToken = randomBytes(20).toString("hex");
 
   return { accessToken, refreshToken, csrfToken };
+} catch(err){
+  throw err
+}
 };
 
 export const logout = async (refreshToken) => {
@@ -80,6 +88,7 @@ export const logout = async (refreshToken) => {
   } catch (err) {
     console.log(err);
     console.log("Logout error");
+    throw err
   }
 };
 
@@ -89,7 +98,7 @@ export const logoutAll = async (userId) => {
 
     await RefreshToken.deleteMany({ user: userId });
   } catch (err) {
-    console.log(err);
+      throw err
   }
 };
 
@@ -110,6 +119,7 @@ export const signupService = async (email, username, password) => {
 };
 
 export const loginService = async (res, email, password) => {
+  try{
   let REFRESH_TOKEN_EXPIRY_DAYS = 7;
   
 
@@ -161,6 +171,9 @@ export const loginService = async (res, email, password) => {
   await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
 
   return { accessToken, refreshToken, csrfToken };
+}catch(err){
+  throw err
+}
 };
 
 export const otpGenerator = async (username, otpToken) => {
@@ -221,6 +234,7 @@ export const otpSender = async (otp, username, email) => {
 };
 
 export const otpChecker = async (username, otpToken, otp) => {
+  try{
   if (!username || !otpToken) {
     throwWithCode("Credential Error", 401);
   }
@@ -242,6 +256,10 @@ export const otpChecker = async (username, otpToken, otp) => {
   user.isVerified = true;
   await user.save();
   return true;
+}
+catch(err){
+  throw err
+}
 };
 
 export const resetOTPgenerator = async (email) => {
@@ -288,7 +306,7 @@ export const resetOTPgenerator = async (email) => {
 };
 
 export const changePasswordService = async (username, otpToken, newPassword) => {
-
+try{
   if (!username || !otpToken) {
     throwWithCode("Invalid request. Please start the password reset process again.", 401);
   }
@@ -310,4 +328,7 @@ export const changePasswordService = async (username, otpToken, newPassword) => 
 
 
   await logoutAll(user._id);
-};
+}catch(err){
+  throw err
+}
+  };
