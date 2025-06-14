@@ -27,9 +27,7 @@ router.post("/signup", validateSignup, handleValidationError, signup);
 
 router.post("/login", login);
 
-router.get(
-  "/github",
-  passport.authenticate("github", { scope: ["user:email"] })
+router.get("/github",passport.authenticate("github", { scope: ["user:email"] })
 );
 
 router.get(

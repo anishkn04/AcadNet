@@ -60,6 +60,7 @@ export const sessionChecker = async (req, res) => {
   try {
     console.log("Hero");
     const oldRefreshToken = req.cookies.refreshToken;
+    console.log(oldRefreshToken)
     if (!oldRefreshToken) {
       return jsonRes(res, 401, false, "No refresh token provided");
     }
@@ -71,6 +72,7 @@ export const sessionChecker = async (req, res) => {
       return jsonRes(res, 401, false, "Session is invalid");
     }
   } catch (err) {
+    console.log("Error")
     return jsonRes(res, 401, false, "Session is invalid or expired");
   }
 };
@@ -166,17 +168,20 @@ export const signup = async (req, res) => {
 
     const otpToken = randomBytes(20).toString("hex");
 
+    console.log(otpToken)
+    console.log(username)
+
     res.cookie("otpToken", otpToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 60 * 60 * 1000
     });
 
     res.cookie("username", username, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 60 * 60 * 1000
     });
 
@@ -240,21 +245,21 @@ export const login = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 15 * 60 * 1000
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.cookie("csrfToken", csrfToken, {
       httpOnly: false,
-      sameSite: "Lax",
+      sameSite: "none",
       secure: false,
       maxAge: 15 * 60 * 1000
     });
@@ -286,13 +291,15 @@ export const resetPasswordSender = async (req, res) => {
 
     res.cookie("username", username, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 5 * 60 * 1000
     });
 
     res.cookie("resetToken", otpToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 5 * 60 * 1000
     });
 
