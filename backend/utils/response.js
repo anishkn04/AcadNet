@@ -1,5 +1,5 @@
-const jsonRes = (res,statusCode,success,message)=>{
-    return res.status(statusCode).json({success,message})
-}
+const jsonRes = (res, statusCode, success, message) => {
+  return res.status(statusCode).json({ success, message });
+};
 
-export default jsonRes
+export default jsonRes;

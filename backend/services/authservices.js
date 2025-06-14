@@ -10,29 +10,29 @@ import nodemailer from "nodemailer";
 import mailSender from "./otpmailservice.js";
 
 export const loginOauth = async (user) => {
-try{
-  const REFRESH_TOKEN_EXPIRY_DAYS = 7;
-  const userId = user._id;
-  const accessToken = generateAccessToken({ id: userId, role: user.role });
-  const refreshToken = generateRefreshToken({ id: userId, role: user.role });
-  const csrfToken = randomBytes(20).toString("hex");
+  try {
+    const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+    const userId = user._id;
+    const accessToken = generateAccessToken({ id: userId, role: user.role });
+    const refreshToken = generateRefreshToken({ id: userId, role: user.role });
+    const csrfToken = randomBytes(20).toString("hex");
 
-  const expiresAt = new Date(
-    Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-  );
+    const expiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    );
 
-  await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
+    await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
 
-  return { accessToken, refreshToken, csrfToken };
-}catch(err){
-  throw err
-}
+    return { accessToken, refreshToken, csrfToken };
+  } catch (err) {
+    throw err;
+  }
 };
 
 export const sessionService = async (oldRefreshToken) => {
   try {
     let decoded;
-    
+
     decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
@@ -47,39 +47,46 @@ export const sessionService = async (oldRefreshToken) => {
 };
 
 export const refreshTokens = async (oldRefreshToken) => {
-  try{
-  const REFRESH_TOKEN_EXPIRY_DAYS = 7;
-
-  let decoded;
-
   try {
-    decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-  } catch {
-    throw new Error("Invalid refresh token");
+    const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+
+    let decoded;
+
+    try {
+      decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch {
+      throw new Error("Invalid refresh token");
+    }
+    const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
+    if (!savedToken) {
+      throw new Error("Refresh token revoked or not found");
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) throw new Error("User not found");
+
+    await RefreshToken.deleteOne({ token: oldRefreshToken });
+
+    const accessToken = generateAccessToken({ id: user._id, role: user.role });
+    const refreshToken = generateRefreshToken({
+      id: user._id,
+      role: user.role
+    });
+    const expiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    );
+    await RefreshToken.create({
+      user: user._id,
+      token: refreshToken,
+      expiresAt
+    });
+
+    const csrfToken = randomBytes(20).toString("hex");
+
+    return { accessToken, refreshToken, csrfToken };
+  } catch (err) {
+    throw err;
   }
-  const savedToken = await RefreshToken.findOne({ token: oldRefreshToken });
-  if (!savedToken) {
-    throw new Error("Refresh token revoked or not found");
-  }
-
-  const user = await User.findById(decoded.id);
-  if (!user) throw new Error("User not found");
-
-  await RefreshToken.deleteOne({ token: oldRefreshToken });
-
-  const accessToken = generateAccessToken({ id: user._id, role: user.role });
-  const refreshToken = generateRefreshToken({ id: user._id, role: user.role });
-  const expiresAt = new Date(
-    Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-  );
-  await RefreshToken.create({ user: user._id, token: refreshToken, expiresAt });
-
-  const csrfToken = randomBytes(20).toString("hex");
-
-  return { accessToken, refreshToken, csrfToken };
-} catch(err){
-  throw err
-}
 };
 
 export const logout = async (refreshToken) => {
@@ -88,17 +95,15 @@ export const logout = async (refreshToken) => {
   } catch (err) {
     console.log(err);
     console.log("Logout error");
-    throw err
+    throw err;
   }
 };
 
 export const logoutAll = async (userId) => {
   try {
-
-
     await RefreshToken.deleteMany({ user: userId });
   } catch (err) {
-      throw err
+    throw err;
   }
 };
 
@@ -114,66 +119,65 @@ export const signupService = async (email, username, password) => {
 
     await User.create({ email, username: newusername, password });
   } catch (err) {
-    throw err
+    throw err;
   }
 };
 
 export const loginService = async (res, email, password) => {
-  try{
-  let REFRESH_TOKEN_EXPIRY_DAYS = 7;
-  
+  try {
+    let REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
-  let user = await User.findOne({ email });
-  if (!user) {
-    throw new Error("Login Error: User not Found");
+    let user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Login Error: User not Found");
+    }
+
+    if (user.isVerified === false) {
+      const otpToken = randomBytes(20).toString("hex");
+      const username = user.username;
+
+      res.cookie("otpToken", otpToken, {
+        httpOnly: true,
+        sameSite: "Lax",
+        secure: false,
+        maxAge: 60 * 60 * 1000
+      });
+
+      res.cookie("username", username, {
+        httpOnly: true,
+        sameSite: "Lax",
+        secure: false,
+        maxAge: 60 * 60 * 1000
+      });
+
+      throwWithCode("Redirecting to /otp-auth", 303);
+    }
+
+    if (user.authProvider != "local") {
+      throw new Error("Please Login via GitHub");
+    }
+
+    const verify = await bcrypt.compare(password, user.password);
+
+    if (!verify) {
+      throw new Error("Login Error: Wrong Credentials");
+    }
+
+    const userId = user._id;
+    const accessToken = generateAccessToken({ id: userId, role: user.role });
+    const refreshToken = generateRefreshToken({ id: userId, role: user.role });
+    const csrfToken = randomBytes(20).toString("hex");
+
+    const expiresAt = new Date(
+      Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    );
+
+    await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
+
+    return { accessToken, refreshToken, csrfToken };
+  } catch (err) {
+    throw err;
   }
-
-  if (user.isVerified === false) {
-    const otpToken = randomBytes(20).toString("hex");
-    const username = user.username;
-
-    res.cookie("otpToken", otpToken, {
-      httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
-      maxAge: 60 * 60 * 1000
-    });
-
-    res.cookie("username", username, {
-      httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
-      maxAge: 60 * 60 * 1000
-    });
-
-    throwWithCode("Redirecting to /otp-auth", 303);
-  }
-
-  if (user.authProvider != "local") {
-    throw new Error("Please Login via GitHub");
-  }
-
-  const verify = await bcrypt.compare(password, user.password);
-
-  if (!verify) {
-    throw new Error("Login Error: Wrong Credentials");
-  }
-
-  const userId = user._id;
-  const accessToken = generateAccessToken({ id: userId, role: user.role });
-  const refreshToken = generateRefreshToken({ id: userId, role: user.role });
-  const csrfToken = randomBytes(20).toString("hex");
-
-  const expiresAt = new Date(
-    Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000
-  );
-
-  await RefreshToken.create({ user: userId, token: refreshToken, expiresAt });
-
-  return { accessToken, refreshToken, csrfToken };
-}catch(err){
-  throw err
-}
 };
 
 export const otpGenerator = async (username, otpToken) => {
@@ -218,8 +222,8 @@ export const otpGenerator = async (username, otpToken) => {
 
     await otpModel.deleteMany({ user: userId });
     await user.save();
-    await otpModel.create({ user: userId,otp, otpToken, expiresAt });
-    return { otp, otpToken,email};
+    await otpModel.create({ user: userId, otp, otpToken, expiresAt });
+    return { otp, otpToken, email };
   } catch (err) {
     throw err;
   }
@@ -234,32 +238,31 @@ export const otpSender = async (otp, username, email) => {
 };
 
 export const otpChecker = async (username, otpToken, otp) => {
-  try{
-  if (!username || !otpToken) {
-    throwWithCode("Credential Error", 401);
+  try {
+    if (!username || !otpToken) {
+      throwWithCode("Credential Error", 401);
+    }
+
+    const user = await User.findOne({ username });
+    const userId = user._id;
+
+    const correct_otp = await otpModel.findOne({ user: userId, otpToken });
+    if (!correct_otp) {
+      throwWithCode("Credential Error", 401);
+    }
+
+    const isMatch = await bcrypt.compare(otp, correct_otp.otp);
+
+    if (!isMatch) {
+      throwWithCode("Wrong OTP", 401);
+    }
+
+    user.isVerified = true;
+    await user.save();
+    return true;
+  } catch (err) {
+    throw err;
   }
-
-  const user = await User.findOne({ username });
-  const userId = user._id;
-
-  const correct_otp = await otpModel.findOne({ user: userId, otpToken});
-  if (!correct_otp) {
-    throwWithCode("Credential Error", 401);
-  }
-
-  const isMatch = await bcrypt.compare(otp, correct_otp.otp);
-
-  if (!isMatch) {
-    throwWithCode("Wrong OTP", 401);
-  }
-
-  user.isVerified = true;
-  await user.save();
-  return true;
-}
-catch(err){
-  throw err
-}
 };
 
 export const resetOTPgenerator = async (email) => {
@@ -268,17 +271,17 @@ export const resetOTPgenerator = async (email) => {
     const OTP_TOKEN_EXPIRY = 5;
     const user = await User.findOne({ email });
 
-    if(!user){
-      throwWithCode("No User Found",401)
+    if (!user) {
+      throwWithCode("No User Found", 401);
     }
 
-    if(user.authProvider === 'github'){
+    if (user.authProvider === "github") {
       throwWithCode("Password Reset Not Available for oAuth", 429);
     }
     const userId = user._id;
     const otpToken = randomBytes(20).toString("hex");
-    const username = user.username
-    
+    const username = user.username;
+
     const lastOtpTime = user.lastOtp.getTime();
     const currentTime = Date.now();
     const timeElapsed = currentTime - lastOtpTime;
@@ -298,37 +301,48 @@ export const resetOTPgenerator = async (email) => {
 
     await otpModel.deleteMany({ user: userId });
     await user.save();
-    await otpModel.create({ user: userId, type: "reset",otp, otpToken, expiresAt});
+    await otpModel.create({
+      user: userId,
+      type: "reset",
+      otp,
+      otpToken,
+      expiresAt
+    });
     return { otp, otpToken, username };
   } catch (err) {
     throw err;
   }
 };
 
-export const changePasswordService = async (username, otpToken, newPassword) => {
-try{
-  if (!username || !otpToken) {
-    throwWithCode("Invalid request. Please start the password reset process again.", 401);
+export const changePasswordService = async (
+  username,
+  otpToken,
+  newPassword
+) => {
+  try {
+    if (!username || !otpToken) {
+      throwWithCode(
+        "Invalid request. Please start the password reset process again.",
+        401
+      );
+    }
+
+    const user = await User.findOne({ username });
+
+    console.log(user.authProvider);
+
+    if (user.authProvider === "github") {
+      throwWithCode("Not for OAuth Users.", 404);
+    }
+    if (!user) {
+      throwWithCode("User not found.", 404);
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    await logoutAll(user._id);
+  } catch (err) {
+    throw err;
   }
-
-  const user = await User.findOne({ username });
-
-  console.log(user.authProvider)
-
-  if(user.authProvider === 'github'){
-    throwWithCode("Not for OAuth Users.", 404);
-  }
-  if (!user) {
-    throwWithCode("User not found.", 404);
-  }
-
- 
-  user.password = newPassword; 
-  await user.save();
-
-
-  await logoutAll(user._id);
-}catch(err){
-  throw err
-}
-  };
+};

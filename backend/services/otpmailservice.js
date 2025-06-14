@@ -1,28 +1,30 @@
-import nodemailer from 'nodemailer'
-import throwWithCode from '../utils/errorthrow.js';
+import nodemailer from "nodemailer";
+import throwWithCode from "../utils/errorthrow.js";
 
 const mailSender = async (recipientEmail, userName, otp) => {
-      const senderEmail = process.env.APP_EMAIL;
-      const senderPassword = process.env.APP_PASSWORD;
+  const senderEmail = process.env.APP_EMAIL;
+  const senderPassword = process.env.APP_PASSWORD;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-        user: senderEmail,
-        pass: senderPassword,
-    },
-});
-    
-    if (!recipientEmail || !userName || !otp) {
-        throwWithCode('Error: Recipient email, user name, and OTP are required.',401,)
+      user: senderEmail,
+      pass: senderPassword
     }
+  });
 
+  if (!recipientEmail || !userName || !otp) {
+    throwWithCode(
+      "Error: Recipient email, user name, and OTP are required.",
+      401
+    );
+  }
 
-    const mailOptions = {
-        from: `"Acadnet" <${senderEmail}>`,
-        to: recipientEmail, 
-        subject: 'Your One-Time Password (OTP) for Verification', 
-        html: `
+  const mailOptions = {
+    from: `"Acadnet" <${senderEmail}>`,
+    to: recipientEmail,
+    subject: "Your One-Time Password (OTP) for Verification",
+    html: `
             <div style="font-family: 'Inter', sans-serif; background-color: #f7f7f7; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <div style="text-align: center; margin-bottom: 30px;">
                     <h1 style="color: #333; font-size: 28px; margin-bottom: 10px;">Account Verification</h1>
@@ -56,16 +58,16 @@ const mailSender = async (recipientEmail, userName, otp) => {
                     <p>&copy; ${new Date().getFullYear()} Acadnet. All rights reserved.</p>
                 </div>
             </div>
-        `,
-    };
+        `
+  };
 
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log('OTP Email sent successfully!');
-        return true;
-    } catch (err) {
-        throw err
-    }
-}
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("OTP Email sent successfully!");
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
 
-export default mailSender
+export default mailSender;

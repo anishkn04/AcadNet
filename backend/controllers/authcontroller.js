@@ -58,7 +58,7 @@ export const oAuthCallback = async (req, res) => {
 
 export const sessionChecker = async (req, res) => {
   try {
-    console.log("Hero")
+    console.log("Hero");
     const oldRefreshToken = req.cookies.refreshToken;
     if (!oldRefreshToken) {
       return jsonRes(res, 401, false, "No refresh token provided");
@@ -158,9 +158,8 @@ export const checkedRes = (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-   
     let { email, username, password } = req.body;
-    
+
     email = email.toLowerCase();
     username = username.toLowerCase();
     await signupService(email, username, password);
@@ -181,28 +180,28 @@ export const signup = async (req, res) => {
       maxAge: 60 * 60 * 1000
     });
 
-    console.log("Reached Here")
+    console.log("Reached Here");
 
     return jsonRes(res, 200, true, "Success");
   } catch (err) {
     if (err.code === 11000 && err.keyPattern?.email) {
       return jsonRes(res, 409, false, "Email already in use");
     }
-    
+
     return jsonRes(res, 500, false, err.message);
   }
 };
 
 export const otpAuthGenerator = async (req, res) => {
   try {
-    console.log("S")
+    console.log("S");
     const username = req.cookies.username;
     const otpToken = req.cookies.otpToken;
-    console.log(username)
-    console.log(otpToken)
+    console.log(username);
+    console.log(otpToken);
     const { otp, email } = await otpGenerator(username, otpToken);
-    console.log("Check")
-    console.log(email)
+    console.log("Check");
+    console.log(email);
     await otpSender(otp, username, email);
     jsonRes(res, 200, true, "OTP Sent");
   } catch (err) {
@@ -217,8 +216,8 @@ export const otpAuthChecker = async (req, res) => {
     const { otp } = req.body;
     const check = await otpChecker(username, otpToken, otp);
     if (check) {
-      res.clearCookie("username")
-      res.clearCookie("otpToken")
+      res.clearCookie("username");
+      res.clearCookie("otpToken");
       jsonRes(res, 200, true, "Verified");
     } else {
       jsonRes(res, err.code, false, "Not Verified");
@@ -281,17 +280,17 @@ export const resetPasswordSender = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const { otp, otpToken, username} = await resetOTPgenerator(email);
+    const { otp, otpToken, username } = await resetOTPgenerator(email);
 
     await otpSender(otp, username, email);
 
-      res.cookie("username", username, {
+    res.cookie("username", username, {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 5 * 60 * 1000
     });
 
-      res.cookie("resetToken", otpToken, {
+    res.cookie("resetToken", otpToken, {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 5 * 60 * 1000
@@ -310,7 +309,6 @@ export const resetVerifier = async (req, res) => {
     const { otp } = req.body;
     const check = await otpChecker(username, otpToken, otp);
     if (check) {
-  
       jsonRes(res, 200, true, "Verified");
     } else {
       jsonRes(res, err.code, false, "Not Verified");
@@ -332,7 +330,6 @@ export const changePassword = async (req, res) => {
 
     await changePasswordService(username, otpToken, newPassword);
 
-   
     res.clearCookie("username");
     res.clearCookie("resetToken");
 

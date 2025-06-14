@@ -21,7 +21,6 @@ import addUser from "../middlewares/addUsertoReq.js";
 import validateSignup from "../validator/validate.js";
 import handleValidationError from "../validator/errorvalidation.js";
 
-
 const router = express.Router();
 
 router.post("/signup", validateSignup, handleValidationError, signup);
@@ -67,9 +66,9 @@ router.post("/otp-auth", otpAuthGenerator);
 
 router.post("/otp-verify", otpAuthChecker);
 
-router.post("/password-reset",resetPasswordSender);
+router.post("/password-reset", resetPasswordSender);
 
-router.post("/password-verify",resetVerifier)
+router.post("/password-verify", resetVerifier);
 
 router.post("/change-password", changePassword);
 
