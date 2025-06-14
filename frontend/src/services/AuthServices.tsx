@@ -47,3 +47,28 @@ export const checkSessionAPI = async () => {
     throw error;
   }
 };
+
+export const forgotPasswordAPI = async (email :string) =>{
+  try{
+    const response = await apiClient.post<any>('/password-reset',{email});
+    return {data:response.data, status:response.status}
+  }catch(error){
+    handleError(error);throw error;
+  }
+}
+
+export const verifyOTPAndResetPasswordAPI = async (otp: string, newPassword: string) =>{
+  try{
+    const verifyResponse = await apiClient.post<any>('/password-verify',{otp});
+    if (verifyResponse.status !== 200 || verifyResponse.data.success !== true){
+      throw new Error(verifyResponse.data.message || "OTP verification failed")
+    }
+    
+    const changePassword = await apiClient.post<any>('/change-password',{newPassword})
+    return {data:changePassword.data, status: changePassword.status};
+  }catch(error){
+    handleError(error);
+    throw error;
+  }
+
+}

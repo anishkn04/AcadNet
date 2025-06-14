@@ -1,8 +1,9 @@
 import type { UserProfile } from "@/models/User";
 import React, { createContext, useEffect, useState } from "react";
-import { loginAPI, registerAPI, logoutAPI, checkSessionAPI } from "@/services/AuthServices";
+import { loginAPI, registerAPI, logoutAPI, checkSessionAPI, forgotPasswordAPI, verifyOTPAndResetPasswordAPI } from "@/services/AuthServices";
 import { toast } from "react-toastify";
 import axios from 'axios';
+
 
 type UserContextType = {
   user: UserProfile | null;
@@ -11,6 +12,8 @@ type UserContextType = {
   logout: () => void;
   isLoggedIn: () => boolean;
   isLoading: boolean;
+  forgotPassword: (email:string)=>Promise<boolean>;
+  resetPasswordWithOTP:(otp:string,newPassword:string)=>Promise<boolean>;
 };
 
 type Props = { children: React.ReactNode };
@@ -100,8 +103,49 @@ export const UserProvider = ({ children }: Props) => {
     }
   };
 
+  const forgotPassword =  async(email:string): Promise<boolean>=>{
+    try{
+      const {data,status} = await forgotPasswordAPI(email);
+      if(status === 200 && data.success === true ){
+        toast.success(data.message || "Password reset OTP has sent to your email!")
+        return true
+      }else{
+        toast.error(data.message || "Failed to send OTP. Please check the email address.")
+        return false;
+      }
+    }catch(e){
+      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message){
+        console.log(e.response.data.message)
+      }else{
+        toast.error("Could not connect to the server or an unknown error occurred.");
+      }
+    }
+    return false;
+  }
+  const resetPasswordWithOTP =  async(otp:string,newPassword:string): Promise<boolean>=>{
+    try{
+      const {data,status} = await verifyOTPAndResetPasswordAPI(otp,newPassword);
+      if (status === 200 && data.success === true){
+        toast.success(data.message || "Your password has been reset successfully!");
+        return true
+      }else{
+        toast.error(data.message || "Password reset failed. Please try again.")
+        return false
+      }
+    }catch(e){
+           if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+        toast.error(e.response.data.message);
+      } else if (e instanceof Error) {
+        toast.error(e.message);
+      } else {
+        toast.error("Could not connect to the server or an unknown error occurred during password reset.");
+      }
+      return false;
+    }
+    return false;
+  }
   return (
-    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading }}>
+    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading,forgotPassword,resetPasswordWithOTP }}>
       {!isLoading && children}
     </UserContext.Provider>
   );

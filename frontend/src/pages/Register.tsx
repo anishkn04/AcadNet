@@ -82,7 +82,7 @@ export default function Register() {
       if (success) {
         setFormMessage({ text: 'Signup successful! Redirecting to login...', type: 'success' });
         setTimeout(() => {
-          navigate("/");
+          navigate("/login");
         }, 2000);
       } else {
         // The toast.error from registerUser in userContext will handle the specific error.
