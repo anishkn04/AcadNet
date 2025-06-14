@@ -11,6 +11,8 @@ const allowedOrigins = ['http://localhost:5500', 'http://127.0.0.1:5500'];
 
 
 const app = express()
+
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -19,7 +21,7 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
+  credentials: true
 }));
 
 app.use(cookieParser())

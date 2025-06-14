@@ -7,6 +7,11 @@ const otpModelSchema = new mongoose.Schema({
     ref: 'User', 
     required: true 
   },
+  type:{
+    type: String,
+    enum: ['verification','reset'],
+    default: "verification"
+  },
   otp: { 
     type: String, 
     required: true, 

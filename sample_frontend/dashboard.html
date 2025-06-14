@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Auth System</title>
+    <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,207 +12,126 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div id="loader" class="text-center">
-        <p class="text-lg font-semibold text-gray-700">Loading dashboard...</p>
-    </div>
-
-    <div id="dashboard-container" class="hidden w-full max-w-2xl p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold text-center text-gray-800">Welcome to Your Dashboard!</h1>
-        <p class="text-center text-gray-600">You are securely logged in.</p>
-
-        <div id="message" class="hidden p-3 text-sm rounded-lg" role="alert">
+<body class="bg-gray-100">
+    <div class="flex min-h-screen items-center justify-center">
+        <div class="w-full max-w-2xl p-8 space-y-8 bg-white rounded-lg shadow-md text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Welcome to your Dashboard</h1>
+            <p class="text-gray-600">Your session is active. You are securely logged in.</p>
+            <div id="message" class="mt-4 text-center text-sm p-2 rounded-md"></div>
+            <div class="flex justify-center space-x-4 mt-8">
+                <button id="logout-btn"
+                    class="px-6 py-3 font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300">
+                    Logout
+                </button>
+                <button id="logout-all-btn"
+                    class="px-6 py-3 font-semibold text-white bg-red-800 rounded-lg hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-all duration-300">
+                    Logout from All Devices
+                </button>
             </div>
-
-        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-            <button id="logout-btn" class="w-full sm:w-auto text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">
-                Logout (Current Session)
-            </button>
-            <button id="logout-all-btn" class="w-full sm:w-auto text-white bg-red-800 hover:bg-red-900 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-200">
-                Logout from All Sessions
-            </button>
         </div>
     </div>
 
     <script>
-        // --- Configuration ---
-        const API_BASE_URL = 'http://localhost:3000/api/v1/auth';
-        const INDEX_URL = './index.html';
-        const SESSION_CHECK_INTERVAL_MS = 20 * 1000; // 20 seconds
-        const REFRESH_TOKEN_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
-        // --- DOM Elements ---
-        const loader = document.getElementById('loader');
-        const dashboardContainer = document.getElementById('dashboard-container');
+        function getCookie(name) {
+    const cookieArr = document.cookie.split(";");
+
+    for (let cookie of cookieArr) {
+        cookie = cookie.trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.startsWith(name + "=")) {
+            return cookie.substring((name + "=").length);
+        }
+    }
+    return null;
+}
+        const API_URL = 'http://localhost:3000/api/v1/auth';
         const logoutBtn = document.getElementById('logout-btn');
         const logoutAllBtn = document.getElementById('logout-all-btn');
         const messageDiv = document.getElementById('message');
+        let sessionInterval;
 
-        let sessionCheckInterval;
-        let refreshTokenInterval;
-
-        // --- Helper Functions ---
-        const getCookie = (name) => {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
-        }
-
-        const showMessage = (message, isError = true) => {
+        const showMessage = (message, isError = false) => {
             messageDiv.textContent = message;
-            messageDiv.classList.remove('hidden');
-            if (isError) {
-                messageDiv.classList.remove('bg-green-100', 'text-green-700');
-                messageDiv.classList.add('bg-red-100', 'text-red-700');
-            } else {
-                messageDiv.classList.remove('bg-red-100', 'text-red-700');
-                messageDiv.classList.add('bg-green-100', 'text-green-700');
-            }
+            messageDiv.className = isError 
+                ? 'mt-4 text-center text-sm p-2 rounded-md bg-red-100 text-red-700' 
+                : 'mt-4 text-center text-sm p-2 rounded-md bg-green-100 text-green-700';
         };
 
-        const redirectToLogin = () => {
-            clearInterval(sessionCheckInterval);
-            clearInterval(refreshTokenInterval);
-            window.location.href = INDEX_URL;
-        };
-
-        // --- Core Logic ---
-
-        /**
-         * Checks the session validity with the backend.
-         * If invalid, redirects to the login page.
-         */
         const checkSession = async () => {
             try {
-                const csrfToken = getCookie('csrfToken');
-                const response = await fetch(`${API_BASE_URL}/check-session`, {
+                const response = await fetch(`${API_URL}/checkSession`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken // Send CSRF token for session checks
-                    },
+                    headers: { 'Content-Type': 'application/json' ,
+                'x-csrf-token': getCookie('csrfToken')},
                     credentials: 'include'
                 });
-
                 if (!response.ok) {
-                    console.warn('Session invalid or expired. Redirecting to login.');
-                    redirectToLogin();
-                } else {
-                    console.log('Session is active.');
+                    throw new Error('Session invalid');
                 }
             } catch (error) {
-                console.error('Error checking session:', error);
-                redirectToLogin();
+                console.error('Session check failed:', error);
+                clearInterval(sessionInterval); // Stop checking
+                showMessage('Your session has expired. Redirecting to login...', true);
+                setTimeout(() => window.location.href = './index.html', 2000);
             }
         };
 
-        /**
-         * Attempts to refresh the access token.
-         * If unsuccessful, redirects to the login page.
-         */
-        const refreshAccessToken = async () => {
+        // On page load, do an initial session check
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+            // Start checking the session every 20 seconds
+            sessionInterval = setInterval(checkSession, 20000);
+        });
+
+        // Handle Logout
+        logoutBtn.addEventListener('click', async () => {
             try {
-                const csrfToken = getCookie('csrfToken');
-                const response = await fetch(`${API_BASE_URL}/refresh-token`, {
+                const response = await fetch(`${API_URL}/logout`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken // Send CSRF token for token refresh
-                    },
+                    headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCookie('csrfToken') },
                     credentials: 'include'
                 });
-
-                if (!response.ok) {
-                    console.warn('Failed to refresh token. Session might be invalid. Redirecting to login.');
-                    redirectToLogin();
-                } else {
-                    console.log('Access token refreshed successfully.');
-                    showMessage('Access token refreshed.', false);
-                }
-            } catch (error) {
-                console.error('Error refreshing token:', error);
-                redirectToLogin();
-            }
-        };
-
-        /**
-         * Handles single session logout.
-         */
-        const handleLogout = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/logout`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
-
                 if (response.ok) {
-                    console.log('Logged out from current session.');
-                    redirectToLogin();
+                    clearInterval(sessionInterval);
+                    showMessage('Logged out successfully. Redirecting...', false);
+                    setTimeout(() => window.location.href = './index.html', 2000);
                 } else {
-                    const result = await response.json();
-                    showMessage(result.message || 'Logout failed.', true);
+                   const data = await response.json();
+                   showMessage(data.message || 'Logout failed.', true);
                 }
             } catch (error) {
-                console.error('Logout request failed:', error);
-                showMessage('Could not connect to the server for logout.', true);
+                console.error('Logout error:', error);
+                showMessage('An error occurred during logout.', true);
             }
-        };
+        });
 
-        /**
-         * Handles logout from all sessions.
-         */
-        const handleLogoutAll = async () => {
-            if (!confirm('Are you sure you want to log out from all sessions? This will invalidate all your active sessions everywhere.')) {
-                return;
-            }
+        // Handle Logout from All Devices
+        logoutAllBtn.addEventListener('click', async () => {
             try {
-                const csrfToken = getCookie('csrfToken'); // CSRF token is required for logout-all
-                const response = await fetch(`${API_BASE_URL}/logout-all`, {
+                const response = await fetch(`${API_URL}/logout-all`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
+                    headers: { 'Content-Type': 'application/json' , 'x-csrf-token': getCookie('csrfToken') },
                     credentials: 'include'
                 });
-
-                if (response.ok) {
-                    console.log('Logged out from all sessions.');
-                    redirectToLogin();
+                 if (response.ok) {
+                    clearInterval(sessionInterval);
+                    showMessage('Logged out from all devices. Redirecting...', false);
+                    setTimeout(() => window.location.href = './index.html', 2000);
                 } else {
-                    const result = await response.json();
-                    showMessage(result.message || 'Logout from all sessions failed.', true);
+                   const data = await response.json();
+                   showMessage(data.message || 'Logout failed.', true);
                 }
             } catch (error) {
-                console.error('Logout all sessions request failed:', error);
-                showMessage('Could not connect to the server for global logout.', true);
+                console.error('Logout all error:', error);
+                showMessage('An error occurred during logout.', true);
             }
-        };
+        });
 
-        // --- Initialization ---
-        const initDashboard = async () => {
-            // Initial session check
-            await checkSession(); 
-
-            // If still on dashboard, show it and start intervals
-            if (window.location.href.endsWith('dashboard.html')) {
-                loader.classList.add('hidden');
-                dashboardContainer.classList.remove('hidden');
-
-                // Set up periodic session checks
-                sessionCheckInterval = setInterval(checkSession, SESSION_CHECK_INTERVAL_MS);
-
-                // Set up periodic access token refresh
-                refreshTokenInterval = setInterval(refreshAccessToken, REFRESH_TOKEN_INTERVAL_MS);
-            }
-        };
-
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', initDashboard);
-        logoutBtn.addEventListener('click', handleLogout);
-        logoutAllBtn.addEventListener('click', handleLogoutAll);
+        // Clear interval when the user navigates away
+        window.addEventListener('beforeunload', () => {
+            clearInterval(sessionInterval);
+        });
     </script>
 </body>
 </html>

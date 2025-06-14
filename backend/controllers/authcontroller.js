@@ -9,9 +9,12 @@ import {
   loginService,
   otpGenerator,
   otpSender,
-  otpChecker
+  otpChecker,
+  resetOTPgenerator,
+  changePasswordService
 } from "../services/authservices.js";
 import { randomBytes } from "crypto";
+
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
 const dashPath = "http://localhost:5500/sample_frontend/dashboard.html";
 
@@ -24,9 +27,6 @@ export const oAuthCallback = async (req, res) => {
 
   try {
     const { accessToken, refreshToken, csrfToken } = await loginOauth(user);
-
-
-
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -56,33 +56,34 @@ export const oAuthCallback = async (req, res) => {
   }
 };
 
-export const sessionChecker = async (req,res) =>{
-  try{
-  const oldRefreshToken = req.cookies.refreshToken;
-   if (!oldRefreshToken){
+export const sessionChecker = async (req, res) => {
+  try {
+    console.log("Hero")
+    const oldRefreshToken = req.cookies.refreshToken;
+    if (!oldRefreshToken) {
       return jsonRes(res, 401, false, "No refresh token provided");
     }
-    const isSession = await sessionService(oldRefreshToken)
-   
-   if(isSession == true){
+    const isSession = await sessionService(oldRefreshToken);
+
+    if (isSession == true) {
       return jsonRes(res, 200, false, "Ref Token is Valid");
-   }else {
+    } else {
       return jsonRes(res, 401, false, "Session is invalid");
     }
-  }
-  catch(err){
+  } catch (err) {
     return jsonRes(res, 401, false, "Session is invalid or expired");
   }
-}
-
+};
 
 export const refreshAccessToken = async (req, res) => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
     if (!oldRefreshToken)
       return jsonRes(res, 401, false, "No refresh token provided");
-    
-    const { accessToken, refreshToken, csrfToken } = await refreshTokens(oldRefreshToken);
+
+    const { accessToken, refreshToken, csrfToken } = await refreshTokens(
+      oldRefreshToken
+    );
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
@@ -105,8 +106,6 @@ export const refreshAccessToken = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-   
-
     return jsonRes(res, 200, true, "Token refreshed");
   } catch (err) {
     console.error(err);
@@ -115,9 +114,7 @@ export const refreshAccessToken = async (req, res) => {
 };
 
 export const logoutCont = async (req, res) => {
-
   try {
-
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken)
@@ -138,9 +135,7 @@ export const logoutCont = async (req, res) => {
 };
 
 export const logoutAllCont = async (req, res) => {
-
   try {
-
     const userId = req.user._id;
 
     await logoutAll(userId);
@@ -161,14 +156,14 @@ export const checkedRes = (req, res) => {
   return jsonRes(res, 200, true, "Logged In");
 };
 
-
 export const signup = async (req, res) => {
   try {
-    console.log("Reached here")
+   
     let { email, username, password } = req.body;
+    
     email = email.toLowerCase();
     username = username.toLowerCase();
-    await signupService(email,username, password);
+    await signupService(email, username, password);
 
     const otpToken = randomBytes(20).toString("hex");
 
@@ -178,65 +173,73 @@ export const signup = async (req, res) => {
       secure: false,
       maxAge: 60 * 60 * 1000
     });
-    
 
-     res.cookie("username", username, {
+    res.cookie("username", username, {
       httpOnly: true,
       sameSite: "Lax",
       secure: false,
       maxAge: 60 * 60 * 1000
     });
-    
-    return jsonRes(res, 303, true, "Redirect to /otp-auth");
+
+    console.log("Reached Here")
+
+    return jsonRes(res, 200, true, "Success");
   } catch (err) {
-    if(err.message === 'MongoServerError: E11000 duplicate key error collection: acadnetest.users index: email_1 dup key: { email: "gainrishavchap@gmail.com" }'){
-      return jsonRes(res, 404, false, "Email already in use");
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return jsonRes(res, 409, false, "Email already in use");
     }
-    return jsonRes(res, 500, false, "Internal Server Error");
+    
+    return jsonRes(res, 500, false, err.message);
   }
 };
 
-export const otpAuthGenerator =async (req,res) =>{
-  try{
-    const username = req.cookies.username
-    const otpToken = req.cookies.otpToken
-    const {otp,email} = await otpGenerator(username,otpToken)
-    console.log(`cont: ${email}`)
-    await otpSender(otp,username,email)
-    jsonRes(res,200,true,"OTP Sent")
-  } catch(err){
-    return jsonRes(res, err.code, false, err.message)
+export const otpAuthGenerator = async (req, res) => {
+  try {
+    console.log("S")
+    const username = req.cookies.username;
+    const otpToken = req.cookies.otpToken;
+    console.log(username)
+    console.log(otpToken)
+    const { otp, email } = await otpGenerator(username, otpToken);
+    console.log("Check")
+    console.log(email)
+    await otpSender(otp, username, email);
+    jsonRes(res, 200, true, "OTP Sent");
+  } catch (err) {
+    return jsonRes(res, err.code, false, err.message);
   }
-}
+};
 
-export const otpAuthChecker = async (req,res) =>{
-  try{
-  const username = req.cookies.username
-  const otpToken = req.cookies.otpToken
-  const {otp} = req.body
-  const check = await otpChecker(username,otpToken,otp)
-  if(check){
-    jsonRes(res, 200, true, "Verified")
-  }else{
-    jsonRes(res, err.code, false, "Not Verified")
+export const otpAuthChecker = async (req, res) => {
+  try {
+    const username = req.cookies.username;
+    const otpToken = req.cookies.otpToken;
+    const { otp } = req.body;
+    const check = await otpChecker(username, otpToken, otp);
+    if (check) {
+      res.clearCookie("username")
+      res.clearCookie("otpToken")
+      jsonRes(res, 200, true, "Verified");
+    } else {
+      jsonRes(res, err.code, false, "Not Verified");
+    }
+  } catch (err) {
+    return jsonRes(res, err.code, false, err.message);
   }
+};
 
-  }catch(err){
-    return jsonRes(res, err.code, false, err.message)
-  }
-
-}
-
-export const login = async (req,res) =>{
-
-  try{   
+export const login = async (req, res) => {
+  try {
     let { email, password } = req.body;
-    email = email.toLowerCase()
-    
-    const {accessToken, refreshToken, csrfToken }= await loginService(res,email,password)
+    email = email.toLowerCase();
 
+    const { accessToken, refreshToken, csrfToken } = await loginService(
+      res,
+      email,
+      password
+    );
 
-   res.cookie("accessToken", accessToken, {
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "Lax",
       secure: false,
@@ -257,17 +260,84 @@ export const login = async (req,res) =>{
       maxAge: 15 * 60 * 1000
     });
 
-    jsonRes(res,200,true,"Login Success")
-
-  }catch(err){
-    if(err.message == "Login Error: User not Found" || err.message == "Login Error: Wrong Credentials"){
-      return jsonRes(res,401,false,err.message)
-    }else if(err.message == "Please Login via GitHub"){
-      return jsonRes(res,409,false,err.message)
-    }else if(err.message == "Redirecting to /otp-auth"){
-      return jsonRes(res,303,false,err.message)
-    }else{
-    return jsonRes(res, 500, false, err.message);
+    jsonRes(res, 200, true, "Login Success");
+  } catch (err) {
+    if (
+      err.message == "Login Error: User not Found" ||
+      err.message == "Login Error: Wrong Credentials"
+    ) {
+      return jsonRes(res, 401, false, err.message);
+    } else if (err.message == "Please Login via GitHub") {
+      return jsonRes(res, 409, false, err.message);
+    } else if (err.message == "Redirecting to /otp-auth") {
+      return jsonRes(res, 303, false, err.message);
+    } else {
+      return jsonRes(res, 500, false, err.message);
     }
   }
+};
+
+export const resetPasswordSender = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const { otp, otpToken, username} = await resetOTPgenerator(email);
+
+    await otpSender(otp, username, email);
+
+      res.cookie("username", username, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 5 * 60 * 1000
+    });
+
+      res.cookie("resetToken", otpToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 5 * 60 * 1000
+    });
+
+    jsonRes(res, 200, true, "OTP SENT");
+  } catch (err) {
+    return jsonRes(res, err.code, false, err.message);
   }
+};
+
+export const resetVerifier = async (req, res) => {
+  try {
+    const username = req.cookies.username;
+    const otpToken = req.cookies.resetToken;
+    const { otp } = req.body;
+    const check = await otpChecker(username, otpToken, otp);
+    if (check) {
+  
+      jsonRes(res, 200, true, "Verified");
+    } else {
+      jsonRes(res, err.code, false, "Not Verified");
+    }
+  } catch (err) {
+    return jsonRes(res, err.code, false, err.message);
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const username = req.cookies.username;
+    const otpToken = req.cookies.resetToken;
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+      return jsonRes(res, 400, false, "New password is required.");
+    }
+
+    await changePasswordService(username, otpToken, newPassword);
+
+   
+    res.clearCookie("username");
+    res.clearCookie("resetToken");
+
+    return jsonRes(res, 200, true, "Password has been reset successfully.");
+  } catch (err) {
+    return jsonRes(res, err.code || 500, false, err.message);
+  }
+};
