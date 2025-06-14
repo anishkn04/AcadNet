@@ -40,13 +40,14 @@ export const logoutAPI = async () => {
 
 export const checkSessionAPI = async () => {
   try {
-    const response = await apiClient.get<any>('/authorizedPage');
+    const response = await apiClient.get<any>('/AuthorizedPage');
     return { data: response.data, status: response.status };
   } catch (error) {
     handleError(error);
     throw error;
   }
 };
+
 
 export const forgotPasswordAPI = async (email :string) =>{
   try{
@@ -72,3 +73,24 @@ export const verifyOTPAndResetPasswordAPI = async (otp: string, newPassword: str
   }
 
 }
+
+export const sendSignupOtpAPI = async () => {
+    try {
+        const response = await apiClient.post<any>('/otp-auth', {});
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+};
+
+
+export const verifySignupOtpAPI = async (otp: string) => {
+    try {
+        const response = await apiClient.post<any>('/otp-verify', { otp });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+};

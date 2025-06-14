@@ -28,11 +28,11 @@ export const Header: React.FC = () => {
           <div className="size-8 text-[#1993e5]">
             <AcademicCapIcon />
           </div>
-          <a href='/' className="text-xl font-bold leading-tight tracking-tight">AcadNet</a>
+          <Link to={'/'} className="text-xl font-bold leading-tight tracking-tight">AcadNet</Link>
         </div>
         
         <nav className="hidden lg:flex items-center gap-8">
-          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="/">Home</a>
+          <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="/">Home</Link>
           <NavigationMenu >
             <NavigationMenuList >
               <NavigationMenuItem >
@@ -44,8 +44,8 @@ export const Header: React.FC = () => {
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
-          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">Resources</a>
-          <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" href="#">About</a>
+          <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">Resources</Link>
+          <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">About</Link>
         </nav>
         
         <div className="flex items-center gap-3">
@@ -59,9 +59,9 @@ export const Header: React.FC = () => {
       {isLoggedIn() ? (
         <>
           
-          <a href='' onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
+          <button  onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Logout</span>
-          </a>
+          </button>
           </>
       ):(
         <>

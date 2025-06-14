@@ -1,6 +1,6 @@
 import type { UserProfile } from "@/models/User";
 import React, { createContext, useEffect, useState } from "react";
-import { loginAPI, registerAPI, logoutAPI, checkSessionAPI, forgotPasswordAPI, verifyOTPAndResetPasswordAPI } from "@/services/AuthServices";
+import { loginAPI, registerAPI, logoutAPI, checkSessionAPI, forgotPasswordAPI, verifyOTPAndResetPasswordAPI,sendSignupOtpAPI, verifySignupOtpAPI } from "@/services/AuthServices";
 import { toast } from "react-toastify";
 import axios from 'axios';
 
@@ -14,6 +14,8 @@ type UserContextType = {
   isLoading: boolean;
   forgotPassword: (email:string)=>Promise<boolean>;
   resetPasswordWithOTP:(otp:string,newPassword:string)=>Promise<boolean>;
+  sendSignupOtp:()=>Promise<boolean>;
+  verifySignupOtp:(otp:string) =>Promise<boolean>;
 };
 
 type Props = { children: React.ReactNode };
@@ -35,6 +37,7 @@ export const UserProvider = ({ children }: Props) => {
         }
       } catch (error) {
         setUser(null);
+        
         console.error("Session check failed:", error);
       } finally {
         setIsLoading(false);
@@ -136,16 +139,57 @@ export const UserProvider = ({ children }: Props) => {
            if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
         toast.error(e.response.data.message);
       } else if (e instanceof Error) {
-        toast.error(e.message);
+        console.log(e.message);
       } else {
         toast.error("Could not connect to the server or an unknown error occurred during password reset.");
       }
-      return false;
+    }
+    return false;
+  };
+  const sendSignupOtp = async ():Promise<boolean>=>{
+    try{
+      const {data,status} = await sendSignupOtpAPI();
+      if(status === 200 && data.success === true){
+        toast.success(data.message || "OTP sent to your email");
+        return true;
+      }else{
+        toast.error(data.message || "Failed to sent OTP.");
+        return false;
+      }
+    }catch(e){
+      console.error("Send signup OTP failed in context:", e);
+      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+        console.log(e.response.data.message);
+      } else {
+        toast.error("Could not connect to the server or an unknown error occurred while sending OTP.");
+        console.log("Could not connect to the server or an unknown error occurred while sending OTP.");
+      }
+    }
+    return false
+  };
+  const verifySignupOtp = async (otp:string): Promise<boolean>=>{
+    try{
+      const {data,status} = await verifySignupOtpAPI(otp);
+      if(status ===200 && data.success === true){
+        toast.success(data.message || "Account verified successfully");
+        return true;
+      }else{
+        toast.error(data.message || "OTP verification failed. Invalid code.");
+        return false;
+      }
+      
+    }catch(e){
+      console.error("Verify signup OTP failed in context:", e);
+      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+        toast.error(e.response.data.message);
+      } else {
+        toast.error("Could not connect to the server or an unknown error occurred during OTP verification.");
+      }
     }
     return false;
   }
   return (
-    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading,forgotPassword,resetPasswordWithOTP }}>
+    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading,forgotPassword,resetPasswordWithOTP,sendSignupOtp,verifySignupOtp }}>
       {!isLoading && children}
     </UserContext.Provider>
   );

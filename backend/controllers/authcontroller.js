@@ -16,7 +16,7 @@ import {
 import { randomBytes } from "crypto";
 
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
-const dashPath = "http://localhost:5500/sample_frontend/dashboard.html";
+const dashPath = "http://localhost:5500/";
 
 export const oAuthCallback = async (req, res) => {
   const user = req.user;
@@ -259,8 +259,8 @@ export const login = async (req, res) => {
 
     res.cookie("csrfToken", csrfToken, {
       httpOnly: false,
-      sameSite: "none",
-      secure: false,
+      sameSite: "lax",
+      secure: true,
       maxAge: 15 * 60 * 1000
     });
 
