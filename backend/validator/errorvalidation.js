@@ -1,5 +1,5 @@
-import { validationResult } from 'express-validator';
-import jsonRes from '../utils/response.js'
+import { validationResult } from "express-validator";
+import jsonRes from "../utils/response.js";
 
 const handleValidationError = (req, res, next) => {
   const errors = validationResult(req);
@@ -7,7 +7,7 @@ const handleValidationError = (req, res, next) => {
     const firstError = errors.array()[0];
     return jsonRes(res, 400, false, firstError.msg);
   }
-  next(); 
+  next();
 };
 
 export default handleValidationError;

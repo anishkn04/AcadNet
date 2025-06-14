@@ -85,9 +85,8 @@
 
                 if (response.status === 200) {            
                     showMessage('Signup successful! Redirecting to OTP verification...', false);
-                    setTimeout(() => {
-                         window.location.href = "./otp.html";
-                }, 1000);
+                    window.location.href = "./otp.html";
+            
                    
                 } else {
                     showMessage(data.message || 'Signup failed.', true);
