@@ -67,7 +67,7 @@ export const sessionChecker = async (req, res) => {
     const isSession = await sessionService(oldRefreshToken);
 
     if (isSession == true) {
-      return jsonRes(res, 200, false, "Ref Token is Valid");
+      return jsonRes(res, 200, true, "Ref Token is Valid");
     } else {
       return jsonRes(res, 401, false, "Session is invalid");
     }

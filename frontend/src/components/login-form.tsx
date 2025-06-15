@@ -9,7 +9,7 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, replace } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import apiClient from "@/lib/apiClient";
@@ -57,6 +57,7 @@ export function LoginForm({
         navigate(from, { replace: true });
       } else {
         setFormError('Login failed. Please check your credentials or try again.');
+        navigate('/otp-verification',{replace:true})
       }
     } catch (error) {
       setFormError('Could not connect to the server. Please try again.');
@@ -133,7 +134,7 @@ export function LoginForm({
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                <a href={(apiClient.defaults.baseURL ?? "") + "/github"}>
+                <a href={(apiClient.defaults.baseURL ?? "") + "auth/github"}>
                   <Button variant="outline" type="button" className="w-full">
                     <FontAwesomeIcon icon={faGithub} className="mr-2" />
                     Login with GitHub
