@@ -139,14 +139,14 @@ export const loginService = async (res, email, password) => {
       res.cookie("otpToken", otpToken, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
+        secure: true,
         maxAge: 60 * 60 * 1000
       });
 
       res.cookie("username", username, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
+        secure: true,
         maxAge: 60 * 60 * 1000
       });
 
