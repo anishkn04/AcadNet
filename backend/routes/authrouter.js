@@ -39,7 +39,7 @@ router.get(
   oAuthCallback
 );
 
-router.post("/checkSession", authMiddleware, csrfMiddleware, sessionChecker);
+router.post("/checkSession", authMiddleware, csrfMiddleware, addUser, sessionChecker);
 
 router.post(
   "/refresh-token",
