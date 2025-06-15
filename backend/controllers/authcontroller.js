@@ -30,15 +30,15 @@ export const oAuthCallback = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 15 * 60 * 1000
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: "Lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -51,22 +51,31 @@ export const oAuthCallback = async (req, res) => {
 
     return res.redirect(dashPath);
   } catch (err) {
-    console.error(err);
+    console.log(err);
     return res.redirect(indexPath);
   }
 };
 
 export const sessionChecker = async (req, res) => {
   try {
-    console.log("Hero");
+
     const oldRefreshToken = req.cookies.refreshToken;
-    console.log(oldRefreshToken)
+  
     if (!oldRefreshToken) {
       return jsonRes(res, 401, false, "No refresh token provided");
     }
-    const isSession = await sessionService(oldRefreshToken);
+    const {isSession,accessToken} = await sessionService(oldRefreshToken,req.user);
 
     if (isSession == true) {
+
+      res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+      maxAge: 15 * 60 * 1000
+    });
+
+    
       return jsonRes(res, 200, true, "Ref Token is Valid");
     } else {
       return jsonRes(res, 401, false, "Session is invalid");
@@ -110,7 +119,7 @@ export const refreshAccessToken = async (req, res) => {
 
     return jsonRes(res, 200, true, "Token refreshed");
   } catch (err) {
-    console.error(err);
+    console.log(err);
     return jsonRes(res, 403, false, err.message || "Refresh failed");
   }
 };
@@ -131,7 +140,7 @@ export const logoutCont = async (req, res) => {
 
     return jsonRes(res, 200, true, "Logged out successfully");
   } catch (err) {
-    console.error(err);
+    console.log(err);
     return jsonRes(res, 500, false, "Logout failed");
   }
 };
@@ -149,7 +158,7 @@ export const logoutAllCont = async (req, res) => {
 
     return jsonRes(res, 200, true, "Logged out from all sessions");
   } catch (err) {
-    console.error(err);
+    console.log(err);
     return jsonRes(res, 500, false, "Logout all failed");
   }
 };
@@ -168,8 +177,7 @@ export const signup = async (req, res) => {
 
     const otpToken = randomBytes(20).toString("hex");
 
-    console.log(otpToken)
-    console.log(username)
+  
 
     res.cookie("otpToken", otpToken, {
       httpOnly: true,
@@ -185,7 +193,7 @@ export const signup = async (req, res) => {
       maxAge: 60 * 60 * 1000
     });
 
-    console.log("Reached Here");
+
 
     return jsonRes(res, 200, true, "Success");
   } catch (err) {
@@ -199,14 +207,12 @@ export const signup = async (req, res) => {
 
 export const otpAuthGenerator = async (req, res) => {
   try {
-    console.log("S");
+
     const username = req.cookies.username;
     const otpToken = req.cookies.otpToken;
-    console.log(username);
-    console.log(otpToken);
+ 
     const { otp, email } = await otpGenerator(username, otpToken);
-    console.log("Check");
-    console.log(email);
+   
     await otpSender(otp, username, email);
     jsonRes(res, 200, true, "OTP Sent");
   } catch (err) {

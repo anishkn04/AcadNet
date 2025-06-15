@@ -8,6 +8,7 @@ import otpModel from "../models/otp.model.js";
 import throwWithCode from "../utils/errorthrow.js";
 import nodemailer from "nodemailer";
 import mailSender from "./otpmailservice.js";
+import { isSession } from "react-router-dom";
 
 export const loginOauth = async (user) => {
   try {
@@ -29,7 +30,7 @@ export const loginOauth = async (user) => {
   }
 };
 
-export const sessionService = async (oldRefreshToken) => {
+export const sessionService = async (oldRefreshToken,user) => {
   try {
     let decoded;
 
@@ -40,7 +41,8 @@ export const sessionService = async (oldRefreshToken) => {
       throw new Error("Refresh token revoked or not found");
     }
 
-    return true;
+    const accessToken = generateAccessToken({ id: user._id, role: user.role })
+    return {isSession: true , accessToken};
   } catch {
     throw new Error("Invalid refresh token");
   }
@@ -329,7 +331,7 @@ export const changePasswordService = async (
 
     const user = await User.findOne({ username });
 
-    console.log(user.authProvider);
+   
 
     if (user.authProvider === "github") {
       throwWithCode("Not for OAuth Users.", 404);

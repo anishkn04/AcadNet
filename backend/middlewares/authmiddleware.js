@@ -4,7 +4,7 @@ import { verifyAccessToken } from "../utils/utils.js";
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.accessToken;
-  console.log(token)
+ 
 
   if (!token) {
     return jsonRes(res, 401, false, "Unauthorized Access");
