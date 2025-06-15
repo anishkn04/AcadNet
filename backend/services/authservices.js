@@ -187,8 +187,8 @@ export const otpGenerator = async (username, otpToken) => {
     const OTP_COOLDOWN_PERIOD_MS = 1000 * 60 * 1;
     const OTP_TOKEN_EXPIRY = 7;
 
-    if (!username) {
-      throwWithCode("Username unreachable", 401);
+    if (!username || !otpToken) {
+      throwWithCode(" unreachable", 401);
     }
 
     const user = await User.findOne({ username });
@@ -272,6 +272,10 @@ export const resetOTPgenerator = async (email) => {
     const OTP_COOLDOWN_PERIOD_MS = 1000 * 60 * 1;
     const OTP_TOKEN_EXPIRY = 5;
     const user = await User.findOne({ email });
+
+    if (!email) {
+      throwWithCode(" unreachable", 401);
+    }
 
     if (!user) {
       throwWithCode("No User Found", 401);
