@@ -12,8 +12,8 @@ import { Label } from "@/components/ui/label";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useAuth } from "@/hooks/userContext";
-// import { toast } from "react-toastify";
+import { useAuth } from "@/hooks/userContext"; // Import useAuth
+// import { toast } from "react-toastify"; // Keep toast for direct messages not from context
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -43,9 +43,11 @@ const validation = Yup.object().shape({
 });
 
 export default function Register() {
-  const { registerUser } = useAuth();
+  // Destructure sendSignupOtp from useAuth
+  const { registerUser, sendSignupOtp } = useAuth();
   const navigate = useNavigate();
   const [formMessage, setFormMessage] = useState({ text: '', type: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button
 
   const {
     register,
@@ -70,28 +72,42 @@ export default function Register() {
 
   const handleRegister = async (form: RegisterFormsInputs) => {
     setFormMessage({ text: '', type: '' });
+    setIsSubmitting(true);
 
     if (!isValid) {
       setFormMessage({ text: 'Please fix the errors before submitting.', type: 'error' });
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const success = await registerUser(form.email, form.userName, form.password);
+      const registerSuccess = await registerUser(form.email, form.userName, form.password);
 
-      if (success) {
-        setFormMessage({ text: 'Signup successful! Redirecting to login...', type: 'success' });
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+      if (registerSuccess) {
+        // After successful registration, trigger OTP generation
+        const otpSendSuccess = await sendSignupOtp(); // Call the context method
+        if (otpSendSuccess) {
+          setFormMessage({ text: 'Signup successful! Redirecting to OTP verification...', type: 'success' });
+          setTimeout(() => {
+            navigate("/otp-verification"); // Navigate to the new OTP verification page
+          }, 2000);
+        } else {
+          // If OTP sending failed, inform user (toast is already handled by context)
+          setFormMessage({ text: 'Signup successful, but failed to send OTP. Please try resending on next page.', type: 'error' });
+          setTimeout(() => {
+            navigate("/otp-verification");
+          }, 2000);
+        }
       } else {
-        // The toast.error from registerUser in userContext will handle the specific error.
-        // This formMessage is a generic fallback.
+        // Error toast handled by registerUser in context
         setFormMessage({ text: 'Registration failed. Please try again.', type: 'error' });
       }
     } catch (error) {
+      // Network errors or unhandled errors
       setFormMessage({ text: 'Could not connect to the server.', type: 'error' });
       console.error("Registration request failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -196,7 +212,7 @@ export default function Register() {
 
             </div>
             <CardFooter className="flex-col gap-2 mt-6 p-0">
-              <Button type="submit" className="w-full" disabled={!isValid}>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 Sign Up
               </Button>
             </CardFooter>

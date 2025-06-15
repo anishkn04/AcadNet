@@ -8,6 +8,8 @@ import JoinGroup from "../pages/JoinGroup";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
+import OtpVerificationPage from "@/pages/OtpVerificationPage";
 export const router = createBrowserRouter([
     {
       path: "/",
@@ -30,4 +32,12 @@ export const router = createBrowserRouter([
       path: "/register",
       element: <Register />,
     },
+    {
+      path:'/forgot',
+      element: <ForgotPasswordPage/>
+    },
+    {
+      path:'/otp-verification',
+      element:<OtpVerificationPage/>
+    }
   ]);

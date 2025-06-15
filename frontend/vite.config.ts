@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: parseInt(env.FRONTEND_PORT) || 6000, // Default to 5173 if VITE_PORT is not set
+      port: parseInt(env.FRONTEND_PORT) || 6000, 
     },
   }
 })
