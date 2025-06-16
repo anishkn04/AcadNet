@@ -88,15 +88,13 @@ export default function Register() {
         const otpSendSuccess = await sendSignupOtp(); // Call the context method
         if (otpSendSuccess) {
           setFormMessage({ text: 'Signup successful! Redirecting to OTP verification...', type: 'success' });
-          setTimeout(() => {
-            navigate("/otp-verification"); // Navigate to the new OTP verification page
-          }, 2000);
+          navigate("/otp-verification")
         } else {
           // If OTP sending failed, inform user (toast is already handled by context)
           setFormMessage({ text: 'Signup successful, but failed to send OTP. Please try resending on next page.', type: 'error' });
-          setTimeout(() => {
-            navigate("/otp-verification");
-          }, 2000);
+          // setTimeout(() => {
+          //   navigate("/otp-verification");
+          // }, 2000);
         }
       } else {
         // Error toast handled by registerUser in context

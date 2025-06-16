@@ -53,7 +53,7 @@ const OtpVerificationPage: React.FC = () => {
   }, []);
 
   // Effect to request OTP on page load
-  useEffect(() => {
+    useEffect(() => {
     const requestInitialOtp = async () => {
       setFormMessage({ text: 'Sending OTP...', type: 'info' });
       setIsSubmitting(true);
@@ -61,24 +61,29 @@ const OtpVerificationPage: React.FC = () => {
         const success = await sendSignupOtp();
         if (success) {
           setFormMessage({ text: 'A new OTP has been sent to your email.', type: 'success' });
+          // Do NOT start a cooldown here on initial send.
+          // The cooldown is for subsequent resend attempts.
         } else {
-          // If `sendSignupOtp` returns false, the error and its message would have been
-          // handled (toasted) within `useContext.tsx`. We set a generic error message here.
+          // If `sendSignupOtp` returns false, it means an error occurred
+          // and was likely toasted by the context.
+          // Set a generic error message if context didn't provide specific message.
           setFormMessage({ text: 'Failed to send initial OTP. Please try resending.', type: 'error' });
         }
       } catch (e: any) {
-         // This catch block handles errors thrown from sendSignupOtp that were re-thrown
-         // (e.g., Axios 429 errors from backend, or other unhandled network errors).
-         const errorMsg = (error: any) => axios.isAxiosError(error) && error.response?.data?.message ? error.response.data.message : '';
-         const match = errorMsg(e).match(/(\d+) seconds/);
-         if (axios.isAxiosError(e) && e.response?.status === 429 && match && match[1]) {
-            const timeLeft = parseInt(match[1], 10);
-            startCooldown(timeLeft);
-            setFormMessage({ text: `Please wait ${timeLeft} seconds before requesting another OTP.`, type: 'error' });
-         } else {
-            setFormMessage({ text: 'Failed to send initial OTP. An unexpected error occurred.', type: 'error' });
-            console.error("Initial OTP request failed unexpectedly:", e);
-         }
+        // This catch block handles errors re-thrown from sendSignupOtp (e.g., Axios errors)
+        // For initial OTP, a 429 here means the backend already has a cooldown for this user.
+        // We still display the cooldown message to inform the user.
+        const errorMsg = (error: any) => axios.isAxiosError(error) && error.response?.data?.message ? error.response.data.message : 'An unexpected error occurred.';
+        const match = errorMsg(e).match(/(\d+) seconds/);
+
+        if (axios.isAxiosError(e) && e.response?.status === 429 && match && match[1]) {
+          const timeLeft = parseInt(match[1], 10);
+          startCooldown(timeLeft);
+          setFormMessage({ text: `Due to previous attempts, please wait ${timeLeft} seconds before requesting another OTP.`, type: 'error' });
+        } else {
+          setFormMessage({ text: `Failed to send initial OTP: ${errorMsg(e)}. Please try again.`, type: 'error' });
+          console.error("Initial OTP request failed unexpectedly:", e);
+        }
       } finally {
         setIsSubmitting(false);
       }

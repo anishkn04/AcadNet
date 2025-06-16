@@ -226,14 +226,15 @@ export const UserProvider = ({ children }: Props) => {
         toast.error(data.message || "Failed to send OTP.");
         return false;
       }
-    } catch (e) {
+    } catch (e: any) {
       if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
         toast.error(e.response.data.message);
       } else {
         toast.error("Could not connect to the server or an unknown error occurred while sending OTP.");
       }
+      // Re-throw the error so OtpVerificationPage can handle specific error types (like 429)
+      throw e;
     }
-    return false;
   };
 
   const verifySignupOtp = async (otp: string): Promise<boolean> => {
