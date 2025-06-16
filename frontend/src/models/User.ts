@@ -7,3 +7,11 @@ export type UserProfile = {
 export type AuthResponse = {
   user: UserProfile;
 }
+export type RegisterFormsInputs = {
+  email: string;
+  userName: string;
+  password: string;
+};
+export type OtpFormInput ={
+  otp:string
+}

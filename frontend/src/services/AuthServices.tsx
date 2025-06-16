@@ -1,5 +1,5 @@
 import apiClient from "@/lib/apiClient";
-import { handleError } from "@/helper/ErrorHandler";
+
 ;
 
 export const loginAPI = async (email: string, password: string) => {
@@ -10,7 +10,6 @@ export const loginAPI = async (email: string, password: string) => {
     });
     return { data: response.data, status: response.status };
   } catch (error) {
-    handleError(error);
     throw error;
   }
 }
@@ -24,7 +23,6 @@ export const registerAPI = async (email: string, username: string, password: str
     });
     return data;
   } catch (error) {
-    handleError(error);
     throw error;
   }
 }
@@ -33,7 +31,6 @@ export const logoutAPI = async () => {
   try {
     await apiClient.post('auth/logout');
   } catch (error) {
-    handleError(error);
     throw error;
   }
 }
@@ -43,7 +40,6 @@ export const checkSessionAPI = async () => {
     const response = await apiClient.post<any>('auth/checkSession');
     return { data: response.data, status: response.status };
   } catch (error) {
-    handleError(error);
     throw error;
   }
 };
@@ -52,7 +48,6 @@ export const authorizedPageAPI = async () =>{
     const response = await apiClient.get<any>('auth/authorizedPage');
     return {data: response.data, status:response.status};
   }catch(error){
-    handleError(error);
     throw error;
   }
 }
@@ -61,8 +56,7 @@ export const refresTokenAPI = async ()=>{
     const refreshRes = await apiClient.post<any>('auth/refresh-token');
     return {data:refreshRes.data, status:refreshRes.status}
   }catch(error){
-    handleError(error);
-    throw error;
+    throw error
   }
 }
 
@@ -71,7 +65,7 @@ export const forgotPasswordAPI = async (email :string) =>{
     const response = await apiClient.post<any>('auth/password-reset',{email});
     return {data:response.data, status:response.status}
   }catch(error){
-    handleError(error);throw error;
+    throw error;
   }
 }
 
@@ -81,11 +75,9 @@ export const verifyOTPAndResetPasswordAPI = async (otp: string, newPassword: str
     if (verifyResponse.status !== 200 || verifyResponse.data.success !== true){
       throw new Error(verifyResponse.data.message || "OTP verification failed")
     }
-    
     const changePassword = await apiClient.post<any>('auth/change-password',{newPassword})
     return {data:changePassword.data, status: changePassword.status};
   }catch(error){
-    handleError(error);
     throw error;
   }
 
@@ -96,7 +88,6 @@ export const sendSignupOtpAPI = async () => {
         const response = await apiClient.post<any>('auth/otp-auth', {});
         return { data: response.data, status: response.status };
     } catch (error) {
-        handleError(error);
         throw error;
     }
 };
@@ -107,7 +98,6 @@ export const verifySignupOtpAPI = async (otp: string) => {
         const response = await apiClient.post<any>('auth/otp-verify', { otp });
         return { data: response.data, status: response.status };
     } catch (error) {
-        handleError(error);
         throw error;
     }
 };
