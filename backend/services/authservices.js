@@ -8,6 +8,7 @@ import otpModel from "../models/otp.model.js";
 import throwWithCode from "../utils/errorthrow.js";
 import nodemailer from "nodemailer";
 import mailSender from "./otpmailservice.js";
+import { isSession } from "react-router-dom";
 
 export const loginOauth = async (user) => {
   try {
@@ -29,7 +30,7 @@ export const loginOauth = async (user) => {
   }
 };
 
-export const sessionService = async (oldRefreshToken) => {
+export const sessionService = async (oldRefreshToken,user) => {
   try {
     let decoded;
 
@@ -40,7 +41,8 @@ export const sessionService = async (oldRefreshToken) => {
       throw new Error("Refresh token revoked or not found");
     }
 
-    return true;
+    const accessToken = generateAccessToken({ id: user._id, role: user.role })
+    return {isSession: true , accessToken};
   } catch {
     throw new Error("Invalid refresh token");
   }
@@ -139,14 +141,14 @@ export const loginService = async (res, email, password) => {
       res.cookie("otpToken", otpToken, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
+        secure: true,
         maxAge: 60 * 60 * 1000
       });
 
       res.cookie("username", username, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: false,
+        secure: true,
         maxAge: 60 * 60 * 1000
       });
 
@@ -185,8 +187,8 @@ export const otpGenerator = async (username, otpToken) => {
     const OTP_COOLDOWN_PERIOD_MS = 1000 * 60 * 1;
     const OTP_TOKEN_EXPIRY = 7;
 
-    if (!username) {
-      throwWithCode("Username unreachable", 401);
+    if (!username || !otpToken) {
+      throwWithCode(" unreachable", 401);
     }
 
     const user = await User.findOne({ username });
@@ -271,6 +273,10 @@ export const resetOTPgenerator = async (email) => {
     const OTP_TOKEN_EXPIRY = 5;
     const user = await User.findOne({ email });
 
+    if (!email) {
+      throwWithCode(" unreachable", 401);
+    }
+
     if (!user) {
       throwWithCode("No User Found", 401);
     }
@@ -329,7 +335,7 @@ export const changePasswordService = async (
 
     const user = await User.findOne({ username });
 
-    console.log(user.authProvider);
+   
 
     if (user.authProvider === "github") {
       throwWithCode("Not for OAuth Users.", 404);

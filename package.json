@@ -1,7 +1,7 @@
 {
-  "name": "kahajaane",
-  "version": "1.0.0",
-  "description": "guide to visit new places while also helping new settlers",
+  "name": "AcadNet",
+  "version": "0.0.1",
+  "description": "Academy Software",
   "main": "frontend/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

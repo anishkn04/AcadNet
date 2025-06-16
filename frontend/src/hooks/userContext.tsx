@@ -32,8 +32,8 @@ type Props = { children: React.ReactNode };
 
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
-const SESSION_CHECK_INTERVAL = 20 * 1000;
-const TOKEN_REFRESH_INTERVAL = 10 * 1000;
+const SESSION_CHECK_INTERVAL = 10 * 1000;
+const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 
 export const UserProvider = ({ children }: Props) => {
   const [user, setUser] = useState<UserProfile | null>(null);
