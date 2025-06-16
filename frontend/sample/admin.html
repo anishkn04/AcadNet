@@ -110,89 +110,7 @@
                                 </div>
                             </div>
                         </section>
-                        <section>
-                            <h2 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight pb-4">Reports
-                            </h2>
-                            <div
-                                class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm @container">
-                                <table class="min-w-full divide-y divide-slate-200">
-                                    <thead class="bg-slate-50">
-                                        <tr>
-                                            <th class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-120 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[25%]"
-                                                scope="col">
-                                                User
-                                            </th>
-                                            <th class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-240 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[30%]"
-                                                scope="col">
-                                                Report Reason
-                                            </th>
-                                            <th class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-360 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[25%]"
-                                                scope="col">
-                                                Reported By
-                                            </th>
-                                            <th class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-480 px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[20%]"
-                                                scope="col">
-                                                Date
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-200 bg-white">
-                                        <tr>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-120 whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
-                                                Bhushan Thapa</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-240 whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                                                Inappropriate Content</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-360 whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
-                                                Sujal Thapa</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-480 whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                                                2024-07-26</td>
-                                        </tr>
-                                        <tr>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-120 whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
-                                                Manish Raj Upreti</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-240 whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                                                Harassment</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-360 whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
-                                                Binod Bist</td>
-                                            <td
-                                                class="table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-480 whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                                                2024-07-25</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <style>
-                                @container (max-width: 640px) {
 
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-360,
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-480 {
-                                        display: none;
-                                    }
-
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-120,
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-240 {
-                                        width: 50%;
-                                    }
-                                }
-
-                                @container (max-width: 480px) {
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-240 {
-                                        display: none;
-                                    }
-
-                                    .table-7f1a6032-c2e5-4eda-bc73-c90ec5ee2fe8-column-120 {
-                                        width: 100%;
-                                    }
-                                }
-                            </style>
-                        </section>
                         <section>
                             <div class="flex justify-between items-center pb-4">
                                 <h2 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight">Members
@@ -360,6 +278,142 @@
                                 }
                             </style>
                         </section>
+                        <!-- Group Admin -->
+                        <section>
+                        <h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Resource Reports</h3>
+                        <div class="mb-4">
+                        <label class="flex flex-col w-full">
+                        <div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+                        <div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+                        <span class="material-icons-outlined text-xl"> search </span>
+                        </div>
+                        <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search resources..." value=""/>
+                        </div>
+                        </label>
+                        </div>
+                        <div class="@container">
+                        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+                        <table class="w-full">
+                        <thead class="bg-slate-50">
+                        <tr>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Resource Name</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploader</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded Date</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                        <tr>
+                        <td class="px-4 py-3 text-slate-800 text-sm">Calculus Notes</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Ethan Harper</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">2023-08-15</td>
+                        <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Approved </span>
+                        </td>
+                        <td class="px-4 py-3 space-x-1">
+                        <button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="material-icons-outlined text-lg">visibility</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <span class="material-icons-outlined text-lg">delete</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <span class="material-icons-outlined text-lg">report</span>
+                        </button>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="px-4 py-3 text-slate-800 text-sm">Science Presentation</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Noah Carter</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">2023-08-05</td>
+                        <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"> Pending </span>
+                        </td>
+                        <td class="px-4 py-3 space-x-1">
+                        <button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="material-icons-outlined text-lg">visibility</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <span class="material-icons-outlined text-lg">delete</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <span class="material-icons-outlined text-lg">report</span>
+                        </button>
+                        </td>
+                        </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </div>
+                        </section>
+                        <section>
+                        <h3 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Complaint &amp; Report Center</h3>
+                        <div class="mb-4">
+                        <label class="flex flex-col w-full">
+                        <div class="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
+                        <div class="text-slate-500 flex bg-slate-50 items-center justify-center pl-3 pr-2 rounded-l-lg border-r border-slate-300">
+                        <span class="material-icons-outlined text-xl"> search </span>
+                        </div>
+                        <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" placeholder="Search reports..." value=""/>
+                        </div>
+                        </label>
+                        </div>
+                        <div class="@container">
+                        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+                        <table class="w-full">
+                        <thead class="bg-slate-50">
+                        <tr>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reported User</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reporting User</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Reason</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Date</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
+                        <th class="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                        <tr>
+                        <td class="px-4 py-3 text-slate-800 text-sm">Ethan Harper</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Olivia Bennett</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Inappropriate Content</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">2023-08-20</td>
+                        <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"> Pending </span>
+                        </td>
+                        <td class="px-4 py-3 space-x-1">
+                        <button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="material-icons-outlined text-lg">visibility</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <span class="material-icons-outlined text-lg">task_alt</span>
+                        </button>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="px-4 py-3 text-slate-800 text-sm">Noah Carter</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Ava Morgan</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">Harassment</td>
+                        <td class="px-4 py-3 text-slate-500 text-sm">2023-08-18</td>
+                        <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"> Resolved </span>
+                        </td>
+                        <td class="px-4 py-3 space-x-1">
+                        <button class="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="material-icons-outlined text-lg">visibility</span>
+                        </button>
+                        <button class="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <span class="material-icons-outlined text-lg">task_alt</span>
+                        </button>
+                        </td>
+                        </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </div>
+                        </section>
+                        
+                        <!-- Group Admin -->
                         <section>
                             <h2 class="text-slate-800 text-xl font-semibold leading-tight tracking-tight pb-4">Group
                                 Details</h2>

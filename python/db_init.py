@@ -23,7 +23,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE study_groups (
-    group_id SERIAL PRIMARY KEY,
+    course_code VARCHAR(15) PRIMARY KEY,
     group_name VARCHAR(150) NOT NULL,
     description TEXT,
     creator_user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
@@ -39,6 +39,9 @@ CREATE TABLE group_members (
     member_role VARCHAR(20) DEFAULT 'member', -- values: member, moderator, creator
     UNIQUE(user_id, group_id)
 );
+
+
+# Add syllabus id to relate with materials
 
 CREATE TABLE materials (
     material_id SERIAL PRIMARY KEY,
