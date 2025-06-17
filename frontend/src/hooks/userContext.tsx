@@ -70,12 +70,11 @@ export const UserProvider = ({ children }: Props) => {
     tokenRefreshIntervalRef.current = setInterval(async () => {
       try {
         const { data, status } = await refresTokenAPI();
-        if (status === 200 && data.success === true) {
-        } else {
+        if (status !== 200 && !data.success === true) {
           setUser(null);
           toast.info("Could not refresh session. Please log in again.");
         }
-      } catch (error) {
+      } catch{
         setUser(null);
         toast.info("Could not refresh session. Please log in again.");
       }
@@ -104,7 +103,7 @@ export const UserProvider = ({ children }: Props) => {
         } else {
           setUser(null);
         }
-      } catch (error) {
+      } catch {
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -171,7 +170,7 @@ export const UserProvider = ({ children }: Props) => {
   const logout = async () => {
     try {
       await logoutAPI();
-    } catch (error) {
+    } catch{
       toast.error("Logout failed. Please try again.");
     } finally {
       setUser(null);

@@ -1,8 +1,7 @@
 import passport from "passport";
 import { Strategy as GithubStrategy } from "passport-github2";
 import User from "../models/user.model.js";
-import { couldStartTrivia } from "typescript";
-import { faL } from "@fortawesome/free-solid-svg-icons";
+
 
 // Helper to fetch verified primary email from GitHub API
 const getGitHubEmail = async (accessToken) => {
