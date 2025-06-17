@@ -1,0 +1,260 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <link as="style"
+        href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+        onload="this.rel='stylesheet'" rel="stylesheet" />
+    <title>Stitch Design</title>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style type="text/tailwindcss">
+        :root {
+            --primary-color: #3f7fbf;
+            --primary-text-color: #101418;
+            --secondary-text-color: #5c738a;
+            --background-color: #f8fafc;--accent-color: #eaedf1;
+            --border-color: #dde2e7;}
+          body {
+            font-family: 'Inter', "Noto Sans", sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-text-color);
+          }
+          .form-input {
+            border-color: var(--border-color);
+            background-color: white;transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+          }
+          .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(63, 127, 191, 0.2);outline: none;
+          }
+          .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+          }
+          .btn-secondary {
+            background-color: var(--accent-color);
+            color: var(--primary-text-color);
+          }
+          .btn-primary:hover {
+            background-color: #356b9f;}
+          .btn-secondary:hover {
+            background-color: #dde2e7;}
+          .nav-link {
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            border-radius: 9999px;}
+          .nav-link:hover {
+            background-color: var(--accent-color);
+          }
+          .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+          }
+          .nav-link.active svg {
+            color: white;
+          }
+          .settings-card {
+            background-color: white;
+            border-radius: 12px;box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);padding: 24px;
+          }
+        </style>
+</head>
+
+<body>
+    <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <div class="flex flex-1">
+                <aside class="w-72 bg-white shadow-sm p-6 border-r border-[var(--border-color)] flex-shrink-0">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-[var(--primary-color)]"
+                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBF303jjA1H_taXGPNRuzfVeXnEggYfkrH1BfiK3dTaCiTtqAaBdpYQ2FZouwuEafrYzqvSlI-3xo-9XQQ2Gg8GXo39AW5D510YSCi6441dBzFay0jyTX4JaqLe5Fy_9oI-TzNBgcy1dEk9lknox_V2T_nWt9yN3stiinUFBHC6diJp1akX9jQRUfZh0DDbQoVHPIxkuBUEkuZF4xPnNaBSR2Mi4GJqJcFIvkaghvwlg1qpg1YGJVHPdwV240itoLGX6iOBNjqh5IuK");'>
+                        </div>
+                        <h1 class="text-[var(--primary-text-color)] text-lg font-semibold">Sophia Bennett</h1>
+                    </div>
+                    <nav class="flex flex-col gap-2">
+                        <a class="nav-link flex items-center gap-3 px-4 py-3 text-[var(--primary-text-color)]" href="#">
+                            <svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-medium">Home</span>
+                        </a>
+                        <a class="nav-link flex items-center gap-3 px-4 py-3 text-[var(--primary-text-color)]" href="#">
+                            <svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-medium">My Profile</span>
+                        </a>
+                        <a class="nav-link flex items-center gap-3 px-4 py-3 text-[var(--primary-text-color)]" href="#">
+                            <svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-medium">Notifications</span>
+                        </a>
+                        <a class="nav-link active flex items-center gap-3 px-4 py-3" href="#">
+                            <svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-medium">Settings</span>
+                        </a>
+                        <a class="nav-link flex items-center gap-3 px-4 py-3 text-[var(--primary-text-color)]" href="#">
+                            <svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z">
+                                </path>
+                            </svg>
+                            <span class="text-sm font-medium">Help</span>
+                        </a>
+                    </nav>
+                </aside>
+                <main class="flex-1 p-8 overflow-y-auto">
+                    <header class="mb-8">
+                        <h1 class="text-[var(--primary-text-color)] text-3xl font-bold tracking-tight">Settings</h1>
+                    </header>
+                    <div class="space-y-10">
+                        <section class="settings-card">
+                            <h2 class="text-xl font-semibold text-[var(--primary-text-color)] mb-6">Personal Information
+                            </h2>
+                            <form class="space-y-6 max-w-xl">
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--primary-text-color)] mb-1.5"
+                                        for="fullName">Full Name</label>
+                                    <input class="form-input w-full rounded-lg p-3 text-sm" id="fullName"
+                                        placeholder="Enter your full name" type="text" value="Sophia Bennett" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--primary-text-color)] mb-1.5"
+                                        for="bio">Bio</label>
+                                    <textarea class="form-input w-full rounded-lg p-3 text-sm min-h-[100px]" id="bio"
+                                        placeholder="Tell us a little about yourself"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--primary-text-color)] mb-1.5"
+                                        for="location">Location</label>
+                                    <input class="form-input w-full rounded-lg p-3 text-sm" id="location"
+                                        placeholder="e.g., San Francisco, CA" type="text" />
+                                </div>
+                            </form>
+                        </section>
+                        <section class="settings-card">
+                            <h2 class="text-xl font-semibold text-[var(--primary-text-color)] mb-6">Notification
+                                Preferences</h2>
+                            <div class="space-y-5">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-[var(--primary-text-color)]">Message
+                                            Notifications</p>
+                                        <p class="text-xs text-[var(--secondary-text-color)]">Receive notifications for
+                                            new messages and group activity.</p>
+                                    </div>
+                                    <label class="relative inline-flex cursor-pointer items-center">
+                                        <input checked="" class="peer sr-only" type="checkbox" value="" />
+                                        <div
+                                            class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[var(--primary-color)] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary-color)]/50 dark:border-gray-600 dark:bg-gray-700">
+                                        </div>
+                                    </label>
+                                </div>
+                                <hr class="border-[var(--border-color)]" />
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-[var(--primary-text-color)]">Mentions &amp;
+                                            Replies</p>
+                                        <p class="text-xs text-[var(--secondary-text-color)]">Get notified when someone
+                                            mentions you or replies.</p>
+                                    </div>
+                                    <label class="relative inline-flex cursor-pointer items-center">
+                                        <input class="peer sr-only" type="checkbox" value="" />
+                                        <div
+                                            class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[var(--primary-color)] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary-color)]/50 dark:border-gray-600 dark:bg-gray-700">
+                                        </div>
+                                    </label>
+                                </div>
+                                <hr class="border-[var(--border-color)]" />
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-[var(--primary-text-color)]">Platform Updates
+                                        </p>
+                                        <p class="text-xs text-[var(--secondary-text-color)]">Receive updates on new
+                                            features and announcements.</p>
+                                    </div>
+                                    <label class="relative inline-flex cursor-pointer items-center">
+                                        <input checked="" class="peer sr-only" type="checkbox" value="" />
+                                        <div
+                                            class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[var(--primary-color)] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--primary-color)]/50 dark:border-gray-600 dark:bg-gray-700">
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="settings-card">
+                            <h2 class="text-xl font-semibold text-[var(--primary-text-color)] mb-6">Privacy Settings
+                            </h2>
+                            <div class="space-y-5">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-[var(--primary-text-color)]">Profile
+                                            Visibility</p>
+                                        <p class="text-xs text-[var(--secondary-text-color)]">Control who can view your
+                                            profile and activity.</p>
+                                    </div>
+                                    <select
+                                        class="form-select rounded-lg border-[var(--border-color)] bg-white text-sm p-2.5 focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)]">
+                                        <option>Public</option>
+                                        <option>Connections Only</option>
+                                        <option>Private</option>
+                                    </select>
+                                </div>
+                                <hr class="border-[var(--border-color)]" />
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-[var(--primary-text-color)]">Blocked Users
+                                        </p>
+                                        <p class="text-xs text-[var(--secondary-text-color)]">Manage your blocked users.
+                                        </p>
+                                    </div>
+                                    <button
+                                        class="btn-secondary rounded-lg h-9 px-4 text-sm font-medium">Manage</button>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="settings-card">
+                            <h2 class="text-xl font-semibold text-[var(--primary-text-color)] mb-6">Account Information
+                            </h2>
+                            <form class="space-y-6 max-w-xl">
+                                <div>
+                                    <label class="block text-sm font-medium text-[var(--primary-text-color)] mb-1.5"
+                                        for="email">Email Address</label>
+                                    <input class="form-input w-full rounded-lg p-3 text-sm" id="email"
+                                        placeholder="sophia.bennett@example.com" type="email"
+                                        value="sophia.bennett@example.com" />
+                                </div>
+                                <div>
+                                    <button class="btn-secondary rounded-lg h-10 px-5 text-sm font-medium"
+                                        type="button">Change Password</button>
+                                </div>
+                            </form>
+                        </section>
+                        <div class="pt-6 flex justify-end">
+                            <button class="btn-primary rounded-lg h-11 px-6 text-sm font-semibold">Save Changes</button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

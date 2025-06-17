@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,19 +16,19 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext"; // Import useAuth
 // import { toast } from "react-toastify"; // Keep toast for direct messages not from context
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import type { RegisterFormsInputs } from "@/models/User";
+import { useState} from "react";
+import PasswordStrengthMeter from "@/components/own_components/PasswordStrengthMeter";
 
-type RegisterFormsInputs = {
-  email: string;
-  userName: string;
-  password: string;
-};
+
+
 
 // Define Yup validation schema for the registration form with detailed password rules
 const validation = Yup.object().shape({
   email: Yup.string().email("Please enter a valid email address.").required("Email is required"),
   userName: Yup.string()
     .required("Username is required")
+    .min(3,"Username must be at least 3 charaters.")
     .max(15, "Username must be at most 15 characters long.")
     .matches(
       /^[A-Za-z][A-Za-z0-9_]*$/,
@@ -35,190 +36,167 @@ const validation = Yup.object().shape({
     ),
   password: Yup.string()
     .required("Password is required")
-    .min(8, "At least 8 characters long")
-    .matches(/[a-z]/, "One lowercase letter")
-    .matches(/[A-Z]/, "One uppercase letter")
-    .matches(/\d/, "One number")
-    .matches(/[^A-Za-z0-9]/, "One special character"),
+    // .min(8, "At least 8 characters long")
+    // .matches(/[a-z]/, "One lowercase letter")
+    // .matches(/[A-Z]/, "One uppercase letter")
+    // .matches(/\d/, "One number")
+    // .matches(/[^A-Za-z0-9]/, "One special character"),
+
+   
 });
+
 
 export default function Register() {
   // Destructure sendSignupOtp from useAuth
-  const { registerUser, sendSignupOtp } = useAuth();
+  const { registerUser ,sendSignupOtp} = useAuth();
   const navigate = useNavigate();
   const [formMessage, setFormMessage] = useState({ text: '', type: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button
-
+  // const [isSubmitting, setIsSubmitting] = useState(false); // To disable button
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    reset,
+    formState: { errors },
   } = useForm<RegisterFormsInputs>({
     resolver: yupResolver(validation),
     mode: "onChange",
   });
 
   const password = watch("password");
-
+ 
   // Calculate the status of each password requirement for visual feedback
-  const passwordReqs = {
-    length: password ? password.length >= 8 : false,
-    lowercase: password ? /[a-z]/.test(password) : false,
-    uppercase: password ? /[A-Z]/.test(password) : false,
-    number: password ? /\d/.test(password) : false,
-    special: password ? /[^A-Za-z0-9]/.test(password) : false,
-  };
+  // const passwordReqs = {
+  //   length: password ? password.length >= 8 : false,
+  //   lowercase: password ? /[a-z]/.test(password) : false,
+  //   uppercase: password ? /[A-Z]/.test(password) : false,
+  //   number: password ? /\d/.test(password) : false,
+  //   special: password ? /[^A-Za-z0-9]/.test(password) : false,
+  // };
 
-  const handleRegister = async (form: RegisterFormsInputs) => {
-    setFormMessage({ text: '', type: '' });
-    setIsSubmitting(true);
 
-    if (!isValid) {
-      setFormMessage({ text: 'Please fix the errors before submitting.', type: 'error' });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      const registerSuccess = await registerUser(form.email, form.userName, form.password);
-
-      if (registerSuccess) {
-        // After successful registration, trigger OTP generation
-        const otpSendSuccess = await sendSignupOtp(); // Call the context method
-        if (otpSendSuccess) {
-          setFormMessage({ text: 'Signup successful! Redirecting to OTP verification...', type: 'success' });
-          setTimeout(() => {
-            navigate("/otp-verification"); // Navigate to the new OTP verification page
-          }, 2000);
-        } else {
-          // If OTP sending failed, inform user (toast is already handled by context)
-          setFormMessage({ text: 'Signup successful, but failed to send OTP. Please try resending on next page.', type: 'error' });
-          setTimeout(() => {
-            navigate("/otp-verification");
-          }, 2000);
-        }
-      } else {
-        // Error toast handled by registerUser in context
-        setFormMessage({ text: 'Registration failed. Please try again.', type: 'error' });
+  const triggerOtp = async () =>{
+    try{
+      const sentsucces = await sendSignupOtp();
+      if(sentsucces){
+        setFormMessage({text:"OTP has been sent to your mail",type:"Success"})
+       setTimeout(() => {
+          navigate('/otpverification', { replace: true });
+        }, 1000);
+      
+      }else{
+        setFormMessage({text:"Failed to send OTP. Please try again later!",type:"error"})
       }
-    } catch (error) {
-      // Network errors or unhandled errors
-      setFormMessage({ text: 'Could not connect to the server.', type: 'error' });
-      console.error("Registration request failed:", error);
-    } finally {
-      setIsSubmitting(false);
+    }catch(e){
+      console.log(e)
     }
-  };
+
+  }
+  const handleRegister = async ({email,userName, password}:RegisterFormsInputs)=>{
+    console.log("has triggered")
+     try{
+       const registerRes = await registerUser(email,userName,password)
+       if (registerRes){
+          console.log("registered")
+          reset()
+          triggerOtp()
+       }
+     }catch(e){
+      console.log(e)
+     }
+  }
+
+ 
 
   return (
     <div className="flex bg-muted justify-center h-svh items-center">
-      <Card className="w-full max-w-xl">
-        <CardHeader>
-          <CardTitle>Create an Account</CardTitle>
-          <CardDescription>
-            Join us today!
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(handleRegister)}>
-            <div className="flex flex-col gap-6">
-
-              {formMessage.text && (
-                <div
-                  className={`p-3 text-sm rounded-lg ${
-                    formMessage.type === 'success'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                  role="alert"
-                >
-                  {formMessage.text}
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.5 }} className="max-w-md w-full bg-blue-800/20  backdrop-blur-5xl rounded-2xl shadow-xl 
+			overflow-hidden">
+      
+          <Card className="w-full max-w-xl">
+          <CardHeader>
+            <CardTitle>Create an Account</CardTitle>
+            <CardDescription>
+              Join us today!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+      
+            <form onSubmit={handleSubmit(handleRegister)}>
+              <div className="flex flex-col gap-6">
+                {formMessage.text && (
+                  <div
+                    className={`p-3 text-sm rounded-lg mb-4 ${
+                      formMessage.type === 'success'
+                        ? 'bg-green-100 text-green-700'
+                        : formMessage.type === 'error'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-blue-100 text-blue-700' // 'info' type
+                    }`}
+                    role="alert"
+                  >
+                    {formMessage.text}
+                  </div>
+                )}
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    {...register("email")}
+                  />
+                  {errors.email && <p className="text-red-500 -mt-2 ml-2">{errors.email.message}</p>}
                 </div>
-              )}
-
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  {...register("email")}
-                />
-                {errors.email && <p className="text-red-500 -mt-2 ml-2">{errors.email.message}</p>}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="username"
-                  {...register("userName")}
-                />
-                {errors.userName && <p className="text-red-500 -mt-2 ml-2">{errors.userName.message}</p>}
-              </div>
-
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="username"
+                    {...register("userName")}
+                  />
+                  {errors.userName && <p className="text-red-500 -mt-2 ml-2">{errors.userName.message}</p>}
                 </div>
-                <Input id="password" type="password" {...register('password')} />
+                <div className="grid gap-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                  </div>
+                  <Input id="password" type="password" {...register('password')} />
+                </div>
+                <PasswordStrengthMeter password={password?? ""}/>
+                {/* Password Requirements: Dynamically show checkmark/cross based on validation */}
+                {/* <div id="password-reqs" className="text-xs text-gray-500 space-y-1 mb-2">
+                  <p className={`flex items-center ${passwordReqs.length ? 'hidden' : 'block text-red-600'}`}>
+                    At least 8 characters long
+                  </p>
+                  <p className={`flex items-center ${passwordReqs.lowercase ? 'hidden' : 'block text-red-500'}`}>
+                    One lowercase letter
+                  </p>
+                  <p className={`flex items-center ${passwordReqs.uppercase ? 'hidden' : 'block text-red-500'}`}>
+                    One uppercase letter
+                  </p>
+                  <p className={`flex items-center ${passwordReqs.number ? 'hidden' : 'block text-red-500'}`}>
+                    One number
+                  </p>
+                  <p className={`flex items-center ${passwordReqs.special ? 'hidden' : 'block text-red-500'}`}>
+                    One special character
+                  </p>
+                </div> */}
               </div>
-
-              {/* Password Requirements: Dynamically show checkmark/cross based on validation */}
-              <div id="password-reqs" className="text-xs text-gray-500 space-y-1">
-                <p className={`flex items-center ${passwordReqs.length ? 'text-green-500' : 'text-red-500'}`}>
-                  {passwordReqs.length ? (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  ) : (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  )}
-                  At least 8 characters long
-                </p>
-                <p className={`flex items-center ${passwordReqs.lowercase ? 'text-green-500' : 'text-red-500'}`}>
-                  {passwordReqs.lowercase ? (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  ) : (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  )}
-                  One lowercase letter
-                </p>
-                <p className={`flex items-center ${passwordReqs.uppercase ? 'text-green-500' : 'text-red-500'}`}>
-                  {passwordReqs.uppercase ? (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  ) : (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  )}
-                  One uppercase letter
-                </p>
-                <p className={`flex items-center ${passwordReqs.number ? 'text-green-500' : 'text-red-500'}`}>
-                  {passwordReqs.number ? (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  ) : (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  )}
-                  One number
-                </p>
-                <p className={`flex items-center ${passwordReqs.special ? 'text-green-500' : 'text-red-500'}`}>
-                  {passwordReqs.special ? (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  ) : (
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  )}
-                  One special character
-                </p>
-              </div>
-
-            </div>
-            <CardFooter className="flex-col gap-2 mt-6 p-0">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                Sign Up
-              </Button>
-            </CardFooter>
-          </form>
-        </CardContent>
-      </Card>
+      
+      
+                <Button type="submit" className="w-full" >
+                  Sign Up
+                </Button>
+      
+            </form>
+          </CardContent>
+        </Card>
+    </motion.div>     
     </div>
   );
 }

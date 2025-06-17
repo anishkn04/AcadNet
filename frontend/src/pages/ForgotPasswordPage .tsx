@@ -94,7 +94,7 @@ const ForgotPasswordPage = () => {
     if (success) {
       setEmailForReset(data.email);
       setFormMessage({
-        text: "If an account with that email exists, a password reset code has been sent.",
+        text: "A reset OTP has been sent your email",
         type: 'success'
       });
       setCurrentStep(2);
