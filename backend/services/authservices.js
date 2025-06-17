@@ -115,11 +115,14 @@ export const signupService = async (email, username, password) => {
 
     let suffix = 1;
 
+
+
     while (await User.findOne({ username: newusername })) {
       newusername = `${username}_${suffix++}`;
     }
 
     await User.create({ email, username: newusername, password });
+    return newusername
   } catch (err) {
     throw err;
   }
@@ -186,13 +189,12 @@ export const otpGenerator = async (username, otpToken) => {
   try {
     const OTP_COOLDOWN_PERIOD_MS = 1000 * 60 * 1;
     const OTP_TOKEN_EXPIRY = 7;
-
     if (!username || !otpToken) {
       throwWithCode(" unreachable", 401);
     }
 
     const user = await User.findOne({ username });
-
+    console.log(user)
     if (!user) {
       throwWithCode("User Not Found", 401);
     }

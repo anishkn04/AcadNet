@@ -173,11 +173,11 @@ export const signup = async (req, res) => {
 
     email = email.toLowerCase();
     username = username.toLowerCase();
-    await signupService(email, username, password);
+    const newusername= await signupService(email, username, password);
 
     const otpToken = randomBytes(20).toString("hex");
 
-  
+    
 
     res.cookie("otpToken", otpToken, {
       httpOnly: true,
@@ -186,7 +186,7 @@ export const signup = async (req, res) => {
       maxAge: 60 * 60 * 1000
     });
 
-    res.cookie("username", username, {
+    res.cookie("username", newusername, {
       httpOnly: true,
       sameSite: "none",
       secure: true,
@@ -210,7 +210,7 @@ export const otpAuthGenerator = async (req, res) => {
 
     const username = req.cookies.username;
     const otpToken = req.cookies.otpToken;
- 
+  
     const { otp, email } = await otpGenerator(username, otpToken);
    
     await otpSender(otp, username, email);
