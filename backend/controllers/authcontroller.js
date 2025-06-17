@@ -18,6 +18,12 @@ import { randomBytes } from "crypto";
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
 const dashPath = "http://localhost:5500/";
 
+
+
+export const oAuthFail = async (req,res) =>{
+   jsonRes(res,401,false,"Oauth Login Failed")
+}
+
 export const oAuthCallback = async (req, res) => {
   const user = req.user;
 

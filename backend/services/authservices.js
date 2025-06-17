@@ -194,7 +194,7 @@ export const otpGenerator = async (username, otpToken) => {
     }
 
     const user = await User.findOne({ username });
-    console.log(user)
+
     if (!user) {
       throwWithCode("User Not Found", 401);
     }

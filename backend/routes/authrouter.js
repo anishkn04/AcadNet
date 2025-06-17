@@ -13,7 +13,8 @@ import {
   otpAuthChecker,
   resetPasswordSender,
   resetVerifier,
-  changePassword
+  changePassword,
+    oAuthFail
 } from "../controllers/authcontroller.js";
 import csrfMiddleware from "../middlewares/csrf.js";
 import authMiddleware from "../middlewares/authmiddleware.js";
@@ -33,11 +34,13 @@ router.get("/github",passport.authenticate("github", { scope: ["user:email"] })
 router.get(
   "/github/callback",
   passport.authenticate("github", {
-    failureRedirect: "/failure",
+    failureRedirect: "/api/v1/auth/failure",
     session: false
   }),
   oAuthCallback
 );
+
+router.get("/failure",oAuthFail)
 
 router.post("/checkSession", authMiddleware, csrfMiddleware, addUser, sessionChecker);
 

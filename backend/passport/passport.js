@@ -1,6 +1,8 @@
 import passport from "passport";
 import { Strategy as GithubStrategy } from "passport-github2";
 import User from "../models/user.model.js";
+import { couldStartTrivia } from "typescript";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 // Helper to fetch verified primary email from GitHub API
 const getGitHubEmail = async (accessToken) => {
@@ -42,10 +44,7 @@ passport.use(
         }
 
         if (!email || !baseUsername) {
-          return done(
-            new Error("GitHub account does not provide necessary details"),
-            null
-          );
+          return done(null,false)
         }
 
         // Check if user exists
@@ -53,10 +52,8 @@ passport.use(
 
         if (user) {
           if (user.authProvider !== "github") {
-            return done(
-              new Error("Email already used with a different auth method"),
-              null
-            );
+            const info =  {errorCode: 101, message: "GitHub email missing" }
+            return done(null,false)
           }
           return done(null, user); // GitHub user logging in again
         }
@@ -85,7 +82,7 @@ passport.use(
         await user.save();
         return done(null, user);
       } catch (error) {
-        return done(error, null);
+        return done(null,false)
       }
     }
   )
