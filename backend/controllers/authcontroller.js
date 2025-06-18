@@ -14,14 +14,20 @@ import {
   changePasswordService
 } from "../services/authservices.js";
 import { randomBytes } from "crypto";
+import path from "path";
+import { fileURLToPath } from "url";
+
 
 const indexPath = "http://localhost:5500/sample_frontend/index.html";
 const dashPath = "http://localhost:5500/";
 
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const oAuthFail = async (req,res) =>{
-   jsonRes(res,401,false,"Oauth Login Failed")
+    const filePath = path.join(__dirname, "../failure/fail.html");
+    console.log(filePath)
+   res.status(401).sendFile(filePath);
 }
 
 export const oAuthCallback = async (req, res) => {
