@@ -50,6 +50,7 @@
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
     "framer-motion": "^12.18.1",
+    "i18n-iso-countries": "^7.14.0",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",

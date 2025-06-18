@@ -3,10 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>GitHub Login Failed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles and Dark Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* Main container for all content */
+        .container {
+            max-width: 600px;
+            width: 90%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* New subtle icon styling */
+        .icon-wrapper {
+            margin-bottom: 2rem;
+        }
+        
+        .failure-icon {
+            width: 120px;
+            height: 120px;
+            color: #30363d;
+        }
+        
+        /* Subtle animation for the broken link icon */
+        @keyframes drift {
+            0% {
+                transform: translate(0, 0);
+            }
+            50% {
+                transform: translate(4px, -2px);
+            }
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+        
+        /* Apply the animation to one part of the icon */
+        #link-part-2 {
+            animation: drift 5s ease-in-out infinite;
+        }
+
+        /* Text content styling */
+        h1 {
+            font-size: clamp(1.75rem, 5vw, 2.5rem); /* Slightly smaller h1 */
+            color: #f0f6fc;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
+            color: #8b949e;
+            max-width: 450px;
+            line-height: 1.6;
+        }
+
+        /* Container for the buttons */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Shared Button Styling */
+        .action-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        /* Primary Button (e.g., Back to Home) */
+        .action-button.primary {
+            background-color: #238636;
+            color: #ffffff;
+        }
+
+        .action-button.primary:hover {
+            background-color: #2ea043;
+            border-color: #8b949e;
+        }
+        
+        /* Secondary Button (e.g., Try Again) */
+        .action-button.secondary {
+            background-color: #21262d;
+            color: #58a6ff;
+            border-color: #30363d;
+        }
+
+        .action-button.secondary:hover {
+            border-color: #58a6ff;
+        }
+
+    </style>
 </head>
 <body>
-    <h1>Fail to login with Github.</h1>
-    
+
+    <div class="container">
+        <div class="icon-wrapper">
+            <!-- Subtle Broken Link SVG Icon -->
+            <svg class="failure-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path id="link-part-1" d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.46 1.46"/>
+                    <path id="link-part-2" d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.46-1.46"/>
+                </g>
+            </svg>
+        </div>
+        
+        <h1>Authentication Failed</h1>
+        <p>
+            There was a problem authenticating your GitHub account. 
+            This may be a temporary issue. Please try again.
+        </p>
+        <div class="button-container">
+            <!-- IMPORTANT: Change the href attribute to your application's home or login page -->
+            <a href="http://localhost:5500" class="action-button primary">Back to Home</a>
+          
+        </div>
+    </div>
+
 </body>
 </html>
