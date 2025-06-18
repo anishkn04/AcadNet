@@ -1,4 +1,4 @@
-import { userData } from "../services/dataservices.js";
+import { userData, userEdit } from "../services/dataservices.js";
 import jsonRes from "../utils/response.js";
 
 export const userInfo = async (req, res) => {
@@ -12,3 +12,14 @@ export const userInfo = async (req, res) => {
     jsonRes(res, err.code, false, err.message);
   }
 };
+
+
+export const userProfile = async (req, res) => {
+  try {
+    const updates = req.body
+    const id = req.id
+    await userEdit(updates, id)
+  } catch (err) {
+    jsonRes(res, err.code, false, err.message)
+  }
+}
