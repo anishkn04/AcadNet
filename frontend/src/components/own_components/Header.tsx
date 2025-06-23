@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
 import { AcademicCapIcon, XIcon, MenuIcon } from './Icons';
 import { Link } from 'react-router-dom';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  // NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  // NavigationMenuViewport,
-} from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/userContext';
+import Profile from './Profile';
+
 export const Header: React.FC = () => {
   const {isLoggedIn,logout} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,17 +25,7 @@ export const Header: React.FC = () => {
         
         <nav className="hidden lg:flex items-center gap-8">
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="/">Home</Link>
-          <NavigationMenu >
-            <NavigationMenuList >
-              <NavigationMenuItem >
-                <NavigationMenuTrigger className='bg-transparent'>Study Group</NavigationMenuTrigger>
-                <NavigationMenuContent className='cursor-pointer '>
-                  <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'/create'} >Create Group</Link></NavigationMenuLink>
-                  <NavigationMenuLink className='hover:text-[#1993e5]' asChild><Link to={'join'}>Join Group</Link></NavigationMenuLink>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+          <Link to={'/create'} className='text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors'>Group</Link>
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">Resources</Link>
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">About</Link>
         </nav>
@@ -58,10 +40,10 @@ export const Header: React.FC = () => {
           </button>
       {isLoggedIn() ? (
         <>
-          
-          <button  onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
+          {/* <button  onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Logout</span>
-          </button>
+          </button> */}
+          <Profile/>
           </>
       ):(
         <>
@@ -116,6 +98,7 @@ export const Header: React.FC = () => {
                   <button onClick={logout} className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
                   Logout
                 </button>
+                
               ):(
                 <>
               <Link to={'/register'}>
