@@ -15,3 +15,9 @@ export type RegisterFormsInputs = {
 export type OtpFormInput ={
   otp:string
 }
+export interface StudyGroup {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+}

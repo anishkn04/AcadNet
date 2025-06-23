@@ -10,12 +10,14 @@ import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
+import UserProfile from "@/pages/UserProfile";
 export const router = createBrowserRouter([
     {
       path: "/",
       element: <MainLayout />,
       children: [
         { index: true, element: <Home /> },
+      
         { path: "create", element: <ProtectedRoutes><CreateGroup /></ProtectedRoutes> },
         { path: "join", element: <ProtectedRoutes><JoinGroup /></ProtectedRoutes> },
       ],
@@ -24,6 +26,7 @@ export const router = createBrowserRouter([
       path: "/user",
       element: <UserLayout />,
     },
+      {path:'/profile',element:<UserProfile/>},
     {
       path: "/login",
       element: <Login />,

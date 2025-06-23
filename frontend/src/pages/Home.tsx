@@ -7,6 +7,7 @@ import { teamData } from '@/data/data';
 import { TeamMemberCard } from '@/components/own_components/TeamMemberCard';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/userContext';
+
 interface StepCardProps {
   number: number;
   title: string;
@@ -15,6 +16,7 @@ interface StepCardProps {
 
 const StepCard: React.FC<StepCardProps> = ({ number, title, description }) => {
   return (
+
     <div className="p-6">
       <div className="flex items-center justify-center mb-4">
         <div className="bg-[#1993e5] text-white rounded-full size-12 flex items-center justify-center text-xl font-bold">

@@ -135,11 +135,9 @@ export const UserProvider = ({ children }: Props) => {
       const { data, status } = await loginAPI(email, password);
       if (status === 200 && data.success === true) {
         setUser({ userName: "Authenticated User", email: "user@example.com" });
-        toast.success("Login Success!");
         startSessionMonitoring();
         return true;
       }else {
-        toast.error("Login failed. Please check your credentials.");
         return false;
       }
     } catch (e) {
@@ -175,7 +173,6 @@ export const UserProvider = ({ children }: Props) => {
     } finally {
       setUser(null);
       stopSessionMonitoring();
-      toast.info("You have been logged out.");
     }
   };
 
