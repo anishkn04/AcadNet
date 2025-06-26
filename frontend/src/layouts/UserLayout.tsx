@@ -1,10 +1,18 @@
 // import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 const UserLayout = () => {
   return (
-    <div><Outlet/>hello</div>
-  )
-}
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="w-full">
+        <SidebarTrigger />
+        <Outlet />
+      </main>
+    </SidebarProvider>
+  );
+};
 
-export default UserLayout
+export default UserLayout;
