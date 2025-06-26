@@ -20,7 +20,7 @@ export const Header: React.FC = () => {
           <div className="size-8 text-[#1993e5]">
             <AcademicCapIcon />
           </div>
-          <Link to={'/'} className="text-xl font-bold leading-tight tracking-tight">AcadNet</Link>
+          <Link to={'/'} className="text-xl font-bold leading-tight tracking-tight">Acadnet</Link>
         </div>
         
         <nav className="hidden lg:flex items-center gap-8">

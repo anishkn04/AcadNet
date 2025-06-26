@@ -134,7 +134,7 @@ export function LoginForm({
                   />
                   {errors.password && <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p>}
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full cursor-pointer">
                   Login
                 </Button>
                 <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -144,7 +144,7 @@ export function LoginForm({
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <a href={(apiClient.defaults.baseURL ?? "") + "auth/github"}>
-                    <Button variant="outline" type="button" className="w-full">
+                    <Button variant="outline" type="button" className="w-full cursor-pointer">
                       <FontAwesomeIcon icon={faGithub} className="mr-2" />
                       Login with GitHub
                     </Button>

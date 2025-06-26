@@ -11,13 +11,14 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
+import StudyPlatform from "@/pages/StudyPlatform";
 export const router = createBrowserRouter([
     {
       path: "/",
       element: <MainLayout />,
       children: [
         { index: true, element: <Home /> },
-      
+        {path:'/group',element:<StudyPlatform/>},
         { path: "create", element: <ProtectedRoutes><CreateGroup /></ProtectedRoutes> },
         { path: "join", element: <ProtectedRoutes><JoinGroup /></ProtectedRoutes> },
       ],
