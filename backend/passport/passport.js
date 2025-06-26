@@ -1,7 +1,6 @@
 import passport from "passport";
 import { Strategy as GithubStrategy } from "passport-github2";
-import User from "../models/user.model.js";
-import pool from "../utils/db.js"
+import UserModel from "../models/user.model.js";
 
 
 // Helper to fetch verified primary email from GitHub API
@@ -48,15 +47,10 @@ passport.use(
         }
 
         // Check if user exists
-        let user = await User.findOne({ email });
-        
-        // For postgres
-        // const result = await pool.query("SELECT * from users where user_id = $1", [id])
-        // const user = result.rows[0]
-
+        let user = await UserModel.findOne({ where: { email } });
 
         if (user) {
-          if (user.authProvider !== "github") {
+          if (user.auth_provider !== "github") {
             const info =  {errorCode: 101, message: "GitHub email missing" }
             return done(null,false)
           }
@@ -66,7 +60,7 @@ passport.use(
         // Ensure unique username
         let username = baseUsername;
         let suffix = 1;
-        while (await User.findOne({ username })) {
+        while (await UserModel.findOne({ where: { username } })) {
           username = `${baseUsername}_${suffix++}`;
         }
 
@@ -75,16 +69,15 @@ passport.use(
         const isVerified = true;
 
         // Create user
-        user = new User({
+        user = await UserModel.create({
           username,
           email,
-          password: "OAuth-Login", // Not hashed, just a placeholder
-          authProvider: "github",
+          password_hash: "OAuth-Login", // Not hashed, just a placeholder
+          auth_provider: "github",
           fullName,
-          isVerified
+          is_verified: isVerified
         });
 
-        await user.save();
         return done(null, user);
       } catch (error) {
         return done(null,false)

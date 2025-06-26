@@ -159,7 +159,7 @@ export const logoutCont = async (req, res) => {
 
 export const logoutAllCont = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.user_id;
 
     await logoutAll(userId);
 

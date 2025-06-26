@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import { Sequelize, DataTypes } from 'sequelize';
 import bcrypt from "bcrypt";
 import { createRequire } from 'module';
 import countries from 'i18n-iso-countries';
+import sequelize from '../config/database.js';
 
 const require = createRequire(import.meta.url);
 const enLocale = require('i18n-iso-countries/langs/en.json');
@@ -11,127 +12,117 @@ countries.registerLocale(enLocale);
 const countryNames = countries.getNames('en');
 const countryEnum = Object.values(countryNames);
 
-const userSchema = new mongoose.Schema(
+const UserModel = sequelize.define('UserModel',
   {
+    user_id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
     username: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: true,
       unique: true,
-      trim: true,
-      minlength: 3
+      validate: {
+        len: [3, 255]
+      }
     },
     email: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
       unique: true,
-      lowercase: true
+      validate: {
+        isEmail: true
+      },
+      set(value){
+        this.setDataValue('email', value.toLowerCase());
+      }
     },
-    password: {
-      type: String,
-      required: true
+    password_hash: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'password_hash'
     },
-    authProvider: {
-      type: String,
-      enum: ["local", "google", "github"],
-      default: "local"
+    auth_provider: {
+      type: DataTypes.ENUM('local', 'google', 'github'),
+      defaultValue: 'local',
+      allowNull: false
     },
     fullName: {
-      type: String
+      type: DataTypes.STRING,
+      allowNull: true
     },
     role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user"
+      type: DataTypes.ENUM('user', 'admin'),
+      defaultValue: 'user',
+      allowNull: false
     },
-    isBanned: {
-      type: Boolean,
-      default: false
+    is_banned: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
-    isVerified: {
-      type: Boolean,
-      default: false
+    is_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
-    lastOtp: {
-      type: Date,
-      default: () => new Date("1980-01-01T00:00:00.000Z")
+    last_otp: {
+      type: DataTypes.DATE,
+      defaultValue: () => new Date('1980-01-01T00:00:00.000Z')
     },
     age: {
-      type: Number
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     phone: {
-      type: String,
-      match: /^[0-9]{10}$/
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        is: /^[0-9]{10}$/
+      }
     },
     nationality: {
-      type: String,
-      enum: countryEnum
+      type: DataTypes.ENUM(...countryEnum),
+      allowNull: true
     },
     address: {
-      state: { type: String },
-      district: { type: String },
-      municipality: { type: String },
-      ward: { type: Number }
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: {}
     },
     education: {
-      level: {
-        type: String,
-        enum: ["School", "Undergrad", "Grad"]
-      },
-      field_of_study: {
-        type: String,
-       
-        validate: {
-          validator: function(value) {
-          
-            if (!value) {
-              return true;
-            }
-            return this.level && this.level !== 'School';
-          },
-          message: 'A field of study can only be specified for "Undergrad" or "Grad" levels.'
-        },
-        enum: [
-          "Computer Science",
-          "Software Engineering",
-          "Information Technology",
-          "Electronics and Communication Engineering",
-          "Mechanical Engineering",
-          "Civil Engineering",
-          "Architecture",
-          "Business Administration",
-          "Economics",
-          "Psychology",
-          "Physics",
-          "Mathematics",
-          "Biotechnology",
-          "Medicine",
-          "Law",
-          "Others"
-        ]
-      },
-      academicInstitution: {
-        type: String
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: {}
+    }
+},
+  {
+    tableName: 'users',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    hooks: {
+      beforeSave: async (user, options) => {
+        if (!user.changed('password_hash') || user.password_hash === 'OAuth-Login') {
+          return;
+        }
+
+        try {
+          const salt = await bcrypt.genSalt(10);
+          user.password_hash = await bcrypt.hash(user.password_hash, salt);
+        } catch (err) {
+          throw err;
+        }
       }
     }
-  },
-  {
-    timestamps: true
   }
 );
 
-userSchema.pre("save", async function(next) {
-  // Skip hashing for non-local auth (e.g., 'OAuth-Login')
-  if (!this.isModified("password") || this.password === "OAuth-Login")
-    return next();
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
+UserModel.prototype.comparePassword = async function (candidatePassword) {
+  if (this.password_hash === 'OAuth-Login') {
+    return false;
   }
-});
+  return await bcrypt.compare(candidatePassword, this.password_hash);
+};
 
-const User = mongoose.model("User", userSchema);
-export default User;
+export { sequelize };
+export default UserModel;

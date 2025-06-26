@@ -49,6 +49,8 @@ AcadNet is a web-based platform designed to facilitate academic networking, coll
    # or
    yarn install
    ```
+   Also, make sure to do this:
+   ```npm install --save pg pg-hstore ```
 
 3. **(Optional) Set up the backend:**
    - If the backend is in Python, follow the instructions in the `/backend` folder or relevant directory.
