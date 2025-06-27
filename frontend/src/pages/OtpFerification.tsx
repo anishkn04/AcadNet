@@ -31,16 +31,11 @@ const OtpFerification = () => {
   const {
     register,
     handleSubmit,
-    watch ,
     formState:{errors}
   } = useForm<OtpFormInput>({
     resolver:yupResolver(OTPValidation)
   });
-   const otp = watch('otp')
-  const otpReg = {
-    length: otp ? otp.length == 6 : false,
-    length2: otp ? otp.length > 6 :false
-  }
+   
 
 const handleOtp = async ({otp}:OtpFormInput) =>{
     try{
