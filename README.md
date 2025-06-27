@@ -1,102 +1,147 @@
 # AcadNet
 
-AcadNet is a web-based platform designed to facilitate academic networking, collaboration, and resource sharing among students, educators, and academic professionals. The project leverages modern web technologies to provide an interactive and user-friendly environment for educational engagement.
-
-## Features
-
-- **User Authentication:** Secure login and registration system for students, teachers, and administrators.
-- **Profile Management:** Personalized user profiles showcasing academic interests, achievements, and connections.
-- **Course & Resource Sharing:** Upload, share, and access academic resources such as notes, assignments, and project materials.
-- **Collaboration Tools:** Forums, messaging, and group features to foster communication and teamwork.
-- **Event Management:** Create and join academic events, seminars, and workshops.
-- **Notifications:** Stay updated with the latest activities, messages, and announcements.
-- **Responsive Design:** Optimized for desktops, tablets, and mobile devices.
+AcadNet is a full-stack web application designed to serve as an academy software. It includes user authentication (including OAuth with GitHub), profile management, and a modern frontend built with React and Vite.
 
 ## Tech Stack
 
-- **Frontend:**  
-  - HTML  
-  - CSS  
-  - JavaScript  
-  - TypeScript
+### Backend
+- **Framework**: Express.js
+- **Database**: PostgreSQL
+- **ORM**: Sequelize
+- **Authentication**: Passport.js for OAuth, JWT for session management
+- **Email**: Nodemailer for sending OTPs
 
-- **Backend:**  
-  - Python (for API/services, if applicable)
-
-- **Other Libraries/Frameworks:**  
-  - [React](https://reactjs.org/) or similar (please update if specific)
-  - [Node.js](https://nodejs.org/) (if used for backend or build tools)
+### Frontend
+- **Framework**: React
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn UI
+- **Language**: TypeScript
 
 ## Getting Started
 
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (Recommended v14+)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Python 3](https://www.python.org/) (If using Python backend)
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [npm](https://www.npmjs.com/)
+- [PostgreSQL](https://www.postgresql.org/)
 
-### Installation
+### Installation & Setup
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/anishkn04/AcadNet.git
-   cd AcadNet
-   ```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/anishkn04/AcadNet.git
+    cd AcadNet
+    ```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+2.  **Install dependencies:**
+    This will install both backend and frontend dependencies.
+    ```bash
+    npm install
+    ```
 
-3. **(Optional) Set up the backend:**
-   - If the backend is in Python, follow the instructions in the `/backend` folder or relevant directory.
+3.  **Setup the database:**
+    - Make sure your PostgreSQL server is running.
+    - Create a new database. You can name it `acadnet` or choose another name.
 
-4. **Start the development server:**
-   ```bash
-   npm start
-   # or
-   yarn start
-   ```
+4.  **Create a `.env` file:**
+    Create a `.env` file in the root of the project and add the following environment variables. These are required to run the backend server.
 
-5. **Access the app:**
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+    ```env
+    # PostgreSQL Database Configuration
+    PG_HOST=localhost
+    PG_PORT=5432
+    PG_USER=your_postgres_user
+    PG_PASSWORD=your_postgres_password
+    PG_DATABASE=acadnet
 
-## Directory Structure
+    # Or you can use a single DATABASE_URL
+    # DATABASE_URL="postgres://your_postgres_user:your_postgres_password@localhost:5432/acadnet"
 
-```
-AcadNet/
-├── public/               # Static files and assets
-├── src/                  # Main source code (TypeScript/JavaScript)
-│   ├── components/       # Reusable components
-│   ├── pages/            # Page components
-│   ├── styles/           # CSS or styled-components
-│   └── ...               # Other directories
-├── backend/              # Backend code (Python, if any)
-├── package.json
-├── README.md
-└── ...
-```
+    # JWT Secrets
+    JWT_ACCESS_SECRET=your_jwt_access_secret
+    JWT_REFRESH_SECRET=your_jwt_refresh_secret
 
-## Contributing
+    # GitHub OAuth Credentials
+    GITHUB_CLIENT_ID=your_github_client_id
+    GITHUB_CLIENT_SECRET=your_github_client_secret
 
-Contributions are welcome! Please open issues or pull requests for suggestions, bug fixes, or improvements.
+    # Nodemailer Configuration (for sending emails)
+    EMAIL=your_email@example.com
+    EMAIL_PASSWORD=your_email_password
+    ```
 
-1. Fork the repository.
-2. Create your feature branch: `git checkout -b feature/YourFeature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin feature/YourFeature`
-5. Open a pull request.
+5.  **Start the application:**
+    You can run the backend and frontend in separate terminals.
 
-## License
+    - **Start the backend server:**
+      ```bash
+      npm start
+      ```
+      The backend will be running on `http://localhost:3000` (or the port specified in your environment).
 
-This project is licensed under the [MIT License](LICENSE).
+    - **Start the frontend development server:**
+      ```bash
+      npm run dev
+      ```
+      The frontend will be available at `http://localhost:5173`.
 
-## Contact
+## Available Scripts
 
-For questions or support, please open an issue in the repository or contact [@anishkn04](https://github.com/anishkn04).
+- `npm start`: Starts the backend server with `nodemon`.
+- `npm run dev`: Starts the frontend development server with Vite.
+- `npm run build`: Builds the frontend for production.
+- `npm run lint`: Lints the frontend code.
+- `npm run preview`: Previews the production build of the frontend.
+- `npm test`: (Not yet configured)
 
----
+## API Endpoints
 
-> AcadNet – Connecting Academia, Empowering Collaboration.
+The backend exposes the following REST API endpoints.
+
+### Authentication Routes
+
+Base path: `/api/v1/auth`
+
+| Method | Endpoint              | Description                                       | Protected |
+| :----- | :-------------------- | :------------------------------------------------ | :-------- |
+| `POST` | `/signup`             | Register a new user.                              | No        |
+| `POST` | `/login`              | Login an existing user.                           | No        |
+| `GET`  | `/github`             | Initiates GitHub OAuth2 authentication.           | No        |
+| `GET`  | `/github/callback`    | Callback URL for GitHub OAuth2.                   | No        |
+| `GET`  | `/failure`            | Redirect URL on OAuth failure.                    | No        |
+| `POST` | `/checkSession`       | Checks if the user's session is valid.            | Yes       |
+| `POST` | `/refresh-token`      | Refreshes the JWT access token.                   | Yes       |
+| `POST` | `/logout`             | Logs out the user from the current device.        | No        |
+| `POST` | `/logout-all`         | Logs out the user from all devices.               | Yes       |
+| `GET`  | `/authorizedPage`     | Example of an authorization-protected route.      | Yes       |
+| `POST` | `/otp-auth`           | Generates and sends an OTP for verification.      | No        |
+| `POST` | `/otp-verify`         | Verifies the provided OTP.                        | No        |
+| `POST` | `/password-reset`     | Sends a password reset link/token.                | No        |
+| `POST` | `/password-verify`    | Verifies the password reset token.                | No        |
+| `POST` | `/change-password`    | Changes the user's password.                      | No        |
+
+### Data Routes
+
+Base path: `/api/v1/data`
+
+| Method | Endpoint        | Description                  | Protected |
+| :----- | :-------------- | :--------------------------- | :-------- |
+| `GET`  | `/user`         | Get the current user's info. | Yes       |
+| `POST` | `/editprofile`  | Edit the user's profile.     | Yes       |
+
+## Frontend
+
+The frontend is a single-page application (SPA) built with React and Vite.
+
+- **Routing**: `react-router-dom` is used for client-side routing.
+- **State Management**: React Context API is used for managing user state.
+- **Styling**: Styled with Tailwind CSS and uses `shadcn/ui` for components.
+- **Structure**:
+    - `src/pages`: Contains the main pages of the application.
+    - `src/components`: Contains reusable UI components.
+    - `src/layouts`: Contains layout components for different parts of the app.
+    - `src/services`: Contains functions for making API calls to the backend.
+    - `src/routes`: Defines the application's routes, including protected routes.
