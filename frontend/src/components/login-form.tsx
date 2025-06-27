@@ -35,7 +35,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { loginUser, isLoggedIn, isLoading,sendSignupOtp,isVerified } = useAuth();
+  const { loginUser, isAuthenticated, isLoading,sendSignupOtp,isVerified } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [formError, setFormError] = useState('');
@@ -52,10 +52,10 @@ export function LoginForm({
   });
 
   useEffect(() => {
-    if (!isLoading && isLoggedIn()) {
+    if (!isLoading && isAuthenticated) {
       navigate(from, { replace: true });
     }
-  }, [isLoading, isLoggedIn, navigate, from]);
+  }, [isLoading, isAuthenticated, navigate, from]);
 
   const handleLogin = async (form: LoginFormsInputs) => {
     setFormError('');

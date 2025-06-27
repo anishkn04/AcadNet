@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/userContext';
 import Profile from './Profile';
 
 export const Header: React.FC = () => {
-  const {isLoggedIn,logout} = useAuth();
+  const {isAuthenticated,logout} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [studyGroupOpen, setStudyGroupOpen] = useState(false); 
 
@@ -25,7 +25,7 @@ export const Header: React.FC = () => {
         
         <nav className="hidden lg:flex items-center gap-8">
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="/">Home</Link>
-          <Link to={'/create'} className='text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors'>Group</Link>
+          <Link to={'/join'} className='text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors'>Group</Link>
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">Resources</Link>
           <Link className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors" to="#">About</Link>
         </nav>
@@ -38,7 +38,7 @@ export const Header: React.FC = () => {
             <span className="sr-only">Toggle menu</span>
             {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
           </button>
-      {isLoggedIn() ? (
+      {isAuthenticated ? (
         <>
           {/* <button  onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
             <span className="truncate">Logout</span>
@@ -94,7 +94,7 @@ export const Header: React.FC = () => {
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
             <div className="flex space-x-3 pt-2">
-              {isLoggedIn() ? (
+              {isAuthenticated ? (
                   <button onClick={logout} className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
                   Logout
                 </button>

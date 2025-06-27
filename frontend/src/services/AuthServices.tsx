@@ -1,7 +1,5 @@
 import apiClient from "@/lib/apiClient";
 
-;
-
 export const loginAPI = async (email: string, password: string) => {
   try {
     const response = await apiClient.post<any>('auth/login', {

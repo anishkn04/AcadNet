@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy as GithubStrategy } from "passport-github2";
 import User from "../models/user.model.js";
+import pool from "../utils/db.js"
 
 
 // Helper to fetch verified primary email from GitHub API
@@ -48,6 +49,11 @@ passport.use(
 
         // Check if user exists
         let user = await User.findOne({ email });
+        
+        // For postgres
+        // const result = await pool.query("SELECT * from users where user_id = $1", [id])
+        // const user = result.rows[0]
+
 
         if (user) {
           if (user.authProvider !== "github") {

@@ -6,13 +6,13 @@ type Props = { children: React.ReactNode };
 
 const ProtectedRoutes = ({ children }: Props) => {
   const location = useLocation();
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  return isLoggedIn() ? (
+  return isAuthenticated ? (
     <>{children}</>
   ) : (
     <Navigate to='/login' state={{ from: location }} replace />

@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { User, Home, Bell, Settings, Info } from "lucide-react";
 
 import {
   Sidebar,
@@ -10,7 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 // Menu items.
 const items = [
@@ -20,33 +20,35 @@ const items = [
     icon: Home,
   },
   {
-    title: "Login",
-    url: "/login",
-    icon: Inbox,
+    title: "My Profile",
+    //url: "/login",
+    icon: User,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Notifications",
+    //url: "#",
+    icon: Bell,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Support",
+    //url: "#",
+    icon: Info,
   },
   {
     title: "Settings",
     url: "#",
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar() {
   return (
-    <Sidebar variant="floating">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xl font-bold underline">Application</SidebarGroupLabel>
+    <Sidebar  >
+      <SidebarContent >
+        <SidebarGroup >
+          <SidebarGroupLabel className="text-xl font-bold underline">
+            Application
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -63,13 +65,11 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <SidebarMenu>
-            <SidebarMenuItem>
-                hello
-            </SidebarMenuItem>
+          <SidebarMenuItem>hello</SidebarMenuItem>
         </SidebarMenu>
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
-  )
+  );
 }
