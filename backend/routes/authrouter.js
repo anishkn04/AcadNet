@@ -21,6 +21,7 @@ import authMiddleware from "../middlewares/authmiddleware.js";
 import addUser from "../middlewares/addUsertoReq.js";
 import validateSignup from "../validator/validate.js";
 import handleValidationError from "../validator/errorvalidation.js";
+import { userInfo } from "os";
 
 const router = express.Router();
 

@@ -130,7 +130,25 @@ Base path: `/api/v1/data`
 | Method | Endpoint        | Description                  | Protected |
 | :----- | :-------------- | :--------------------------- | :-------- |
 | `GET`  | `/user`         | Get the current user's info. | Yes       |
+| `GET`  | `/user/:userId`  | Get the details of given user id  | Yes
 | `POST` | `/editprofile`  | Edit the user's profile.     | Yes       |
+
+#### The GET /user returns all data of current user while the /user/userId only returns given data:
+```json
+{
+  "user_id": 6,
+  "username": "anishkn",
+  "created_at": "2025-06-27T19:33:52.960Z",
+  "email": "anish@gmail.com",
+  "fullName": null,
+  "role": "user",
+  "age": null,
+  "phone": null,
+  "nationality": null,
+  "address": {},
+  "education": {}
+}
+```
 
 ## Frontend
 
