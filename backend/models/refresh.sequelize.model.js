@@ -2,8 +2,8 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 import UserModel from './user.model.js';
 
-const OTP = sequelize.define('OTP', {
-  otp_id: {
+const RefreshToken = sequelize.define('RefreshToken', {
+  token_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
@@ -16,27 +16,24 @@ const OTP = sequelize.define('OTP', {
       key: 'user_id'
     }
   },
-  otp_code: {
-    type: DataTypes.STRING(6),
-    allowNull: false
+  token: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
   },
   expires_at: {
     type: DataTypes.DATE,
     allowNull: false
-  },
-  is_used: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
   }
 }, {
-  tableName: 'otps',
+  tableName: 'refresh_tokens',
   timestamps: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at'
 });
 
 // Define associations
-UserModel.hasMany(OTP, { foreignKey: 'user_id' });
-OTP.belongsTo(UserModel, { foreignKey: 'user_id' });
+UserModel.hasMany(RefreshToken, { foreignKey: 'user_id' });
+RefreshToken.belongsTo(UserModel, { foreignKey: 'user_id' });
 
-export default OTP;
+export default RefreshToken;
