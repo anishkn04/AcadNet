@@ -125,7 +125,7 @@ useEffect(() => {
       return true;
     } catch (e) {
       if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
-          toast.info(e.response.data.message);
+          console.log(e.response.data.message);
       } else {
         console.log("Registration failed.");
       }

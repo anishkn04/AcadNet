@@ -32,9 +32,9 @@ const OtpFerification = () => {
     register,
     handleSubmit,
     watch ,
+    formState:{errors}
   } = useForm<OtpFormInput>({
-    resolver:yupResolver(OTPValidation),
-    mode: "onChange",
+    resolver:yupResolver(OTPValidation)
   });
    const otp = watch('otp')
   const otpReg = {
@@ -114,11 +114,7 @@ const handleOtp = async ({otp}:OtpFormInput) =>{
                     <div className="grid gap-2">
                         <Label htmlFor="otp">OTP</Label>
                         <Input id="otp" placeholder="------" {...register('otp')} className="text-center text-2xl tracking-[1em]"/>
-                        <div>
-                           <p className={`flex items-center justify-center ${(otpReg.length && !otpReg.length2) ? 'hidden' : 'block text-red-600'}`}>
-                            The OTP must be of 6 digits
-                          </p>
-                        </div>
+                        {errors.otp && <p className="text-red-500 text-center  -mb-3 ml-2">{errors.otp.message}</p>}
                         <div className="flex justify-between">
                             <p className="opacity-80">
                               Time Remaining: {" "}

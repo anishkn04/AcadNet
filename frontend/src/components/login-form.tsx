@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { faEye ,faEyeSlash} from "@fortawesome/free-solid-svg-icons";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -39,9 +40,11 @@ export function LoginForm({
   const navigate = useNavigate();
   const location = useLocation();
   const [formError, setFormError] = useState('');
-
+  const [seePwd,setSeePwd] = useState<boolean>(false)
   const from = location.state?.from?.pathname || "/";
-
+  const togglePwd = () =>{
+    setSeePwd(!seePwd)
+  }
   const {
     register,
     handleSubmit,
@@ -98,7 +101,7 @@ export function LoginForm({
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">Welcome!</h1>
                   <p className="text-muted-foreground text-balance">
-                    Login to your Acadnet account
+                    Login to your AcadNet account
                   </p>
                 </div>
                 {formError && (
@@ -126,12 +129,15 @@ export function LoginForm({
                       Forgot your password?
                     </Link>
                   </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    {...register("password")}
-                  />
+                  <div className="flex justify-center items-center gap-2 relative">
+                    <Input
+                      id="password"
+                      type={!seePwd? ('password'):('text')} 
+                      placeholder="Password"
+                      {...register("password")}
+                    />
+                     <FontAwesomeIcon onClick={() => togglePwd()} icon={!seePwd? (faEyeSlash):(faEye)} className="absolute right-3 text-gray-500/90 cursor-pointer" />
+                  </div>
                   {errors.password && <p className="-mt-3 -mb-3 bottom-80 ml-2 text-red-500 ">{errors.password.message}</p>}
                 </div>
                 <Button type="submit" className="w-full cursor-pointer">

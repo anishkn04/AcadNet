@@ -7,6 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner,faEye ,faEyeSlash} from "@fortawesome/free-solid-svg-icons";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as Yup from "yup";
@@ -34,8 +37,10 @@ const validation = Yup.object().shape({
 
 export default function Register() {
   const { registerUser ,sendSignupOtp} = useAuth();
+  const [seePwd,setSeePwd] = useState<boolean>(false)
   const navigate = useNavigate();
   const [formMessage, setFormMessage] = useState({ text: '', type: '' });
+  const [spin,setSpin] = useState<boolean>(false)
   const {
     register,
     handleSubmit,
@@ -47,6 +52,11 @@ export default function Register() {
     mode: "onChange",
   });
   const password = watch("password");
+
+  const togglePwd = () =>{
+    setSeePwd(!seePwd)
+  }
+
   const triggerOtp = async () =>{
     try{
       const sentsucces = await sendSignupOtp();
@@ -70,6 +80,7 @@ export default function Register() {
           console.log("registered")
           reset()
           triggerOtp()
+          setSpin(true)
        }
      }catch(e){
       console.log(e)
@@ -132,11 +143,17 @@ export default function Register() {
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
                   </div>
-                  <Input id="password" type="password" {...register('password')} />
+                  <div className="flex justify-center items-center gap-2 relative">
+                    <Input id="password" type={!seePwd? ('password'):('text')} {...register('password')} />
+                    <FontAwesomeIcon onClick={() => togglePwd()} icon={!seePwd? (faEyeSlash):(faEye)} className="absolute right-3 text-gray-500/90 cursor-pointer" />
+                  </div>
                 </div>
                 <PasswordStrengthMeter password={password?? ""}/>
               </div>
-                <Button type="submit" className="w-full cursor-pointer" >
+                <Button type="submit" className={`w-full cursor-pointer flex justify-center` } >
+                  <div className={spin?('block'):('hidden')}>
+                    <FontAwesomeIcon icon={faSpinner} className={`animate-spin`}/>
+                  </div>
                   Sign Up
                 </Button>
             </form>

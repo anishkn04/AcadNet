@@ -9,7 +9,6 @@ import { formSections } from "@/data/UserFormSection";
 import { useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
 
-
 const getError = (errors: FieldErrors, path: string) => {
   const pathArray = path.split(".");
   let current: any = errors;
@@ -24,45 +23,50 @@ const getError = (errors: FieldErrors, path: string) => {
 };
 
 const UserProfile = () => {
-  const {getInfo} = useData()
-  const location = useLocation()
-  const [userData, setUserData] = useState<{message:UserProfileData}>();
+  const { getInfo } = useData();
+  const location = useLocation();
 
-  const getData = async () =>{
-    const data = await getInfo();
-    if (data){
-      setUserData({message:data})
-      console.log(userData)
-    }
-  }
-
-  useEffect(() => {
-    if (location.pathname === '/user'){
-      getData()
-    }
-  },[location]) 
- 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserProfileData>({
-    defaultValues: {
-        email:"hello",
-        fullName:"",
-        isBanned:false,
-        isVerified:false,
-        lastOtp:"",
-        password:"",
-        role:"",
-        updatedAt:"",
-        username:""
-      },
+    reset, // Get the reset method from useForm
+  } = useForm<UserProfileData>(); // No defaultValues here initially
 
-  });
-  
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    const fetchDataAndPopulateForm = async () => {
+      if (location.pathname === '/user') {
+        setIsLoading(true); // Start loading
+        const data = await getInfo();
+        if (data) {
+          // Use reset to populate the form fields with fetched data
+          reset(data);
+        } else {
+          // Handle case where data fetching failed or returned null
+          console.log("Failed to load user profile data.");
+          // You might want to set some default empty state or show an error message
+          reset({
+            email: "",
+            fullName: "",
+            isBanned: false,
+            isVerified: false,
+            lastOtp: "",
+            password: "",
+            role: "",
+            updatedAt: "",
+            username: ""
+          });
+        }
+        setIsLoading(false); // End loading
+      }
+    };
+    
+    fetchDataAndPopulateForm();
+  }, [location, getInfo, reset]); // Add reset to dependency array
+
   const onSubmit = async (data: UserProfileData) => {
-
     try {
       // TODO: Replace with actual API endpoint when backend is ready
       console.log("User Profile Data:", { user_profile: data });
@@ -72,6 +76,11 @@ const UserProfile = () => {
       // Handle error
     }
   };
+
+  if (isLoading) {
+    return <div className="w-full p-4 md:p-6 text-center text-lg">Loading user profile...</div>;
+  }
+
   return (
     <div className="w-full p-4 md:p-6 space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">
