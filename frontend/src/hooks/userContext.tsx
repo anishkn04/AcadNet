@@ -225,15 +225,15 @@ useEffect(() => {
       } else {
         return false;
       }
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        toast.error("Network Error!");
-      } else {
-        toast.error("Could not connect to the server or an unknown error occurred while sending OTP.");
+    } catch (error:any) {
+    let errorMessage = "Network Error. Please check your internet connection.";
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.message || error.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
       }
-      return false
-    }
-  };
+      throw new Error(errorMessage);
+  }}
 
   const verifySignupOtp = async (otp: string): Promise<boolean> => {
     try {
