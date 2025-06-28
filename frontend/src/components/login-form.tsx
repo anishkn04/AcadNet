@@ -90,9 +90,9 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 60 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5 }} 
+			transition={{ duration: 1 }} 
       >
         <Card className="overflow-hidden p-0">
           <CardContent className="grid p-0 md:grid-cols-2">

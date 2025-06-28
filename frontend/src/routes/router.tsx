@@ -12,6 +12,7 @@ import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
 import StudyPlatform from "@/pages/StudyPlatform";
+import LoadingPage from "@/pages/LoadingPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -54,14 +55,13 @@ export const router = createBrowserRouter([
     ),
     children: [{ index: true, element: <UserProfile /> }],
   },
-
   {
     path: "/login",
     element: <Login />,
   },
   {
     path: "/register",
-    element: <Register />,
+    element: <Register />
   },
   {
     path: "/forgot",
