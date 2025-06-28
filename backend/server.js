@@ -13,7 +13,7 @@ try {
   // Sync models (creates tables if they don't exist)
   // WARNING: { force: true } will drop existing tables and recreate them
   // Only use this in development when you don't have important data
-  await sequelize.sync({ force: true }); // Use { alter: true } for production
+  await sequelize.sync({ alter: true }); // Use { alter: true } for production
 
   app.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);

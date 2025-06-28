@@ -1,4 +1,4 @@
-import { userData, userEdit } from "../services/dataservices.js";
+import { userData, userEdit, getUserById as getUserByIdService } from "../services/dataservices.js";
 import jsonRes from "../utils/response.js";
 
 export const userInfo = async (req, res) => {
@@ -13,6 +13,16 @@ export const userInfo = async (req, res) => {
   }
 };
 
+export const getUserById = async(req, res, next) => {
+  try{
+    console.log(req)
+    const {userId} = req.params;
+    const user = await getUserByIdService(userId)
+    res.status(200).json(user);
+  }catch(err){
+    next(err);
+  }
+}
 
 export const userProfile = async (req, res) => {
   try {
