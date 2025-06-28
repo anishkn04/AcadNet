@@ -6,8 +6,48 @@ import passport from "passport";
 import "./passport/passport.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import swaggerUi from 'swagger-ui-express';
+import swaggerJSDoc from 'swagger-jsdoc';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-const allowedOrigins = ["http://localhost:5500", "http://127.0.0.1:5500"];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const allowedOrigins = ["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:3000", "http://127.0.0.1:3000"];
+const PORT = process.env.BACKEND_PORT || 3000;
+
+// Swagger definition
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'AcadNet',
+      version: '1.0.0',
+      description: 'API documentation for AcadNet',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'accessToken',
+        },
+        csrfToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-CSRF-Token',
+        },
+      },
+    },
+  },
+  apis: [__dirname + '/routes/*.js'], // Path to your API docs
+};
 
 const app = express();
 
@@ -24,6 +64,9 @@ app.use(
   })
 );
 
+const swaggerDocs = swaggerJSDoc(swaggerOptions);
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(cookieParser());
 app.use(express.json());
 app.use(logger);
