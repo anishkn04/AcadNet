@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import FilterItem from '@/components/own_components/FilterItem';
 // import SearchFilter from './SearchFilter';
 // import FilterBar from './FilterBar';
@@ -7,6 +8,8 @@ import FilterItem from '@/components/own_components/FilterItem';
 // import { studyGroups } from '../../data/studyGroups';
 import { studyGroups } from '@/data/studyGroups';
 import StudyGroupList from '@/components/own_components/StudyGroupList';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 const StudyGroups: React.FC = () => {
   const [groups] = useState(studyGroups);
 
@@ -18,7 +21,15 @@ const StudyGroups: React.FC = () => {
 
   return (
     <div className=" flex flex-col container max-auto justify-center item-center p-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 mb-6">
+        <Card className='flex flex-col md:flex-row w-full justify-start md:justify-between  md:items-center'>
+          <CardHeader className='w-full'>
+            <CardTitle className='text-3xl font-bold leading-tight'>Create a Study Group</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link to={'/create'}><Button className='text-lg font-medium cursor-pointer'>Create</Button></Link>
+          </CardContent>
+        </Card>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 mb-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-[#101518] tracking-tight text-3xl font-bold leading-tight">Study Groups</h1>
         <p className="text-gray-500 text-sm font-normal leading-normal">

@@ -28,7 +28,7 @@ export default function Profile() {
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer">
             <Link to="/user">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>

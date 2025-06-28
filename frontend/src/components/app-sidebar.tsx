@@ -43,9 +43,9 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar variant="floating">
-      <SidebarContent>
-        <SidebarGroup>
+    <Sidebar  >
+      <SidebarContent >
+        <SidebarGroup >
           <SidebarGroupLabel className="text-xl font-bold underline">
             Application
           </SidebarGroupLabel>

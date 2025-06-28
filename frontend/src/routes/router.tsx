@@ -11,6 +11,7 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
+import StudyPlatform from "@/pages/StudyPlatform";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -19,7 +20,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
 
       {
-        path: "create",
+        path: "join",
         element: (
           <ProtectedRoutes>
             <CreateGroup />
@@ -27,10 +28,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "join",
+        path: "create",
         element: (
           <ProtectedRoutes>
             <JoinGroup />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "group",
+        element: (
+          <ProtectedRoutes>
+            <StudyPlatform/>
           </ProtectedRoutes>
         ),
       },

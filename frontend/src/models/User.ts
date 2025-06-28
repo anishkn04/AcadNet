@@ -21,24 +21,13 @@ export interface StudyGroup {
   memberCount: number;
 }
 export interface UserProfileData {
-  full_name: string;
-  gender: string;
-  date_of_birth: string;
-  bio: string;
-  contact: {
-    email: string;
-    phone: string;
-  };
-  address: {
-    province: string;
-    district: string;
-    municipality: string;
-    ward_no: number;
-  };
-  academic_details: {
-    level: string;
-    field_of_study: string;
-    university: string;
-    college: string;
-  };
+  email:string,
+  fullName:String,
+  isBanned:boolean
+  isVerified:boolean
+  lastOtp:string
+  password:string,
+  role:string,
+  updatedAt:string,
+  username:string
 }

@@ -1,147 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfileData } from "@/models/User";
 import { useForm, type FieldErrors } from "react-hook-form";
-
-const formSections = [
-  {
-    title: "Personal Information",
-    fields: [
-      {
-        name: "full_name",
-        label: "Full Name",
-        type: "text",
-        placeholder: "Enter your full name",
-        requiredMessage: "Full name is required.",
-      },
-      {
-        name: "gender",
-        label: "Gender",
-        type: "select",
-        requiredMessage: "Gender is required.",
-        options: ["Male", "Female", "Other"],
-      },
-      {
-        name: "date_of_birth",
-        label: "Date of Birth",
-        type: "date",
-        requiredMessage: "Date of birth is required.",
-      },
-      {
-        name: "bio",
-        label: "Bio",
-        type: "textarea",
-        placeholder: "Tell us about yourself...",
-        requiredMessage: "Bio is required.",
-        className: "md:col-span-2",
-      },
-    ],
-  },
-  {
-    title: "Contact Information",
-    fields: [
-      {
-        name: "contact.email",
-        label: "Email",
-        type: "email",
-        placeholder: "Enter your email",
-        requiredMessage: "Email is required.",
-      },
-      {
-        name: "contact.phone",
-        label: "Phone",
-        type: "tel",
-        placeholder: "Enter your phone number",
-        requiredMessage: "Phone number is required.",
-      },
-    ],
-  },
-  {
-    title: "Address Information",
-    fields: [
-      {
-        name: "address.province",
-        label: "Province",
-        type: "text",
-        placeholder: "Enter your province",
-        requiredMessage: "Province is required.",
-      },
-      {
-        name: "address.district",
-        label: "District",
-        type: "text",
-        placeholder: "Enter your district",
-        requiredMessage: "District is required.",
-      },
-      {
-        name: "address.municipality",
-        label: "Municipality",
-        type: "text",
-        placeholder: "Enter your municipality",
-        requiredMessage: "Municipality is required.",
-      },
-      {
-        name: "address.ward_no",
-        label: "Ward No.",
-        type: "number",
-        placeholder: "Enter ward number",
-        requiredMessage: "Ward number is required.",
-      },
-    ],
-  },
-  {
-    title: "Academic Details",
-    fields: [
-      {
-        name: "academic_details.level",
-        label: "Level",
-        type: "select",
-        requiredMessage: "Level is required.",
-        options: ["School", "Undergraduate", "Graduate"],
-      },
-      {
-        name: "academic_details.field_of_study",
-        label: "Field of Study",
-        type: "select",
-        requiredMessage: "Field of study is required.",
-        options: [
-          "Computer Science",
-          "Software Engineering",
-          "Information Technology",
-          "Electronics and Communication Engineering",
-          "Mechanical Engineering",
-          "Civil Engineering",
-          "Architecture",
-          "Business Administration",
-          "Economics",
-          "Psychology",
-          "Physics",
-          "Mathematics",
-          "Biotechnology",
-          "Medicine",
-          "Law",
-        ],
-      },
-      {
-        name: "academic_details.university",
-        label: "University",
-        type: "text",
-        placeholder: "Enter your university",
-        requiredMessage: "University is required.",
-      },
-      {
-        name: "academic_details.college",
-        label: "College",
-        type: "text",
-        placeholder: "Enter your college",
-        requiredMessage: "College is required.",
-      },
-    ],
-  },
-];
+import { formSections } from "@/data/UserFormSection";
+import { useLocation } from "react-router-dom";
+import { useData } from "@/hooks/userInfoContext";
 
 const getError = (errors: FieldErrors, path: string) => {
   const pathArray = path.split(".");
@@ -157,70 +23,53 @@ const getError = (errors: FieldErrors, path: string) => {
 };
 
 const UserProfile = () => {
+  const { getInfo } = useData();
+  const location = useLocation();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
-  } = useForm<UserProfileData>({
-    defaultValues: {
-      full_name: "",
-      gender: "",
-      date_of_birth: "",
-      bio: "",
-      contact: { email: "", phone: "" },
-      address: { province: "", district: "", municipality: "", ward_no: 0 },
-      academic_details: {
-        level: "",
-        field_of_study: "",
-        university: "",
-        college: "",
-      },
-    },
-  });
+    reset, // Get the reset method from useForm
+  } = useForm<UserProfileData>(); // No defaultValues here initially
+
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        // This is a mock fetch. In a real app, you'd fetch from an API.
-        const existingData: Partial<UserProfileData> = {
-          full_name: "Nishan Kumar",
-          gender: "Male",
-          date_of_birth: "2000-01-25",
-          bio: "A passionate developer exploring new technologies.",
-          contact: {
-            email: "nishan.kumar@example.com",
-            phone: "9876543210",
-          },
-          address: {
-            province: "Bagmati",
-            district: "Kathmandu",
-            municipality: "Kathmandu",
-            ward_no: 32,
-          },
-          academic_details: {
-            level: "Undergraduate",
-            field_of_study: "Computer Science",
-            university: "Tribhuvan University",
-            college: "", // User can fill this
-          },
-        };
-
-        // Reset the form with fetched data
-        reset(existingData);
-      } catch (error) {
-        console.error("Failed to fetch user profile:", error);
+    const fetchDataAndPopulateForm = async () => {
+      if (location.pathname === '/user') {
+        setIsLoading(true); // Start loading
+        const data = await getInfo();
+        if (data) {
+          // Use reset to populate the form fields with fetched data
+          reset(data);
+        } else {
+          // Handle case where data fetching failed or returned null
+          console.log("Failed to load user profile data.");
+          // You might want to set some default empty state or show an error message
+          reset({
+            email: "",
+            fullName: "",
+            isBanned: false,
+            isVerified: false,
+            lastOtp: "",
+            password: "",
+            role: "",
+            updatedAt: "",
+            username: ""
+          });
+        }
+        setIsLoading(false); // End loading
       }
     };
-
-    fetchUserProfile();
-  }, [reset]);
+    
+    fetchDataAndPopulateForm();
+  }, [location, getInfo, reset]); // Add reset to dependency array
 
   const onSubmit = async (data: UserProfileData) => {
     try {
       // TODO: Replace with actual API endpoint when backend is ready
       console.log("User Profile Data:", { user_profile: data });
-
       alert("Profile data logged to console. API integration pending.");
     } catch (error) {
       console.error("Error saving profile:", error);
@@ -228,12 +77,15 @@ const UserProfile = () => {
     }
   };
 
+  if (isLoading) {
+    return <div className="w-full p-4 md:p-6 text-center text-lg">Loading user profile...</div>;
+  }
+
   return (
     <div className="w-full p-4 md:p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+      <h1 className="text-3xl font-bold text-gray-900">
         User Profile
       </h1>
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {formSections.map((section) => (
           <Card
@@ -294,7 +146,6 @@ const UserProfile = () => {
                             valueAsNumber: true,
                           }),
                         })}
-                        placeholder={field.placeholder}
                         className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       />
                     )}

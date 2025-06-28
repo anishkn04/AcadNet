@@ -1,5 +1,4 @@
 // useContext.tsx
-import type { UserProfile } from "@/models/User";
 import React, { createContext, useEffect, useState, useRef } from "react";
 import {
   loginAPI,
@@ -16,11 +15,10 @@ import { toast } from "react-toastify";
 import axios from 'axios';
 
 type UserContextType = {
-  user: UserProfile | null;
+  isAuthenticated:boolean;
   registerUser: (email: string, username: string, password: string) => Promise<boolean>;
   loginUser: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  isLoggedIn: () => boolean;
+  logout: () => void; 
   isLoading: boolean;
   isVerified:boolean;
   forgotPassword: (email: string) => Promise<boolean>;
@@ -37,12 +35,15 @@ const SESSION_CHECK_INTERVAL = 10 * 1000;
 const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 
 export const UserProvider = ({ children }: Props) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isVerified,setIsVerified] = useState<boolean>(false);
   const sessionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
+   
+
+
   const startSessionMonitoring = () => {
     if (sessionCheckIntervalRef.current) {
       clearInterval(sessionCheckIntervalRef.current);
@@ -57,12 +58,12 @@ export const UserProvider = ({ children }: Props) => {
         if (status === 200 && data.success === true) {
           console.log('session is running')
         } else {
-         setUser(null);
+         setIsAuthenticated(false)
           stopSessionMonitoring();
           toast.info("Your session has expired. Please log in again.");
         }
       } catch (error) {
-        setUser(null);
+        setIsAuthenticated(false)
         console.log(error)
       }
     }, SESSION_CHECK_INTERVAL);
@@ -71,11 +72,11 @@ export const UserProvider = ({ children }: Props) => {
       try {
         const { data, status } = await refresTokenAPI();
         if (status !== 200 && !data.success === true) {
-          setUser(null);
+          setIsAuthenticated(false)
           toast.info("Could not refresh session. Please log in again.");
         }
       } catch{
-        setUser(null);
+        setIsAuthenticated(false)
         toast.info("Could not refresh session. Please log in again.");
       }
     }, TOKEN_REFRESH_INTERVAL);
@@ -92,29 +93,31 @@ export const UserProvider = ({ children }: Props) => {
     }
   };
 
-  useEffect(() => {
-    const verifyUserSession = async () => {
-      try {
-        const { data, status } = await checkSessionAPI();
-        if (status === 200 && data.success === true) {
-          setUser({ userName: "Authenticated User", email: "user@example.com" });
-          console.log("sessionstarted")
-          startSessionMonitoring();
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
+useEffect(() => {
+  const verifyUserSession = async () => {
+    setIsLoading(true); // Start loading
+    try {
+      const { data, status } = await checkSessionAPI();
+      if (status === 200 && data.success === true) {
+        setIsAuthenticated(true);
+        startSessionMonitoring();
+      } else {
+        // Session is invalid or expired.
+        setIsAuthenticated(false);
       }
-    };
-    verifyUserSession();
+    } catch (error) {
+      setIsAuthenticated(false);
+      console.log("Session check failed:", error);
+    } finally {
+      setIsLoading(false); // Stop loading
+    }
+  };
+  verifyUserSession();
 
-    return () => {
-      stopSessionMonitoring();
-    };
-  }, []);
+  return () => {
+    stopSessionMonitoring();
+  };
+}, []);
 
   const registerUser = async (email: string, username: string, password: string): Promise<boolean> => {
     try {
@@ -122,7 +125,7 @@ export const UserProvider = ({ children }: Props) => {
       return true;
     } catch (e) {
       if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
-          toast.info(e.response.data.message);
+          console.log(e.response.data.message);
       } else {
         console.log("Registration failed.");
       }
@@ -134,10 +137,11 @@ export const UserProvider = ({ children }: Props) => {
     try {
       const { data, status } = await loginAPI(email, password);
       if (status === 200 && data.success === true) {
-        setUser({ userName: "Authenticated User", email: "user@example.com" });
-        startSessionMonitoring();
-        return true;
+          setIsAuthenticated(true);
+          startSessionMonitoring();
+          return true;
       }else {
+        setIsAuthenticated(false);
         return false;
       }
     } catch (e) {
@@ -148,21 +152,16 @@ export const UserProvider = ({ children }: Props) => {
         } else if (e.response.status === 401) {
           toast.error("Invalid email or password. Please try again.");
         } else if(e.response.data.message === "Redirecting to /otp-auth"){
-         
           setIsVerified(true);
-          
         }else{
           setIsVerified(false)
         }
       } else {
         toast.error("Login failed. Could not connect to the server or an unknown error occurred.");
       }
+      setIsAuthenticated(false)
       return false;
     }
-  };
-
-  const isLoggedIn = () => {
-    return !!user;
   };
 
   const logout = async () => {
@@ -171,7 +170,7 @@ export const UserProvider = ({ children }: Props) => {
     } catch{
       toast.error("Logout failed. Please try again.");
     } finally {
-      setUser(null);
+      setIsAuthenticated(false);
       stopSessionMonitoring();
     }
   };
@@ -255,9 +254,9 @@ export const UserProvider = ({ children }: Props) => {
     }
     return false;
   };
-
+  
   return (
-    <UserContext.Provider value={{ loginUser, user, logout, isLoggedIn, registerUser, isLoading,isVerified, forgotPassword, resetPasswordWithOTP, sendSignupOtp, verifySignupOtp }}>
+    <UserContext.Provider value={{ loginUser, logout,isAuthenticated, registerUser, isLoading,isVerified, forgotPassword, resetPasswordWithOTP, sendSignupOtp, verifySignupOtp }}>
       {!isLoading && children}
     </UserContext.Provider>
   );

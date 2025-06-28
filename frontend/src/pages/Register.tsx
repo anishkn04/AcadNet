@@ -4,26 +4,23 @@ import {
   Card,
   CardContent,
   CardDescription,
-
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner,faEye ,faEyeSlash} from "@fortawesome/free-solid-svg-icons";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useAuth } from "@/hooks/userContext"; // Import useAuth
-// import { toast } from "react-toastify"; // Keep toast for direct messages not from context
+import { useAuth } from "@/hooks/userContext"; 
 import { useNavigate } from "react-router-dom";
 import type { RegisterFormsInputs } from "@/models/User";
 import { useState} from "react";
 import PasswordStrengthMeter from "@/components/own_components/PasswordStrengthMeter";
 
-
-
-
-// Define Yup validation schema for the registration form with detailed password rules
 const validation = Yup.object().shape({
   email: Yup.string().email("Please enter a valid email address.").required("Email is required"),
   userName: Yup.string()
@@ -36,22 +33,14 @@ const validation = Yup.object().shape({
     ),
   password: Yup.string()
     .required("Password is required")
-    // .min(8, "At least 8 characters long")
-    // .matches(/[a-z]/, "One lowercase letter")
-    // .matches(/[A-Z]/, "One uppercase letter")
-    // .matches(/\d/, "One number")
-    // .matches(/[^A-Za-z0-9]/, "One special character"),
-
-   
 });
 
-
 export default function Register() {
-  // Destructure sendSignupOtp from useAuth
   const { registerUser ,sendSignupOtp} = useAuth();
+  const [seePwd,setSeePwd] = useState<boolean>(false)
   const navigate = useNavigate();
   const [formMessage, setFormMessage] = useState({ text: '', type: '' });
-  // const [isSubmitting, setIsSubmitting] = useState(false); // To disable button
+  const [spin,setSpin] = useState<boolean>(false)
   const {
     register,
     handleSubmit,
@@ -62,18 +51,11 @@ export default function Register() {
     resolver: yupResolver(validation),
     mode: "onChange",
   });
-
   const password = watch("password");
- 
-  // Calculate the status of each password requirement for visual feedback
-  // const passwordReqs = {
-  //   length: password ? password.length >= 8 : false,
-  //   lowercase: password ? /[a-z]/.test(password) : false,
-  //   uppercase: password ? /[A-Z]/.test(password) : false,
-  //   number: password ? /\d/.test(password) : false,
-  //   special: password ? /[^A-Za-z0-9]/.test(password) : false,
-  // };
 
+  const togglePwd = () =>{
+    setSeePwd(!seePwd)
+  }
 
   const triggerOtp = async () =>{
     try{
@@ -83,14 +65,12 @@ export default function Register() {
        setTimeout(() => {
           navigate('/otpverification', { replace: true });
         }, 1000);
-      
       }else{
         setFormMessage({text:"Failed to send OTP. Please try again later!",type:"error"})
       }
     }catch(e){
       console.log(e)
     }
-
   }
   const handleRegister = async ({email,userName, password}:RegisterFormsInputs)=>{
     console.log("has triggered")
@@ -100,14 +80,12 @@ export default function Register() {
           console.log("registered")
           reset()
           triggerOtp()
+          setSpin(true)
        }
      }catch(e){
       console.log(e)
      }
   }
-
- 
-
   return (
     <div className="flex bg-muted justify-center h-svh items-center">
     <motion.div
@@ -134,7 +112,7 @@ export default function Register() {
                         ? 'bg-green-100 text-green-700'
                         : formMessage.type === 'error'
                         ? 'bg-red-100 text-red-700'
-                        : 'bg-blue-100 text-blue-700' // 'info' type
+                        : 'bg-blue-100 text-blue-700'
                     }`}
                     role="alert"
                   >
@@ -165,34 +143,19 @@ export default function Register() {
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
                   </div>
-                  <Input id="password" type="password" {...register('password')} />
+                  <div className="flex justify-center items-center gap-2 relative">
+                    <Input id="password" type={!seePwd? ('password'):('text')} {...register('password')} />
+                    <FontAwesomeIcon onClick={() => togglePwd()} icon={!seePwd? (faEyeSlash):(faEye)} className="absolute right-3 text-gray-500/90 cursor-pointer" />
+                  </div>
                 </div>
                 <PasswordStrengthMeter password={password?? ""}/>
-                {/* Password Requirements: Dynamically show checkmark/cross based on validation */}
-                {/* <div id="password-reqs" className="text-xs text-gray-500 space-y-1 mb-2">
-                  <p className={`flex items-center ${passwordReqs.length ? 'hidden' : 'block text-red-600'}`}>
-                    At least 8 characters long
-                  </p>
-                  <p className={`flex items-center ${passwordReqs.lowercase ? 'hidden' : 'block text-red-500'}`}>
-                    One lowercase letter
-                  </p>
-                  <p className={`flex items-center ${passwordReqs.uppercase ? 'hidden' : 'block text-red-500'}`}>
-                    One uppercase letter
-                  </p>
-                  <p className={`flex items-center ${passwordReqs.number ? 'hidden' : 'block text-red-500'}`}>
-                    One number
-                  </p>
-                  <p className={`flex items-center ${passwordReqs.special ? 'hidden' : 'block text-red-500'}`}>
-                    One special character
-                  </p>
-                </div> */}
               </div>
-      
-      
-                <Button type="submit" className="w-full" >
+                <Button type="submit" className={`w-full cursor-pointer flex justify-center` } >
+                  <div className={spin?('block'):('hidden')}>
+                    <FontAwesomeIcon icon={faSpinner} className={`animate-spin`}/>
+                  </div>
                   Sign Up
                 </Button>
-      
             </form>
           </CardContent>
         </Card>
