@@ -4,7 +4,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import { Home } from "../pages/Home";
 import CreateGroup from "../pages/CreateGroup";
-import JoinGroup from "../pages/JoinGroup";
+import CreateGroupForm from "@/pages/CreateGroupForm";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
         path: "create",
         element: (
           <ProtectedRoutes>
-            <JoinGroup />
+            <CreateGroupForm />
           </ProtectedRoutes>
         ),
       },
@@ -40,7 +40,7 @@ export const router = createBrowserRouter([
         path: "group",
         element: (
           <ProtectedRoutes>
-            <StudyPlatform/>
+            <StudyPlatform />
           </ProtectedRoutes>
         ),
       },
@@ -55,9 +55,9 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        index:true,
-         element: <UserProfile /> },
-    
+        index: true,
+        element: <UserProfile />,
+      },
     ],
   },
   {
@@ -66,7 +66,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/register",
-    element: <Register />
+    element: <Register />,
   },
   {
     path: "/forgot",
