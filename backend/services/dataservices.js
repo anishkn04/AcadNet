@@ -44,10 +44,19 @@ export const getUserById = async (userId) => {
 
 export const userEdit = async (updates, id) => {
   try {
+    console.log("\n\n\n\n\nNew changes: ", updates, "\n\n\n\n\n\n")
     const user = await UserModel.findByPk(id)
-
+    const dataFromFrontend = updates.userData
+    console.log("userData is: ", dataFromFrontend)
+    for (var key in dataFromFrontend){
+      console.log("In the loop", key, dataFromFrontend[key])
+      if(updates[key] != undefined){
+        user.setDataValue(key, dataFromFrontend[key]);
+      }
+      console.log("After the changes: ", user)
+    }
     await user.save()
-    console.log(user)
+    // console.log(user)
   } catch (err) {
     console.log(err)
     throw err

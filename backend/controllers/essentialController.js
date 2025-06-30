@@ -29,6 +29,7 @@ export const userProfile = async (req, res) => {
     const updates = req.body
     const id = req.id
     await userEdit(updates, id)
+    jsonRes(res,200,true,'successful')
   } catch (err) {
     jsonRes(res, err.code, false, err.message)
   }
