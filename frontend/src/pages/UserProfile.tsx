@@ -1,176 +1,282 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfileData } from "@/models/User";
-import { useForm, type FieldErrors } from "react-hook-form";
-import { formSections } from "@/data/UserFormSection";
+import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
 
-const getError = (errors: FieldErrors, path: string) => {
-  const pathArray = path.split(".");
-  let current: any = errors;
-  for (const key of pathArray) {
-    if (current && key in current) {
-      current = current[key];
-    } else {
-      return undefined;
-    }
-  }
-  return current;
+const FOS_list = {
+    options: [
+        "Computer Science",
+        "Software Engineering",
+        "Information Technology",
+        "Electronics and Communication Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Architecture",
+        "Business Administration",
+        "Economics",
+        "Psychology",
+        "Physics",
+        "Mathematics",
+        "Biotechnology",
+        "Medicine",
+        "Law",
+    ],
 };
 
 const UserProfile = () => {
-  const { getInfo } = useData();
-  const location = useLocation();
+    const { getInfo, updateProfile } = useData();
+    const location = useLocation();
+    const [userInformation, setUserInformation] = useState<UserProfileData>();
+    const [formVisible, setFormVisible] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset, // Get the reset method from useForm
-  } = useForm<UserProfileData>(); // No defaultValues here initially
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        watch,
+    } = useForm<UserProfileData>({
+        defaultValues: userInformation || {},
+    });
 
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+    useEffect(() => {
+        const fetchUserData = async () => {
+            setIsLoading(true);
+            try {
+                const data = await getInfo();
+                if (data) {
+                    setUserInformation(data);
+                    reset(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchUserData();
+    }, [location, getInfo, reset]);
 
-  useEffect(() => {
-    const fetchDataAndPopulateForm = async () => {
-      if (location.pathname === '/user') {
-        setIsLoading(true); // Start loading
-        const data = await getInfo();
-        if (data) {
-          // Use reset to populate the form fields with fetched data
-          reset(data);
-        } else {
-          // Handle case where data fetching failed or returned null
-          console.log("Failed to load user profile data.");
-          // You might want to set some default empty state or show an error message
-          reset({
-            email: "",
-            fullName: "",
-            isBanned: false,
-            isVerified: false,
-            lastOtp: "",
-            password: "",
-            role: "",
-            updatedAt: "",
-            username: ""
-          });
+    const changeVisibility = () => {
+        setFormVisible(!formVisible);
+        if (formVisible && userInformation) {
+            reset(userInformation);
         }
-        setIsLoading(false); // End loading
-      }
     };
-    
-    fetchDataAndPopulateForm();
-  }, [location, getInfo, reset]); // Add reset to dependency array
 
-  const onSubmit = async (data: UserProfileData) => {
-    try {
-      // TODO: Replace with actual API endpoint when backend is ready
-      console.log("User Profile Data:", { user_profile: data });
-      alert("Profile data logged to console. API integration pending.");
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      // Handle error
+    const onSubmit = async (data: UserProfileData) => {
+        setIsSubmitting(true);
+        try {
+            await updateProfile(data);
+            setFormVisible(false);
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="w-full p-4 md:p-6 text-center text-lg text-gray-700 dark:text-gray-300">
+                Loading user profile...
+            </div>
+        );
     }
-  };
 
-  if (isLoading) {
-    return <div className="w-full p-4 md:p-6 text-center text-lg">Loading user profile...</div>;
-  }
+    return (
+        <div className="w-full p-4 md:p-6 space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <Card>
+                    <CardHeader className="flex justify-between">
+                        <CardTitle className="font-bold text-xl underline">Personal Information</CardTitle>
+                        <CardDescription>
+                            <Button onClick={changeVisibility} className="bg-gray-700 px-4 sm:px-8 cursor-pointer" type="button">
+                                {formVisible ? "Cancel" : "Edit"}
+                            </Button>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col md:flex-row justify-between gap-2">
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id={'username'}
+                                    {...register('username')}
+                                    type="text"
+                                    defaultValue={userInformation?.username}
+                                    disabled={!formVisible}
+                                />
+                                {errors.username && <span className="text-red-500 text-sm">{errors.username.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="fullName">Full Name</Label>
+                                <Input
+                                    id={'fullName'}
+                                    {...register('fullName')}
+                                    type="text"
+                                    defaultValue={userInformation?.fullName}
+                                    disabled={!formVisible}
+                                />
+                                {errors.fullName && <span className="text-red-500 text-sm">{errors.fullName.message}</span>}
+                            </div>
+                        </div>
+                        <hr className="my-5" />
+                        <CardTitle className="font-bold text-xl underline">Contact Information</CardTitle>
+                        <div className="flex flex-col md:flex-row justify-between gap-2 mt-6">
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id={'email'}
+                                    {...register('email')}
+                                    type="text"
+                                    defaultValue={userInformation?.email}
+                                    disabled={!formVisible}
+                                />
+                                {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="phone">Phone</Label>
+                                <Input
+                                    id={'phone'}
+                                    {...register('phone')}
+                                    type="text"
+                                    defaultValue={userInformation?.phone}
+                                    disabled={!formVisible}
+                                />
+                                {errors.phone && <span className="text-red-500 text-sm">{errors.phone.message}</span>}
+                            </div>
+                        </div>
+                        <hr className="my-5" />
+                        <CardTitle className="font-bold text-xl underline">Address Information</CardTitle>
+                        <div className="flex flex-col md:flex-row justify-between gap-2 mt-6">
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="address.province">Province</Label>
+                                <Input
+                                    id={'address.province'}
+                                    {...register('address.province')}
+                                    type="text"
+                                    defaultValue={userInformation?.address?.province}
+                                    disabled={!formVisible}
+                                />
+                                {errors.address?.province && <span className="text-red-500 text-sm">{errors.address.province.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="address.municipality">Municipality</Label>
+                                <Input
+                                    id={'address.municipality'}
+                                    {...register('address.municipality')}
+                                    type="text"
+                                    defaultValue={userInformation?.address?.municipality}
+                                    disabled={!formVisible}
+                                />
+                                {errors.address?.municipality && <span className="text-red-500 text-sm">{errors.address.municipality.message}</span>}
+                            </div>
+                        </div>
+                        <div className="flex justify-between gap-2 mt-6">
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="address.district">District</Label>
+                                <Input
+                                    id={'address.district'}
+                                    {...register('address.district')}
+                                    type="text"
+                                    defaultValue={userInformation?.address?.district}
+                                    disabled={!formVisible}
+                                />
+                                {errors.address?.district && <span className="text-red-500 text-sm">{errors.address.district.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="address.wordNo">Word No.</Label>
+                                <Input
+                                    id={'address.wordNo'}
+                                    {...register('address.wordNo')}
+                                    type="text"
+                                    defaultValue={userInformation?.address?.wordNo}
+                                    disabled={!formVisible}
+                                />
+                                {errors.address?.wordNo && <span className="text-red-500 text-sm">{errors.address.wordNo.message}</span>}
+                            </div>
+                        </div>
 
-  return (
-    <div className="w-full p-4 md:p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">
-        User Profile
-      </h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {formSections.map((section) => (
-          <Card
-            key={section.title}
-            className="w-full bg-transparent shadow-none border rounded-lg border-gray-200 dark:border-gray-700"
-          >
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-gray-100">
-                {section.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-              {section.fields.map((field) => {
-                const error = getError(errors, field.name);
-                return (
-                  <div
-                    key={field.name}
-                    className={`space-y-2 ${field.className || ""}`}
-                  >
-                    <Label
-                      htmlFor={field.name}
-                      className="text-gray-700 dark:text-gray-300 font-medium"
-                    >
-                      {field.label}
-                    </Label>
-                    {field.type === "textarea" ? (
-                      <textarea
-                        id={field.name}
-                        {...register(field.name as any, {
-                          required: field.requiredMessage,
-                        })}
-                        placeholder={field.placeholder}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px] resize-vertical bg-gray-50 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      />
-                    ) : field.type === "select" ? (
-                      <select
-                        id={field.name}
-                        title={`Select your ${field.label.toLowerCase()}`}
-                        {...register(field.name as any, {
-                          required: field.requiredMessage,
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      >
-                        <option value="">Select {field.label}</option>
-                        {field.options?.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <Input
-                        id={field.name}
-                        type={field.type}
-                        {...register(field.name as any, {
-                          required: field.requiredMessage,
-                          ...(field.type === "number" && {
-                            valueAsNumber: true,
-                          }),
-                        })}
-                        className="bg-gray-50 border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      />
-                    )}
-                    {error && (
-                      <p className="text-red-500 text-sm">
-                        {(error as any).message}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        ))}
-        <div className="flex justify-end pt-4">
-          <Button
-            type="submit"
-            className="px-10 py-3 text-lg font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105"
-          >
-            Save Profile
-          </Button>
+                        <hr className="my-5" />
+                        <CardTitle className="font-bold text-xl underline">Education</CardTitle>
+                        <div className="flex justify-between gap-2 mt-6">
+                            <div className="w-full ">
+                                <Label htmlFor="education.level">Level</Label>
+                                <select
+                                    className="w-full border-1 mt-2 h-9 rounded-md px-2"
+                                    id="education.level"
+                                    {...register("education.level")}
+                                    defaultValue={userInformation?.education?.level || ""}
+                                    disabled={!formVisible}
+                                >
+                                    <option value="" disabled>Select the level</option>
+                                    <option value={'School'}>School</option>
+                                    <option value={'Undergraduate'}>Undergraduate</option>
+                                    <option value={'Graduate'}>Graduate</option>
+                                </select>
+                                {errors.education?.level && <span className="text-red-500 text-sm">{errors.education.level.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="education.FOS">Field of Study</Label>
+                                <select
+                                    className="w-full border-1 h-9 rounded-md px-2"
+                                    id="education.FOS"
+                                    {...register("education.FOS")}
+                                    defaultValue={userInformation?.education?.FOS || ""}
+                                    disabled={!formVisible}
+                                >
+                                    <option value="" disabled>Select the Field of study</option>
+                                    {FOS_list.options?.map((option) => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                                {errors.education?.FOS && <span className="text-red-500 text-sm">{errors.education.FOS.message}</span>}
+                            </div>
+                        </div>
+                        <div className="flex justify-between gap-2 mt-6">
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="education.university">University</Label>
+                                <Input
+                                    id={'education.university'}
+                                    {...register('education.university')}
+                                    type="text"
+                                    defaultValue={userInformation?.education?.university}
+                                    disabled={!formVisible}
+                                />
+                                {errors.education?.university && <span className="text-red-500 text-sm">{errors.education.university.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="education.college">College</Label>
+                                <Input
+                                    id={'education.college'}
+                                    {...register('education.college')}
+                                    type="text"
+                                    defaultValue={userInformation?.education?.college}
+                                    disabled={!formVisible}
+                                />
+                                {errors.education?.college && <span className="text-red-500 text-sm">{errors.education.college.message}</span>}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                {formVisible && (
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </div>
+                )}
+            </form>
         </div>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default UserProfile;

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner,faEye ,faEyeSlash, faSpaghettiMonsterFlying} from "@fortawesome/free-solid-svg-icons";
+import { faSpinner,faEye ,faEyeSlash} from "@fortawesome/free-solid-svg-icons";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext"; 
 import { useNavigate } from "react-router-dom";
 import type { RegisterFormsInputs } from "@/models/User";
-import { useEffect, useState} from "react";
+import {useState} from "react";
 import PasswordStrengthMeter from "@/components/own_components/PasswordStrengthMeter";
 import LoadingPage from "./LoadingPage";
 
