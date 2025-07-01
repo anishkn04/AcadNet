@@ -34,10 +34,7 @@ const StudyGroup = sequelize.define(
         key: "user_id",
       },
     },
-    creatorName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+  
 
     groupCode: {
       type: DataTypes.STRING(6),
