@@ -8,7 +8,7 @@ const MainLayout = () => {
  
   return (
     
-    <div>
+    <div className='caret-transparent select-none overflow-hidden'>
       <Header/>
       <main>
         <Outlet/>

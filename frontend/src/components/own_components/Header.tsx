@@ -5,9 +5,8 @@ import { useAuth } from '@/hooks/userContext';
 import Profile from './Profile';
 
 export const Header: React.FC = () => {
-  const {isAuthenticated,logout} = useAuth();
+  const {isAuthenticated} = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [studyGroupOpen, setStudyGroupOpen] = useState(false); 
 
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -40,9 +39,6 @@ export const Header: React.FC = () => {
           </button>
       {isAuthenticated ? (
         <>
-          {/* <button  onClick={logout} className="hidden sm:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-300 transition-colors">
-            <span className="truncate">Logout</span>
-          </button> */}
           <Profile/>
           </>
       ):(
@@ -62,46 +58,17 @@ export const Header: React.FC = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-[72px] left-0 right-0 bg-white/90 backdrop-blur-2xl shadow-lg z-50 p-4">
           <nav className="flex flex-col space-y-4">
-            <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="/">Home</a>
+            <Link onClick={() =>{setMobileMenuOpen(false)}} className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" to="/">Home</Link>
             {/* Collapsible Study Group for mobile */}
             <div>
-              <button
-                className="w-full flex items-center justify-between text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
-                onClick={() => setStudyGroupOpen(open => !open)}
-              >
-                <span>Study Group</span>
-                {/* <span>{studyGroupOpen ? "▲" : "▼"}</span> */}
-              </button>
-              {studyGroupOpen && (
-                <div className="pl-4 flex flex-col space-y-2">
-                  <Link
-                    to={'/create'}
-                    className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-1 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Create Group
-                  </Link>
-                  <Link
-                    to={'/join'}
-                    className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-1 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Join Group
-                  </Link>
-                </div>
-              )}
+                <Link onClick={() =>{setMobileMenuOpen(false)}} to={'/join'}>Study Group</Link>
             </div>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">Resources</a>
             <a className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors" href="#">About</a>
             <div className="flex space-x-3 pt-2">
-              {isAuthenticated ? (
-                  <button onClick={logout} className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
-                  Logout
-                </button>
-                
-              ):(
+              {!isAuthenticated &&
                 <>
-              <Link to={'/register'}>
+              <Link onClick={() =>{setMobileMenuOpen(false)}} to={'/register'}>
                 <button className="flex-1 flex items-center justify-center rounded-lg h-10 px-4 bg-[#1993e5] text-slate-50 text-sm font-bold hover:bg-[#137abd] transition-colors">
                   Sign Up
                 </button>
@@ -112,7 +79,7 @@ export const Header: React.FC = () => {
                 </button>
               </Link>
               </>
-              )}
+              }
             </div>
           </nav>
         </div>
