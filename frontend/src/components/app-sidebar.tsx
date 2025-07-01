@@ -1,9 +1,8 @@
-import { User, Home, Bell, Settings, Info ,Book} from "lucide-react";
+import { User, Home, Bell, Settings, Info } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
