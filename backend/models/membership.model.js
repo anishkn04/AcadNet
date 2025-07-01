@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "./path-to-your-sequelize-instance.js";
+import sequelize  from "../config/database.js";
 
 const Membership = sequelize.define(
   "Membership",
