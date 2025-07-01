@@ -85,15 +85,21 @@ const UserModel = sequelize.define(
       type: DataTypes.ENUM(...countryEnum),
       allowNull: true,
     },
-    address: {
-      type: DataTypes.JSONB,
+    address_id: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: {},
+      references: {
+        model: "addresses",
+        key: "address_id",
+      },
     },
-    education: {
-      type: DataTypes.JSONB,
+    academic_id: {
+      type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: {},
+      references: {
+        model: "academics",
+        key: "academic_id",
+      },
     },
   },
   {
