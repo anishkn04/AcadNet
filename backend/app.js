@@ -10,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import groupRouter from "./routes/grouprouter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,6 +73,7 @@ app.use(express.json());
 app.use(logger);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/data", dataRouter);
+app.use("/api/v1/group",groupRouter)
 
 app.use(passport.initialize());
 
