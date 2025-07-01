@@ -12,7 +12,7 @@ export const fetchUserAPI = async ()=>{
 
 export const editUserAPI = async (userData:UserProfileData)=>{
     try{
-        const response = await apiClient.post<any>('/data/editprofile',{userData});
+        const response = await apiClient.post<any>('/data/editprofile',userData);
         return {data:response.data, status: response.status}
     }catch(error){
         throw error;

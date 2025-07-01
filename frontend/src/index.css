@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* *{
+  @apply caret-transparent
+} */
+ *{
+  scroll-behavior: smooth;
+ }
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

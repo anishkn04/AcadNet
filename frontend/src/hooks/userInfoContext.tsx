@@ -1,10 +1,12 @@
 import type {  UserProfileData } from "@/models/User";
 import { editUserAPI, fetchUserAPI } from "@/services/UserServices";
-import React, { createContext, type ReactNode } from "react";
+import React, { createContext, useEffect, type ReactNode,useState } from "react";
+import { useAuth } from "./userContext";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
     updateProfile: (updates:UserProfileData) => Promise<void>
+    user : string
 }
 
 type Props = {children:ReactNode}
@@ -13,8 +15,8 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 
 
 export const UserInfoProvider = ({children}:Props) =>{
-    
-  
+    const [user,setUser] = useState<string>("")
+    const {isAuthenticated} = useAuth()
 
     const getInfo = async():Promise<UserProfileData | null> =>{
         try{
@@ -42,8 +44,18 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
          
     }
+
+    useEffect(()=>{
+        const fetchUsername = async() =>{
+            const data = await getInfo();
+            setUser(data?.username ?? '')
+        }
+        if(isAuthenticated){
+            fetchUsername()
+        }
+    },[isAuthenticated])
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,user}}>
             {children}
         </UserInfoContext.Provider>
     )

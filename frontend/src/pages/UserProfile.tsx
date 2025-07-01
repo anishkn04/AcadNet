@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfileData } from "@/models/User";
@@ -25,6 +26,7 @@ const FOS_list = {
         "Biotechnology",
         "Medicine",
         "Law",
+        "Others"
     ],
 };
 
@@ -41,7 +43,6 @@ const UserProfile = () => {
         handleSubmit,
         formState: { errors },
         reset,
-        watch,
     } = useForm<UserProfileData>({
         defaultValues: userInformation || {},
     });
@@ -86,17 +87,23 @@ const UserProfile = () => {
     if (isLoading) {
         return (
             <div className="w-full p-4 md:p-6 text-center text-lg text-gray-700 dark:text-gray-300">
-                Loading user profile...
+                <div className="flex flex-col space-y-3">
+                 <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                 <div className="space-y-2">
+                     <Skeleton className="h-4 w-[250px]" />
+                     <Skeleton className="h-4 w-[200px]" />
+                 </div>
+                 </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full p-4 md:p-6 space-y-6">
+        <div className="w-full p-4 md:p-6 space-y-6  ">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <Card>
                     <CardHeader className="flex justify-between">
-                        <CardTitle className="font-bold text-xl underline">Personal Information</CardTitle>
+                        <CardTitle className="font-bold text-xl">Personal Information</CardTitle>
                         <CardDescription>
                             <Button onClick={changeVisibility} className="bg-gray-700 px-4 sm:px-8 cursor-pointer" type="button">
                                 {formVisible ? "Cancel" : "Edit"}
@@ -112,7 +119,8 @@ const UserProfile = () => {
                                     {...register('username')}
                                     type="text"
                                     defaultValue={userInformation?.username}
-                                    disabled={!formVisible}
+                                    disabled
+                                    className="select-none cursor-none caret-transparent"
                                 />
                                 {errors.username && <span className="text-red-500 text-sm">{errors.username.message}</span>}
                             </div>
@@ -129,7 +137,7 @@ const UserProfile = () => {
                             </div>
                         </div>
                         <hr className="my-5" />
-                        <CardTitle className="font-bold text-xl underline">Contact Information</CardTitle>
+                        <CardTitle className="font-bold text-xl ">Contact Information</CardTitle>
                         <div className="flex flex-col md:flex-row justify-between gap-2 mt-6">
                             <div className="w-full flex flex-col gap-2">
                                 <Label htmlFor="email">Email</Label>
@@ -138,7 +146,7 @@ const UserProfile = () => {
                                     {...register('email')}
                                     type="text"
                                     defaultValue={userInformation?.email}
-                                    disabled={!formVisible}
+                                    disabled
                                 />
                                 {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
                             </div>
@@ -155,7 +163,7 @@ const UserProfile = () => {
                             </div>
                         </div>
                         <hr className="my-5" />
-                        <CardTitle className="font-bold text-xl underline">Address Information</CardTitle>
+                        <CardTitle className="font-bold text-xl ">Address Information</CardTitle>
                         <div className="flex flex-col md:flex-row justify-between gap-2 mt-6">
                             <div className="w-full flex flex-col gap-2">
                                 <Label htmlFor="address.province">Province</Label>
@@ -193,7 +201,7 @@ const UserProfile = () => {
                                 {errors.address?.district && <span className="text-red-500 text-sm">{errors.address.district.message}</span>}
                             </div>
                             <div className="w-full flex flex-col gap-2">
-                                <Label htmlFor="address.wordNo">Word No.</Label>
+                                <Label htmlFor="address.wordNo">Postal  Code</Label>
                                 <Input
                                     id={'address.wordNo'}
                                     {...register('address.wordNo')}
@@ -206,7 +214,7 @@ const UserProfile = () => {
                         </div>
 
                         <hr className="my-5" />
-                        <CardTitle className="font-bold text-xl underline">Education</CardTitle>
+                        <CardTitle className="font-bold text-xl ">Education</CardTitle>
                         <div className="flex justify-between gap-2 mt-6">
                             <div className="w-full ">
                                 <Label htmlFor="education.level">Level</Label>

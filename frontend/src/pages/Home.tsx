@@ -6,7 +6,6 @@ import { testimonialsData } from '@/data/data';
 import { teamData } from '@/data/data';
 import { TeamMemberCard } from '@/components/own_components/TeamMemberCard';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/userContext';
 
 interface StepCardProps {
   number: number;
@@ -48,10 +47,10 @@ export const Home: React.FC = () => {
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="flex min-w-[180px] max-w-xs mx-auto sm:mx-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#1993e5] text-slate-50 text-base font-bold leading-normal tracking-[0.015em] hover:bg-[#137abd] transition-colors shadow-lg">
-              <span className="truncate"><Link to={'/join'}>Join a Study Group</Link></span>
+              <Link to={'/join'}>J<span className="truncate">oin a Study Group</span></Link>
             </button>
             <button className="flex min-w-[180px] max-w-xs mx-auto sm:mx-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-slate-100 text-slate-900 text-base font-bold leading-normal tracking-[0.015em] hover:bg-slate-200 transition-colors shadow-lg">
-              <span className="truncate"><Link to={'/create'}>Create Study Group</Link></span>
+              <Link to={'/create'}><span className="truncate">Create Study Group</span></Link>
             </button>
           </div>
         </div>

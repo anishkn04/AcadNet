@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import { useData } from "@/hooks/userInfoContext";
 
 // Menu items.
 const items = [
@@ -43,18 +44,19 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const {user} = useData()
   return (
     <Sidebar  >
       <SidebarContent >
         <SidebarGroup >
-          <SidebarGroupLabel className="text-xl font-bold underline">
-            Application
+          <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
+            <p>{user}</p>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu >
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="pl-14 py-5">
                     <Link to={item.url ?? "#"}>
                       <item.icon />
                       <span>{item.title}</span>
