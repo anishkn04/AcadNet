@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import { Button } from "@/components/ui/button";
 
 // Define the structure for a subtopic
@@ -15,29 +15,89 @@ interface SyllabusUnit {
   subtopics: Subtopic[];
 }
 
-interface SyllabusSectionProps {
-  syllabusUnits: SyllabusUnit[];
-  addSyllabusUnit: () => void;
-  removeSyllabusUnit: (id: string) => void;
-  updateUnitTitle: (id: string, title: string) => void;
-  addSubtopic: (unitId: string) => void;
-  removeSubtopic: (unitId: string, subtopicId: string) => void;
-  updateSubtopicName: (
+
+const SyllabusSection: React.FC = ({
+}) => {
+   const [syllabusUnits, setSyllabusUnits] = useState<SyllabusUnit[]>([]);
+
+
+
+     const removeSyllabusUnit = (id: string) => {
+    setSyllabusUnits(syllabusUnits.filter((unit) => unit.id !== id));
+  };
+
+  const updateSubtopicName = (
     unitId: string,
     subtopicId: string,
     name: string
-  ) => void;
-}
+  ) => {
+    setSyllabusUnits(
+      syllabusUnits.map((unit) =>
+        unit.id === unitId
+          ? {
+              ...unit,
+              subtopics: unit.subtopics.map((subtopic) =>
+                subtopic.id === subtopicId ? { ...subtopic, name } : subtopic
+              ),
+            }
+          : unit
+      )
+    );
+  };
+     const addSubtopic = (unitId: string) => {
+    setSyllabusUnits(
+      syllabusUnits.map((unit) =>
+        unit.id === unitId
+          ? {
+              ...unit,
+              subtopics: [
+                ...unit.subtopics,
+                { id: Date.now().toString() + Math.random(), name: "" },
+              ],
+            }
+          : unit
+      )
+    );
+  };
+     const updateUnitTitle = (id: string, title: string) => {
+    setSyllabusUnits(
+      syllabusUnits.map((unit) => (unit.id === id ? { ...unit, title } : unit))
+    );
+  };
+  const addSyllabusUnit = () => {
+    const nextUnitNum =
+      syllabusUnits.length > 0
+        ? (
+            parseInt(
+              syllabusUnits[syllabusUnits.length - 1].unitNumber || "0"
+            ) + 1
+          ).toString()
+        : "1";
 
-const SyllabusSection: React.FC<SyllabusSectionProps> = ({
-  syllabusUnits,
-  addSyllabusUnit,
-  removeSyllabusUnit,
-  updateUnitTitle,
-  addSubtopic,
-  removeSubtopic,
-  updateSubtopicName,
-}) => {
+    setSyllabusUnits([
+      ...syllabusUnits,
+      {
+        id: Date.now().toString(),
+        unitNumber: nextUnitNum,
+        title: "",
+        subtopics: [],
+      },
+    ]);
+  };
+    const removeSubtopic = (unitId: string, subtopicId: string) => {
+    setSyllabusUnits(
+      syllabusUnits.map((unit) =>
+        unit.id === unitId
+          ? {
+              ...unit,
+              subtopics: unit.subtopics.filter(
+                (subtopic) => subtopic.id !== subtopicId
+              ),
+            }
+          : unit
+      )
+    );
+  };
   return (
     <>
       <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-3">

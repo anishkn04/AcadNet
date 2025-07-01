@@ -29,10 +29,10 @@ export default function Profile() {
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link to="/user">Profile</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Support</DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">Support</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="cursor-pointer">Log out</DropdownMenuItem>
       </DropdownMenuContent>

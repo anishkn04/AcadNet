@@ -32,7 +32,7 @@ type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
 const SESSION_CHECK_INTERVAL = 10 * 1000;
-const TOKEN_REFRESH_INTERVAL = 30 * 60 * 1000;
+const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 
 export const UserProvider = ({ children }: Props) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -68,18 +68,27 @@ export const UserProvider = ({ children }: Props) => {
       }
     }, SESSION_CHECK_INTERVAL);
 
-    tokenRefreshIntervalRef.current = setInterval(async () => {
-      try {
-        const { data, status } = await refresTokenAPI();
-        if (status !== 200 && !data.success === true) {
-          setIsAuthenticated(false)
-          toast.info("Could not refresh session. Please log in again.");
-        }
-      } catch{
-        setIsAuthenticated(false)
-        toast.info("Could not refresh session. Please log in again.");
+tokenRefreshIntervalRef.current = setInterval(async () => {
+  try {
+    const { data, status } = await refresTokenAPI();
+    if (status === 200 && data.success === true) {
+      // Try verifying session immediately
+      const sessionRes = await checkSessionAPI();
+      if (sessionRes.status === 200 && sessionRes.data.success === true) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
       }
-    }, TOKEN_REFRESH_INTERVAL);
+    } else {
+      setIsAuthenticated(false);
+      console.log('couldnt refresh the session')
+    }
+  } catch (err) {
+    console.error("Refresh failed:", err);
+    setIsAuthenticated(false);
+    toast.info("Could not refresh session. Please log in again.");
+  }
+}, TOKEN_REFRESH_INTERVAL);
   };
 
   const stopSessionMonitoring = () => {
