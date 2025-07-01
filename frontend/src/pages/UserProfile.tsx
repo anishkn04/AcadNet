@@ -105,7 +105,7 @@ const UserProfile = () => {
                     <CardHeader className="flex justify-between">
                         <CardTitle className="font-bold text-xl">Personal Information</CardTitle>
                         <CardDescription>
-                            <Button onClick={changeVisibility} className="bg-gray-700 px-4 sm:px-8 cursor-pointer" type="button">
+                            <Button onClick={changeVisibility} className="bg-green-600 hover:bg-green-600/90 px-4 sm:px-8 cursor-pointer" type="button">
                                 {formVisible ? "Cancel" : "Edit"}
                             </Button>
                         </CardDescription>
@@ -277,7 +277,7 @@ const UserProfile = () => {
                 </Card>
                 {formVisible && (
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button type="submit" className="bg-blue-600 hover:bg-blue-600/90 cursor-pointer" disabled={isSubmitting}>
                             {isSubmitting ? "Saving..." : "Save Changes"}
                         </Button>
                     </div>

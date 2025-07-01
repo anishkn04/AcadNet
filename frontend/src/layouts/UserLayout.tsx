@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 
 const UserLayout = () => {
   return (
-    <SidebarProvider className="caret-transparent">
+    <SidebarProvider className="select-none">
       <AppSidebar />
       <main className="w-full">
         <SidebarTrigger />

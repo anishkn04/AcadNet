@@ -1,4 +1,7 @@
+
 import React from "react";
+
+
 
 interface AdditionalResourcesProps {
   triggerPdfUpload: () => void;
@@ -62,7 +65,6 @@ const AdditionalResourcesSection: React.FC<AdditionalResourcesProps> = ({
             type="file"
             accept=".pdf"
             ref={pdfInputRef}
-            onChange={handlePdfFileSelect}
             className="hidden"
             title="Upload PDF Document"
             placeholder="Select PDF file"
