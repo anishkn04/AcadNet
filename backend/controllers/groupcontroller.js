@@ -1,10 +1,11 @@
 import { getAllGroups , createStudyGroupWithSyllabus} from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
+import fs from 'fs'
 
 export const getGroups = async (req,res)=>{
     try{
         console.log("Reached Here")
-        const allGroups = await getAllGroups(res)
+        const allGroups = await getAllGroups(req)
         console.log(allGroups)
         jsonRes(res,200,true,allGroups)
     }
@@ -16,8 +17,17 @@ export const getGroups = async (req,res)=>{
 
 export const createGroup = async (req, res) => {
  const creatorId = req.id;
- const { name, description, isPrivate, syllabus } = req.body;
- const files = req.files; // Files from multer
+ let { name, description, isPrivate, syllabus } = req.body;
+ const files = req.files; 
+
+ if (typeof syllabus === 'string') {
+  try {
+   syllabus = JSON.parse(syllabus);
+  } catch (parseError) {
+   return jsonRes(res, 400, false, "Invalid syllabus JSON format.");
+  }
+ }
+
 
  if (!name) {
   return jsonRes(res, 400, false, "Group name is required.");
@@ -25,20 +35,38 @@ export const createGroup = async (req, res) => {
  if (!syllabus) {
   return jsonRes(res, 400, false, "Syllabus data is required to create a group.");
  }
+ 
+
+ let topicsData;
+ if (syllabus.syllabus && syllabus.syllabus.topics) {
+  topicsData = syllabus.syllabus.topics;
+ } else if (syllabus.topics) {
+  topicsData = syllabus.topics;
+ } else {
+  return jsonRes(res, 400, false, "Syllabus must have a 'topics' property.");
+ }
+ 
+ if (!Array.isArray(topicsData)) {
+  return jsonRes(res, 400, false, "Syllabus topics must be an array.");
+ }
+ 
+ if (topicsData.length === 0) {
+  return jsonRes(res, 400, false, "Syllabus must contain at least one topic.");
+ }
 
  try {
   const newGroup = await createStudyGroupWithSyllabus(
    creatorId,
    { name, description, isPrivate },
-   syllabus.topics,
-   files // Pass the files to the service
+   topicsData,
+   files 
   );
   jsonRes(res, 201, true, {
    message: "Study group created successfully!",
    group: newGroup,
   });
  } catch (err) {
-  // If there's an error, clean up any uploaded files
+
   if (files) {
    files.forEach((file) => {
     fs.unlink(file.path, (unlinkErr) => {

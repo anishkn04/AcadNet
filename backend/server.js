@@ -13,7 +13,8 @@ import {
   Membership,
   Syllabus,
   Topic,
-  SubTopic
+  SubTopic,
+  AdditionalResource
  } from './models/index.model.js';
 
 const PORT = process.env.BACKEND_PORT || 3000;
@@ -36,7 +37,8 @@ const startServer = async () => {
     await Membership.sync({ alter: true });
     await Syllabus.sync({ alter: true });
     await Topic.sync({ alter: true });
-    await SubTopic.sync({ force: true });
+    await SubTopic.sync({ alter: true });
+    await AdditionalResource.sync({ alter: true });
 
     console.log('✅ Models synced successfully');
 
