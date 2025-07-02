@@ -106,24 +106,55 @@ export const logoutAll = async (userId) => {
   }
 };
 
+
 export const signupService = async (email, username, password) => {
   try {
     let newusername = username;
-
+  
     let suffix = 1;
-
-
 
     while (await UserModel.findOne({ where: { username: newusername } })) {
       newusername = `${username}_${suffix++}`;
     }
-
     await UserModel.create({ email, username: newusername, password_hash: password });
+ 
     return newusername
   } catch (err) {
+    // Handle Sequelize Unique Constraint Errors
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      // Check which field caused the unique constraint violation
+      if (err.errors && err.errors.length > 0) {
+        const duplicateField = err.errors[0].path;
+        
+        if (duplicateField === 'email') {
+          err.message = "Email is already in use";
+        } else if (duplicateField === 'username') {
+          err.message = "Username is already taken";
+        } else {
+          err.message = `${duplicateField} must be unique`;
+        }
+      } else {
+        err.message = "Duplicate entry detected";
+      }
+    } 
+    // Handle other Sequelize Validation Errors
+    else if (err.name === 'SequelizeValidationError') {
+      // Handle validation errors (like invalid email format, length constraints, etc.)
+      if (err.errors && err.errors.length > 0) {
+        err.message = err.errors[0].message;
+      } else {
+        err.message = "Validation failed";
+      }
+    }
+    // Keep original handling for backward compatibility
+    else if (err.message === "Validation error") {
+      err.message = "Email in Use";
+    }
+    
     throw err;
   }
 };
+
 
 export const loginService = async (res, email, password) => {
   try {
