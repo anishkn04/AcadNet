@@ -3,8 +3,6 @@ import { Features } from "@/components/own_components/Features";
 import { stepsData } from "@/data/data";
 import { TestimonialCard } from "@/components/own_components/TestonomialCard";
 import { testimonialsData } from "@/data/data";
-import { teamData } from "@/data/data";
-import { TeamMemberCard } from "@/components/own_components/TeamMemberCard";
 import { Link } from "react-router-dom";
 
 interface StepCardProps {
@@ -64,16 +62,7 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* <section className="py-16 sm:py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-10 text-center">
-          <p className="text-slate-700 text-lg font-medium leading-relaxed tracking-wide max-w-3xl mx-auto">
-            AcadNet is a peer-led academic collaboration platform designed to
-            help students connect, share resources, and support each other's
-            learning journeys. Join study groups, access shared resources, and
-            participate in forums to enhance your academic experience.
-          </p>
-        </div>
-      </section> */}
+
       <Features />
       <section className="py-16 sm:py-24 bg-slate-100" id="how-it-works">
         <div className="container mx-auto px-4 sm:px-6 lg:px-10">
@@ -100,7 +89,7 @@ export const Home: React.FC = () => {
       </section>
       <section className="py-16 sm:py-24" id="testimonials">
         <div className="container mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-6 sm:mb-6">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
               Testimonials
             </h2>
@@ -116,28 +105,6 @@ export const Home: React.FC = () => {
                 role={testimonial.role}
                 quote={testimonial.quote}
                 image={testimonial.image}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="py-16 sm:py-24 bg-slate-100" id="team">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
-              Our Team
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Meet the talented individuals behind AcadNet.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {teamData.map((member, index) => (
-              <TeamMemberCard
-                key={index}
-                name={member.name}
-                role={member.role}
-                image={member.image}
               />
             ))}
           </div>

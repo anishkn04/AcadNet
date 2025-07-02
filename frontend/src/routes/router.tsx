@@ -5,6 +5,7 @@ import Register from "../pages/Register";
 import { Home } from "../pages/Home";
 import CreateGroup from "../pages/CreateGroup";
 import CreateGroupForm from "@/pages/CreateGroupForm";
+import About from "@/pages/About";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
             <CreateGroupForm />
           </ProtectedRoutes>
         ),
+      },
+      {
+        path: "about",
+        element: <About />,
       },
       {
         path: "group",
