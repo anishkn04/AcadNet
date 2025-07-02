@@ -25,20 +25,20 @@ const startServer = async () => {
     console.log('✅ Database connected successfully');
 
     // Sync models in dependency order
-    await CountryModel.sync({ alter: true });
-    await LevelModel.sync({ alter: true });
-    await FieldOfStudyModel.sync({ alter: true });
-    await UniversityModel.sync({ alter: true });
-    await CollegeModel.sync({ alter: true });
-    await AddressModel.sync({ alter: true });
-    await AcademicModel.sync({ alter: true });
-    await UserModel.sync({ alter: true });
-    await StudyGroup.sync({ alter: true });
-    await Membership.sync({ alter: true });
-    await Syllabus.sync({ alter: true });
-    await Topic.sync({ alter: true });
-    await SubTopic.sync({ alter: true });
-    await AdditionalResource.sync({ alter: true });
+    await CountryModel.sync({ force: true });
+    await LevelModel.sync({ force: true });
+    await FieldOfStudyModel.sync({ force: true });
+    await UniversityModel.sync({ force: true });
+    await CollegeModel.sync({ force: true });
+    await AddressModel.sync({ force: true });
+    await AcademicModel.sync({ force: true });
+    await UserModel.sync({ force: true });
+    await StudyGroup.sync({ force: true });
+    await Membership.sync({ force: true });
+    await Syllabus.sync({ force: true });
+    await Topic.sync({ force: true });
+    await SubTopic.sync({ force: true });
+    await AdditionalResource.sync({ force: true });
 
     console.log('✅ Models synced successfully');
 
