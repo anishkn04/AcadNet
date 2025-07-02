@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
           </Link>
           <Link
             className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-            to="#"
+            to="/about"
           >
             About
           </Link>

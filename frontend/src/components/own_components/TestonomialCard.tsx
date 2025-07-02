@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface TestimonialCardProps {
   name: string;
@@ -7,12 +7,17 @@ interface TestimonialCardProps {
   image: string;
 }
 
-export const TestimonialCard: React.FC<TestimonialCardProps> = ({ name, role, quote, image }) => {
+export const TestimonialCard: React.FC<TestimonialCardProps> = ({
+  name,
+  role,
+  quote,
+  image,
+}) => {
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg">
       <div className="flex items-center mb-4">
-        <div 
-          className="w-12 h-12 bg-center bg-no-repeat aspect-square bg-cover rounded-full mr-4" 
+        <div
+          className="w-12 h-12 bg-center bg-no-repeat aspect-square bg-cover rounded-full mr-4"
           style={{ backgroundImage: `url("${image}")` }}
         ></div>
         <div>
