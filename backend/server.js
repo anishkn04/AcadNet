@@ -36,7 +36,7 @@ const startServer = async () => {
     await Membership.sync({ alter: true });
     await Syllabus.sync({ alter: true });
     await Topic.sync({ alter: true });
-    await SubTopic.sync({ alter: true });
+    await SubTopic.sync({ force: true });
 
     console.log('✅ Models synced successfully');
 

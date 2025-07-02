@@ -8,6 +8,8 @@ import CollegeModel from "../models/college.model.js";
 import CountryModel from "../models/country.model.js";
 import throwWithCode from "../utils/errorthrow.js";
 
+
+
 export const userData = async (id) => {
   try {
     if (!id || typeof id != "string") {

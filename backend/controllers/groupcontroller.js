@@ -13,29 +13,47 @@ export const getGroups = async (req,res)=>{
     }
 }
 
+
 export const createGroup = async (req, res) => {
+ const creatorId = req.id;
+ const { name, description, isPrivate, syllabus } = req.body;
+ const files = req.files; // Files from multer
 
-    const creatorId = req.id; 
+ if (!name) {
+  return jsonRes(res, 400, false, "Group name is required.");
+ }
+ if (!syllabus) {
+  return jsonRes(res, 400, false, "Syllabus data is required to create a group.");
+ }
 
-    const { name, description, isPrivate, syllabus } = req.body;
-
-
-    if (!name) {
-        return jsonRes(res, 400, false, 'Group name is required.');
-    }
-    if (!syllabus) {
-        return jsonRes(res, 400, false, 'Syllabus data is required to create a group.');
-    }
-
-    try {
-        const newGroup = await createStudyGroupWithSyllabus(
-            creatorId,
-            { name, description, isPrivate },
-            syllabus.topics 
-        );
-        jsonRes(res, 201, true, { message: 'Study group created successfully!', group: newGroup });
-    } catch (err) {
-        console.error('Error in createGroup controller:', err);
-        jsonRes(res, err.code || 500, false, err.message || 'Failed to create study group.');
-    }
+ try {
+  const newGroup = await createStudyGroupWithSyllabus(
+   creatorId,
+   { name, description, isPrivate },
+   syllabus.topics,
+   files // Pass the files to the service
+  );
+  jsonRes(res, 201, true, {
+   message: "Study group created successfully!",
+   group: newGroup,
+  });
+ } catch (err) {
+  // If there's an error, clean up any uploaded files
+  if (files) {
+   files.forEach((file) => {
+    fs.unlink(file.path, (unlinkErr) => {
+     if (unlinkErr) {
+      console.error("Error deleting temp file:", unlinkErr);
+     }
+    });
+   });
+  }
+  console.error("Error in createGroup controller:", err);
+  jsonRes(
+   res,
+   err.code || 500,
+   false,
+   err.message || "Failed to create study group."
+  );
+ }
 };
