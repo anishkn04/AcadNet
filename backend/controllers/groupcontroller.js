@@ -1,10 +1,11 @@
 import { getAllGroups , createStudyGroupWithSyllabus} from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
+import fs from 'fs'
 
 export const getGroups = async (req,res)=>{
     try{
         console.log("Reached Here")
-        const allGroups = await getAllGroups(res)
+        const allGroups = await getAllGroups(req)
         console.log(allGroups)
         jsonRes(res,200,true,allGroups)
     }
@@ -13,29 +14,74 @@ export const getGroups = async (req,res)=>{
     }
 }
 
+
 export const createGroup = async (req, res) => {
+ const creatorId = req.id;
+ let { name, description, isPrivate, syllabus } = req.body;
+ const files = req.files; 
 
-    const creatorId = req.id; 
+ if (typeof syllabus === 'string') {
+  try {
+   syllabus = JSON.parse(syllabus);
+  } catch (parseError) {
+   return jsonRes(res, 400, false, "Invalid syllabus JSON format.");
+  }
+ }
 
-    const { name, description, isPrivate, syllabus } = req.body;
 
+ if (!name) {
+  return jsonRes(res, 400, false, "Group name is required.");
+ }
+ if (!syllabus) {
+  return jsonRes(res, 400, false, "Syllabus data is required to create a group.");
+ }
+ 
 
-    if (!name) {
-        return jsonRes(res, 400, false, 'Group name is required.');
-    }
-    if (!syllabus) {
-        return jsonRes(res, 400, false, 'Syllabus data is required to create a group.');
-    }
+ let topicsData;
+ if (syllabus.syllabus && syllabus.syllabus.topics) {
+  topicsData = syllabus.syllabus.topics;
+ } else if (syllabus.topics) {
+  topicsData = syllabus.topics;
+ } else {
+  return jsonRes(res, 400, false, "Syllabus must have a 'topics' property.");
+ }
+ 
+ if (!Array.isArray(topicsData)) {
+  return jsonRes(res, 400, false, "Syllabus topics must be an array.");
+ }
+ 
+ if (topicsData.length === 0) {
+  return jsonRes(res, 400, false, "Syllabus must contain at least one topic.");
+ }
 
-    try {
-        const newGroup = await createStudyGroupWithSyllabus(
-            creatorId,
-            { name, description, isPrivate },
-            syllabus.topics 
-        );
-        jsonRes(res, 201, true, { message: 'Study group created successfully!', group: newGroup });
-    } catch (err) {
-        console.error('Error in createGroup controller:', err);
-        jsonRes(res, err.code || 500, false, err.message || 'Failed to create study group.');
-    }
+ try {
+  const newGroup = await createStudyGroupWithSyllabus(
+   creatorId,
+   { name, description, isPrivate },
+   topicsData,
+   files 
+  );
+  jsonRes(res, 201, true, {
+   message: "Study group created successfully!",
+   group: newGroup,
+  });
+ } catch (err) {
+
+  if (files) {
+   files.forEach((file) => {
+    fs.unlink(file.path, (unlinkErr) => {
+     if (unlinkErr) {
+      console.error("Error deleting temp file:", unlinkErr);
+     }
+    });
+   });
+  }
+  console.error("Error in createGroup controller:", err);
+  jsonRes(
+   res,
+   err.code || 500,
+   false,
+   err.message || "Failed to create study group."
+  );
+ }
 };

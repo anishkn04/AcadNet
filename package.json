@@ -57,6 +57,7 @@
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
+    "multer": "^2.0.1",
     "nodemailer": "^7.0.3",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",

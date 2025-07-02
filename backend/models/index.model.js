@@ -11,6 +11,8 @@ import CountryModel from "./country.model.js";
 import FieldOfStudyModel from "./fieldOfStudy.model.js";
 import LevelModel from "./level.model.js";
 import UniversityModel from "./university.model.js";
+import AdditionalResource from "./additionalResources.model.js";
+
 
 UserModel.hasMany(StudyGroup, { foreignKey: "creatorId" });
 StudyGroup.belongsTo(UserModel, { foreignKey: "creatorId" });
@@ -67,6 +69,9 @@ UniversityModel.belongsTo(CountryModel, { foreignKey: "country_id" });
 
 CountryModel.hasMany(CollegeModel, { foreignKey: "country_id" });
 CollegeModel.belongsTo(CountryModel, { foreignKey: "country_id" });
+StudyGroup.hasMany(AdditionalResource, { foreignKey: "studyGroupId" });
+AdditionalResource.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+
 
 export {
   UserModel,
@@ -82,4 +87,5 @@ export {
   UniversityModel,
   CollegeModel,
   CountryModel,
+  AdditionalResource
 };
