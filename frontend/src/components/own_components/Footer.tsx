@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-slate-800 text-slate-300 py-12 sm:py-16">
@@ -10,19 +10,51 @@ export const Footer: React.FC = () => {
             <p className="text-sm">Learn together, grow together.</p>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-3">Quick Links</h3>
+            <h3 className="text-lg font-semibold text-white mb-3">
+              Quick Links
+            </h3>
             <ul className="space-y-2 text-sm">
-              <li><a className="hover:text-[#1993e5] transition-colors" href="/#">Home</a></li>
-              <li><Link className="hover:text-[#1993e5] transition-colors" to="/join">Group</Link></li>
-              <li><Link className="hover:text-[#1993e5] transition-colors" to="#">Resourse</Link></li>
-              <li><Link className="hover:text-[#1993e5] transition-colors" to="#">How It Works</Link></li>
+              <li>
+                <a className="hover:text-[#1993e5] transition-colors" href="/#">
+                  Home
+                </a>
+              </li>
+              <li>
+                <Link
+                  className="hover:text-[#1993e5] transition-colors"
+                  to="/join"
+                >
+                  Group
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-[#1993e5] transition-colors" to="#">
+                  Guide
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="hover:text-[#1993e5] transition-colors"
+                  to="/about"
+                >
+                  About
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white mb-3">Legal</h3>
             <ul className="space-y-2 text-sm">
-              <li><a className="hover:text-[#1993e5] transition-colors" href="#">Terms of Service</a></li>
-              <li><a className="hover:text-[#1993e5] transition-colors" href="#">Privacy Policy</a></li>
+              <li>
+                <a className="hover:text-[#1993e5] transition-colors" href="#">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-[#1993e5] transition-colors" href="#">
+                  Privacy Policy
+                </a>
+              </li>
             </ul>
           </div>
         </div>
