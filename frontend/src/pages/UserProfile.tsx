@@ -63,7 +63,7 @@ const UserProfile = () => {
             }
         };
         fetchUserData();
-    }, [location, getInfo, reset]);
+    }, [,location,reset]);
 
     const changeVisibility = () => {
         setFormVisible(!formVisible);
@@ -88,7 +88,7 @@ const UserProfile = () => {
         return (
             <div className="w-full p-4 md:p-6 text-center text-lg text-gray-700 dark:text-gray-300">
                 <div className="flex flex-col space-y-3">
-                 <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                 <Skeleton className="h-full w-full rounded-xl" />
                  <div className="space-y-2">
                      <Skeleton className="h-4 w-[250px]" />
                      <Skeleton className="h-4 w-[200px]" />

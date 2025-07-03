@@ -31,7 +31,7 @@ type Props = { children: React.ReactNode };
 
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
-const SESSION_CHECK_INTERVAL = 10 * 1000;
+const SESSION_CHECK_INTERVAL = 30 * 60 * 1000;
 const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 
 export const UserProvider = ({ children }: Props) => {
@@ -72,13 +72,13 @@ tokenRefreshIntervalRef.current = setInterval(async () => {
   try {
     const { data, status } = await refresTokenAPI();
     if (status === 200 && data.success === true) {
-      // Try verifying session immediately
-      const sessionRes = await checkSessionAPI();
-      if (sessionRes.status === 200 && sessionRes.data.success === true) {
+      // // Try verifying session immediately
+      // const sessionRes = await checkSessionAPI();
+      // if (sessionRes.status === 200 && sessionRes.data.success === true) {
         setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+      // } else {
+      //   setIsAuthenticated(false);
+      // }
     } else {
       setIsAuthenticated(false);
       console.log('couldnt refresh the session')
