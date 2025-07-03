@@ -9,6 +9,14 @@ const AcademicModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "user_id",
+      },
+    },
     level_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

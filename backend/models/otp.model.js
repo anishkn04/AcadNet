@@ -35,8 +35,4 @@ const OTP = sequelize.define('OTP', {
   updatedAt: 'updated_at'
 });
 
-// Define associations
-UserModel.hasMany(OTP, { foreignKey: 'user_id' });
-OTP.belongsTo(UserModel, { foreignKey: 'user_id' });
-
 export default OTP;
