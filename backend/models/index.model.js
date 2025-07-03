@@ -12,7 +12,9 @@ import FieldOfStudyModel from "./fieldOfStudy.model.js";
 import LevelModel from "./level.model.js";
 import UniversityModel from "./university.model.js";
 import AdditionalResource from "./additionalResources.model.js";
+import OTP from "./otp.model.js";
 import RefreshToken from "./refresh.sequelize.model.js";
+
 
 UserModel.hasMany(StudyGroup, { foreignKey: "creatorId" });
 StudyGroup.belongsTo(UserModel, { foreignKey: "creatorId" });
@@ -39,11 +41,11 @@ Topic.hasMany(SubTopic, { foreignKey: "topicId" });
 SubTopic.belongsTo(Topic, { foreignKey: "topicId" });
 
 // User-Address
-UserModel.hasOne(AddressModel, { foreignKey: "address_id" });
+UserModel.hasOne(AddressModel, { foreignKey: "user_id" });
 AddressModel.belongsTo(UserModel, { foreignKey: "user_id" });
 
 // User-Academic
-UserModel.hasOne(AcademicModel, { foreignKey: "academic_id" });
+UserModel.hasOne(AcademicModel, { foreignKey: "user_id" });
 AcademicModel.belongsTo(UserModel, { foreignKey: "user_id" });
 
 // Academic Details
@@ -72,6 +74,14 @@ CollegeModel.belongsTo(CountryModel, { foreignKey: "country_id" });
 StudyGroup.hasMany(AdditionalResource, { foreignKey: "studyGroupId" });
 AdditionalResource.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
 
+// User-OTP
+UserModel.hasMany(OTP, { foreignKey: "user_id" });
+OTP.belongsTo(UserModel, { foreignKey: "user_id" });
+
+// User-RefreshToken
+UserModel.hasMany(RefreshToken, { foreignKey: "user_id" });
+RefreshToken.belongsTo(UserModel, { foreignKey: "user_id" });
+
 
 export {
   UserModel,
@@ -87,6 +97,7 @@ export {
   UniversityModel,
   CollegeModel,
   CountryModel,
-  RefreshToken,
-  AdditionalResource
+  AdditionalResource,
+  OTP,
+  RefreshToken
 };

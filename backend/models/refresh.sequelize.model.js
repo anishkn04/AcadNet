@@ -32,8 +32,4 @@ const RefreshToken = sequelize.define('RefreshToken', {
   updatedAt: 'updated_at'
 });
 
-// Define associations
-UserModel.hasMany(RefreshToken, { foreignKey: 'user_id' });
-RefreshToken.belongsTo(UserModel, { foreignKey: 'user_id' });
-
 export default RefreshToken;

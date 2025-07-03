@@ -34,7 +34,7 @@ export const createGroupAPI = async (createGroupData: CreateGroupInterface) => {
 export const fetchGroupAPI = async () => {
     try{
         const response = await apiClient.get<any>('/group/groups');
-        return {data:response.data.data, status:response.status};
+        return {data:response.data, status:response.status};
     }catch(error){
         throw error
     }
