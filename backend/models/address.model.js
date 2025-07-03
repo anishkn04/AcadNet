@@ -9,6 +9,14 @@ const AddressModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "user_id",
+      },
+    },
     province: {
       type: DataTypes.STRING,
       allowNull: false,

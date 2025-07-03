@@ -14,7 +14,9 @@ import {
   Syllabus,
   Topic,
   SubTopic,
-  AdditionalResource
+  AdditionalResource,
+  OTP,
+  RefreshToken
  } from './models/index.model.js';
 
 const PORT = process.env.BACKEND_PORT || 3000;
@@ -33,6 +35,8 @@ const startServer = async () => {
     await AddressModel.sync({ force: true });
     await AcademicModel.sync({ force: true });
     await UserModel.sync({ force: true });
+    await OTP.sync({ force: true });
+    await RefreshToken.sync({ force: true });
     await StudyGroup.sync({ force: true });
     await Membership.sync({ force: true });
     await Syllabus.sync({ force: true });
