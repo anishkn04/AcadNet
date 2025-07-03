@@ -1,22 +1,33 @@
 import React from "react";
 import { featuresData } from "@/data/data";
+import { Users, Share2, MessageCircle, Star } from "lucide-react";
+
 interface FeatureCardProps {
   icon: string;
   title: string;
   description: string;
 }
 
+const iconMap = {
+  Users: Users,
+  Share2: Share2,
+  MessageCircle: MessageCircle,
+  Star: Star,
+};
+
 const FeatureCard: React.FC<FeatureCardProps> = ({
   icon,
   title,
   description,
 }) => {
+  const IconComponent = iconMap[icon as keyof typeof iconMap];
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <div className="mb-4">
-        <span className="material-icons-outlined text-4xl text-[#1993e5]">
-          {icon}
-        </span>
+      <div className="mb-1">
+        {IconComponent && (
+          <IconComponent className="w-10 h-10 text-[#1993e5]" />
+        )}
       </div>
       <h3 className="text-xl font-semibold text-slate-900 mb-2">{title}</h3>
       <p className="text-slate-600 text-sm">{description}</p>
@@ -28,7 +39,7 @@ export const Features: React.FC = () => {
   return (
     <section className="py-16 sm:py-24" id="features">
       <div className="container mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="text-center mb-12 sm:mb-16">
+        <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
             Features
           </h2>

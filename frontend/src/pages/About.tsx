@@ -9,7 +9,10 @@ const About = () => {
         <header className="text-center mb-6">
           <p
             className="text-2xl font-bold tracking-wide"
-            style={{ color: "#1993e5" }}
+            style={{
+              color: "#1993e5",
+              textShadow: "1px 1px 3px rgba(0,0,0,0.2)",
+            }}
           >
             Learn More About AcadNet
           </p>
@@ -31,7 +34,7 @@ const About = () => {
 
         <section className="py-4 sm:py-6 mt-2">
           <div className="text-center mb-2 sm:mb-3">
-            <h2 className="text-2xl font-bold text-center mb-3">Our Team</h2>
+            <h2 className="text-2xl font-bold text-center mb-1">Our Team</h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Meet the talented individuals behind AcadNet.
             </p>
