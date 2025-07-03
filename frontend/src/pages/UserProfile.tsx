@@ -32,7 +32,7 @@ const FOS_list = {
 
 const UserProfile = () => {
     const { getInfo, updateProfile } = useData();
-    const location = useLocation();
+    // const location = useLocation();
     const [userInformation, setUserInformation] = useState<UserProfileData>();
     const [formVisible, setFormVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +63,7 @@ const UserProfile = () => {
             }
         };
         fetchUserData();
-    }, [,location,reset]);
+    }, []);
 
     const changeVisibility = () => {
         setFormVisible(!formVisible);

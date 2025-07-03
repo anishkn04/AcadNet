@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import FilterItem from '@/components/own_components/FilterItem';
 // import SearchFilter from './SearchFilter';
 // import FilterBar from './FilterBar';
 // import StudyGroupList from './StudyGroupList';
 // import { studyGroups } from '../../data/studyGroups';
-import { studyGroups } from '@/data/studyGroups';
+// import { studyGroups } from '@/data/studyGroups';
 import StudyGroupList from '@/components/own_components/StudyGroupList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+
 const StudyGroups: React.FC = () => {
-  const [groups] = useState(studyGroups);
 
   const handleJoinGroup = (id: string) => {
     console.log(`Joining group with id: ${id}`);
@@ -56,7 +56,7 @@ const StudyGroups: React.FC = () => {
       <FilterItem label="Course" />
       <FilterItem label="Time Slot" />
     </div>
-    <StudyGroupList groups={groups} onJoinGroup={handleJoinGroup}/>
+    <StudyGroupList />
     </div>
   );
 };
