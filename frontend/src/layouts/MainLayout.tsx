@@ -7,7 +7,7 @@ const MainLayout = () => {
   return (
     <div className=" select-none overflow-hidden">
       <Header />
-      <main>
+      <main >
         <Outlet />
       </main>
       <Footer />

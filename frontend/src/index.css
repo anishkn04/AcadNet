@@ -7,7 +7,12 @@
  *{
   scroll-behavior: smooth;
  }
-
+ Input{
+  @apply border-1 border-black/50
+ }
+Button{
+  @apply cursor-pointer
+}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

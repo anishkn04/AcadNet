@@ -27,7 +27,7 @@ const StudyGroupList: React.FC = () => {
 
   return (
     <>
-      <h2 className="text-[#101518] text-xl font-semibold leading-tight tracking-[-0.015em] px-4 pb-4 pt-2">
+      <h2 className="text-[#101518]  text-xl font-semibold leading-tight tracking-[-0.015em] px-4 pb-4 pt-2">
         Available Groups ({groups.length})
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
