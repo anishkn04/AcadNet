@@ -6,9 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfileData } from "@/models/User";
 import { useForm } from "react-hook-form";
-import { useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
-
 const FOS_list = {
     options: [
         "Computer Science",
@@ -32,12 +30,13 @@ const FOS_list = {
 
 const UserProfile = () => {
     const { getInfo, updateProfile } = useData();
-    const location = useLocation();
+    // const location = useLocation();
     const [userInformation, setUserInformation] = useState<UserProfileData>();
     const [formVisible, setFormVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+   
     const {
         register,
         handleSubmit,
@@ -63,7 +62,7 @@ const UserProfile = () => {
             }
         };
         fetchUserData();
-    }, [,location,reset]);
+    }, []);
 
     const changeVisibility = () => {
         setFormVisible(!formVisible);
@@ -219,14 +218,13 @@ const UserProfile = () => {
                             <div className="w-full ">
                                 <Label htmlFor="education.level">Level</Label>
                                 <select
-                                    className="w-full border-1 mt-2 h-9 rounded-md px-2"
+                                    className={`w-full border-1 ${formVisible?('border-black/50'):('')}  mt-2 h-9 rounded-md px-2`}
                                     id="education.level"
                                     {...register("education.level")}
                                     defaultValue={userInformation?.education?.level || ""}
                                     disabled={!formVisible}
                                 >
                                     <option value="" disabled>Select the level</option>
-                                    <option value={'School'}>School</option>
                                     <option value={'Undergraduate'}>Undergraduate</option>
                                     <option value={'Graduate'}>Graduate</option>
                                 </select>
@@ -235,7 +233,7 @@ const UserProfile = () => {
                             <div className="w-full flex flex-col gap-2">
                                 <Label htmlFor="education.FOS">Field of Study</Label>
                                 <select
-                                    className="w-full border-1 h-9 rounded-md px-2"
+                                    className={`w-full ${formVisible?('border-black/50'):('')} border-1 h-9 rounded-md px-2`}
                                     id="education.FOS"
                                     {...register("education.FOS")}
                                     defaultValue={userInformation?.education?.FOS || ""}

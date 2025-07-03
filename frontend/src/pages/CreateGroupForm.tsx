@@ -15,6 +15,7 @@ const CreateGroupForm: React.FC = () => {
       console.log("Form submission triggered!");
         try{
           await createGroup(data)
+          navigate('/join',{replace:true})
         }catch{
           console.log('not entered')
         }
