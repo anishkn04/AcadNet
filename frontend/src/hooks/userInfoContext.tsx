@@ -1,11 +1,13 @@
-import type {  UserProfileData } from "@/models/User";
-import { editUserAPI, fetchUserAPI } from "@/services/UserServices";
+import type {  CreateGroupInterface, fetchGroupInterface, Groups, UserProfileData } from "@/models/User";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
     updateProfile: (updates:UserProfileData) => Promise<void>
+    createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
+    retreiveGroups: () => Promise<fetchGroupInterface | null>
     user : string
 }
 
@@ -17,7 +19,9 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 export const UserInfoProvider = ({children}:Props) =>{
     const [user,setUser] = useState<string>("")
     const {isAuthenticated} = useAuth()
+    const [list,setList] = useState<any>([])
 
+    //fetch the user info
     const getInfo = async():Promise<UserProfileData | null> =>{
         try{
             const {data :ApiResponse ,status,} = await fetchUserAPI();
@@ -30,7 +34,7 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
         return null
     }
-
+    //update userInfo
     const updateProfile = async (update:UserProfileData):Promise<void> =>{
         try{
             const {status}= await editUserAPI(update);
@@ -41,10 +45,8 @@ export const UserInfoProvider = ({children}:Props) =>{
             }
         }catch(error){
             console.log('failed',error)
-        }
-         
+        }     
     }
-
     useEffect(()=>{
         const fetchUsername = async() =>{
             const data = await getInfo();
@@ -53,9 +55,41 @@ export const UserInfoProvider = ({children}:Props) =>{
         if(isAuthenticated){
             fetchUsername()
         }
-    },[isAuthenticated])
+
+    },[])
+  
+    //groups
+    const createGroup = async(createGroupData:CreateGroupInterface):Promise<boolean>=>{
+        try{
+            const {success,status} = await createGroupAPI(createGroupData)
+            if(status === 201 && success === true){
+                console.log('hello')
+                return true
+            }else if(status === 400 && success === false){
+                console.log('here')
+                return false
+            }
+        }catch{
+          console.log('catch')
+        }
+        return false
+    }
+    const retreiveGroups = async ():Promise<fetchGroupInterface | null> =>{
+        const {data,status} = await fetchGroupAPI();
+        if (status === 200) {
+            console.log(data)
+            return {data};
+        } else {
+            console.log('groupList error');
+            return null;
+        }
+    }
+    useEffect(()=>{
+        retreiveGroups()
+    },[])
+
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,user}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user}}>
             {children}
         </UserInfoContext.Provider>
     )

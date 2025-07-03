@@ -12,7 +12,7 @@ import FieldOfStudyModel from "./fieldOfStudy.model.js";
 import LevelModel from "./level.model.js";
 import UniversityModel from "./university.model.js";
 import AdditionalResource from "./additionalResources.model.js";
-
+import RefreshToken from "./refresh.sequelize.model.js";
 
 UserModel.hasMany(StudyGroup, { foreignKey: "creatorId" });
 StudyGroup.belongsTo(UserModel, { foreignKey: "creatorId" });
@@ -87,5 +87,6 @@ export {
   UniversityModel,
   CollegeModel,
   CountryModel,
+  RefreshToken,
   AdditionalResource
 };

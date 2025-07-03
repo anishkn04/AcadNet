@@ -43,7 +43,40 @@ export interface UserProfileData {
     college:string | undefined
   }
 }
-export interface UserDataResponse<T>{
-  success:boolean,
-  message:T
+
+//study groups
+export interface subTopics{
+  title:string,
+  content?:string
+}
+export interface topics{
+  title:string,
+  description?:string,
+  subTopics:subTopics[];
+}
+export interface Resource{
+  // type: 'pdf' | 'video' | 'image' | 'other';
+  filePath:string
+}
+export interface CreateGroupInterface{
+  name:string,
+  isPrivate?:boolean,
+  description?:string,
+  syllabus:{
+    topics:topics[]
+  },
+  additionalResources:Resource[],
+}
+
+export interface Groups{
+  id: number;
+  name:string,
+  description:string,
+  creatorId: number; 
+  isPrivate:boolean,
+  createdAt: string; 
+  updatedAt: string; 
+}
+export interface fetchGroupInterface{
+  data:Groups[],
 }

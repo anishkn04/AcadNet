@@ -10,6 +10,7 @@ import {
   AcademicModel,
   UserModel,
   StudyGroup,
+  RefreshToken,
   Membership,
   Syllabus,
   Topic,
@@ -30,9 +31,10 @@ const startServer = async () => {
     await FieldOfStudyModel.sync({ force: true });
     await UniversityModel.sync({ force: true });
     await CollegeModel.sync({ force: true });
+    await UserModel.sync({ force: true });
+    await RefreshToken.sync({force:true})
     await AddressModel.sync({ force: true });
     await AcademicModel.sync({ force: true });
-    await UserModel.sync({ force: true });
     await StudyGroup.sync({ force: true });
     await Membership.sync({ force: true });
     await Syllabus.sync({ force: true });
