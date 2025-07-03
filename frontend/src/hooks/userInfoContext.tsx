@@ -7,7 +7,7 @@ type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
     updateProfile: (updates:UserProfileData) => Promise<void>
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
-    retreiveGroups: () => Promise<fetchGroupInterface | null>
+    retreiveGroups: () => Promise<Groups |undefined>
     user : string
 }
 
@@ -19,8 +19,6 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 export const UserInfoProvider = ({children}:Props) =>{
     const [user,setUser] = useState<string>("")
     const {isAuthenticated} = useAuth()
-    const [list,setList] = useState<any>([])
-
     //fetch the user info
     const getInfo = async():Promise<UserProfileData | null> =>{
         try{
@@ -63,10 +61,8 @@ export const UserInfoProvider = ({children}:Props) =>{
         try{
             const {success,status} = await createGroupAPI(createGroupData)
             if(status === 201 && success === true){
-                console.log('hello')
                 return true
             }else if(status === 400 && success === false){
-                console.log('here')
                 return false
             }
         }catch{
@@ -74,19 +70,16 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
         return false
     }
-    const retreiveGroups = async ():Promise<fetchGroupInterface | null> =>{
+    const retreiveGroups = async ():Promise<Groups | undefined> =>{
         const {data,status} = await fetchGroupAPI();
         if (status === 200) {
-            console.log(data)
-            return {data};
+            return (data.message);
         } else {
             console.log('groupList error');
-            return null;
+            return 
         }
     }
-    useEffect(()=>{
-        retreiveGroups()
-    },[])
+ 
 
     return (
         <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user}}>
