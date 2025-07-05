@@ -11,8 +11,6 @@ const StudyGroupList: React.FC = () => {
   useEffect(() => {
     const groupList = async () => {
       const data = await retreiveGroups();
-      console.log(data);
-
       if (Array.isArray(data)) {
         setGroups(data);
       } else {
