@@ -1,13 +1,6 @@
 import app from "./app.js";
 import sequelize from './config/database.js';
 import { 
-  CountryModel,
-  LevelModel,
-  FieldOfStudyModel,
-  UniversityModel,
-  CollegeModel,
-  AddressModel,
-  AcademicModel,
   UserModel,
   StudyGroup,
   RefreshToken,
@@ -26,25 +19,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully');
 
-    // Sync models in dependency order
-    await CountryModel.sync({ force: true });
-    await LevelModel.sync({ force: true });
-    await FieldOfStudyModel.sync({ force: true });
-    await UniversityModel.sync({ force: true });
-    await CollegeModel.sync({ force: true });
-    await UserModel.sync({ force: true });
-    await RefreshToken.sync({force:true})
-    await AddressModel.sync({ force: true });
-    await AcademicModel.sync({ force: true });
-    await UserModel.sync({ force: true });
-    await OTP.sync({ force: true });
-    await RefreshToken.sync({ force: true });
-    await StudyGroup.sync({ force: true });
-    await Membership.sync({ force: true });
-    await Syllabus.sync({ force: true });
-    await Topic.sync({ force: true });
-    await SubTopic.sync({ force: true });
-    await AdditionalResource.sync({ force: true });
+    await sequelize.sync({alter: true})
 
     console.log('✅ Models synced successfully');
 

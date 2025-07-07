@@ -48,6 +48,7 @@ export const UserInfoProvider = ({children}:Props) =>{
     useEffect(()=>{
         const fetchUsername = async() =>{
             const data = await getInfo();
+            console.log(data?.username)
             setUser(data?.username ?? '')
         }
         if(isAuthenticated){
