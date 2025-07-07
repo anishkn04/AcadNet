@@ -3,6 +3,7 @@ import { useData } from '@/hooks/userInfoContext';
 import type { Groups } from '@/models/User';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface StudyGroupListProps {
   search: string;
@@ -18,7 +19,8 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
   timeSlot,
 }) => {
   const [groups, setGroups] = useState<Groups[]>([]);
-  const { retreiveGroups } = useData();
+  const { retreiveGroups, userId } = useData();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const groupList = async () => {
@@ -45,6 +47,16 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
     return matchesSearch && matchesSubject && matchesCourse && matchesTimeSlot;
   });
 
+  // Handler for entering a group you created
+  const handleEnterGroup = (groupId: number | string) => {
+    navigate(`/group?id=${groupId}`);
+  };
+
+  // Handler for joining a group (to be implemented)
+  const handleJoinGroup = (groupId: number | string) => {
+    navigate(`/overview?id=${groupId}`);
+  };
+
   return (
     <>
       <h2 className="text-[#101518]  text-xl font-semibold leading-tight tracking-[-0.015em] px-4 ">
@@ -52,21 +64,28 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-10">
         {filteredGroups.length > 0 ? (
-          filteredGroups.map((group) => (
-            <Card key={group.id}>
-              <CardHeader>
-                <CardTitle>
-                  {group?.name}
-                </CardTitle>
-                <CardDescription>
-                  {group?.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button>Join Group</Button>
-              </CardContent>
-            </Card>
-          ))
+          filteredGroups.map((group) => {
+            const isCreator = group?.creatorId === userId;
+            return (
+              <Card key={group.id}>
+                <CardHeader>
+                  <CardTitle>
+                    {group?.name}
+                  </CardTitle>
+                  <CardDescription>
+                    {group?.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isCreator ? (
+                    <Button  onClick={() => handleEnterGroup(group.id)}>Enter Group</Button>
+                  ) : (
+                    <Button onClick={() => handleJoinGroup(group.id)}>Join Group</Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
         ) : (
           <p className="px-4">No groups available at the moment.</p>
         )}

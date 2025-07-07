@@ -82,6 +82,10 @@ export interface Groups{
   isPrivate:boolean,
   createdAt: string; 
   updatedAt: string; 
+  creator?: {
+    user_id: number;
+    username: string;
+  };
 }
 export interface fetchGroupInterface{
   data:Groups[],

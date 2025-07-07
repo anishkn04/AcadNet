@@ -8,7 +8,8 @@ type UserInfoType ={
     updateProfile: (updates:UserProfileData) => Promise<void>
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
     retreiveGroups: () => Promise<Groups |undefined>
-    user : string
+    user : string,
+    userId:Number | undefined
 }
 
 type Props = {children:ReactNode}
@@ -18,6 +19,7 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 
 export const UserInfoProvider = ({children}:Props) =>{
     const [user,setUser] = useState<string>("")
+    const[userId,setUserId] = useState<Number>()
     const {isAuthenticated} = useAuth()
     //fetch the user info
     const getInfo = async():Promise<UserProfileData | null> =>{
@@ -50,6 +52,7 @@ export const UserInfoProvider = ({children}:Props) =>{
             const data = await getInfo();
             console.log(data?.username)
             setUser(data?.username ?? '')
+            setUserId(data?.user_id ?? 0)
         }
         if(isAuthenticated){
             fetchUsername()
@@ -83,7 +86,7 @@ export const UserInfoProvider = ({children}:Props) =>{
  
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
             {children}
         </UserInfoContext.Provider>
     )

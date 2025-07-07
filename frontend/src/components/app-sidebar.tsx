@@ -1,4 +1,4 @@
-import { User, Home, Bell, Settings, Info } from "lucide-react";
+import { User, Home, Bell, Settings, Info,Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -22,13 +22,13 @@ const items = [
   },
   {
     title: "My Profile",
-    //url: "/login",
+    url: "",
     icon: User,
   },
   {
-    title: "Notifications",
-    //url: "#",
-    icon: Bell,
+    title: "My Group",
+    url: "mygroup",
+    icon: Users,
   },
   {
     title: "Support",
