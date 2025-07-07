@@ -20,7 +20,9 @@ const SyllabusSection: React.FC = () => {
 
   const addSyllabusUnitHandler = () => {
     appendUnit({
+      id: crypto.randomUUID(), // or use any unique string generator
       title: "",
+      description: "",
       subTopics: [],
     } as topics); 
   };
@@ -111,11 +113,12 @@ const SubtopicList: React.FC<SubtopicListProps> = ({ unitIndex }) => {
     name: `syllabus.topics.${unitIndex}.subTopics` as const, // Path to subtopic array for this unit
   });
 
-  const addSubtopicHandler = () => {
-    // Append a new subtopic to the current unit's subtopic array
-    // Provide initial values matching the UserSubtopic structure
-    appendSubtopic({ title: "" } as subTopics);
-  };
+const addSubtopicHandler = () => {
+  appendSubtopic({
+    id: crypto.randomUUID(), // Use the native API
+    title: ""
+  } as subTopics);
+};
 
   return (
     <>

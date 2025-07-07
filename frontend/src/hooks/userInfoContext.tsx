@@ -1,4 +1,4 @@
-import type {  CreateGroupInterface, fetchGroupInterface, Groups, UserProfileData } from "@/models/User";
+import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
 import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
@@ -54,7 +54,7 @@ export const UserInfoProvider = ({children}:Props) =>{
             fetchUsername()
         }
 
-    },[])
+    },[isAuthenticated])
   
     //groups
     const createGroup = async(createGroupData:CreateGroupInterface):Promise<boolean>=>{
@@ -65,8 +65,8 @@ export const UserInfoProvider = ({children}:Props) =>{
             }else if(status === 400 && success === false){
                 return false
             }
-        }catch{
-          console.log('catch')
+        }catch(e){
+          console.log('error',e)
         }
         return false
     }
