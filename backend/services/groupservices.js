@@ -183,3 +183,73 @@ export const createStudyGroupWithSyllabus = async (
     throw error;
   }
 };
+
+// Get overview for all groups
+export const getGroupOverviewList = async () => {
+  const groups = await StudyGroup.findAll({
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['fileType'],
+      },
+      {
+        model: Membership,
+        attributes: ['id'],
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+
+  return groups.map((group) => {
+    // File count by type
+    const fileTypeCount = {};
+    group.AdditionalResources?.forEach((r) => {
+      fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
+    });
+    return {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      fileCounts: fileTypeCount,
+      totalFiles: group.AdditionalResources?.length || 0,
+      membersCount: group.Memberships?.length || 0,
+      syllabus: group.Syllabus,
+      creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+    };
+  });
+};
+
+// Get all details for a group (for logged-in user)
+export const getGroupDetailsById = async (groupId) => {
+  const group = await StudyGroup.findByPk(groupId, {
+    include: [
+      {
+        model: AdditionalResource,
+      },
+      {
+        model: Membership,
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+  if (!group) return null;
+  return group;
+};
