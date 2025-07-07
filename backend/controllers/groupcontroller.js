@@ -16,8 +16,9 @@ export const getGroups = async (req,res)=>{
 
 
 export const createGroup = async (req, res) => {
+    console.log("Creating group with details: ", req.body)
  const creatorId = req.id;
- let { name, description, isPrivate, syllabus } = req.body;
+ let { name, description, isPrivate, syllabus, additionalResources } = req.body;
  const files = req.files; 
 
  if (typeof syllabus === 'string') {

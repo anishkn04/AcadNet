@@ -84,25 +84,32 @@ export const createStudyGroupWithSyllabus = async (
 
     const createdResources = [];
     if (additionalResourceFiles && additionalResourceFiles.length > 0) {
-
       const groupResourcePath = `resources/${newGroup.id}_resources`;
       fs.mkdirSync(groupResourcePath, { recursive: true });
 
       let fileCounter = 1;
       for (const file of additionalResourceFiles) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        let fileType = "other";
+        if ([".pdf"].includes(ext)) fileType = "pdf";
+        else if ([".doc", ".docx"].includes(ext)) fileType = "doc";
+        else if ([".xls", ".xlsx"].includes(ext)) fileType = "excel";
+        else if ([".ppt", ".pptx"].includes(ext)) fileType = "ppt";
+        else if ([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"].includes(ext)) fileType = "image";
+        else if ([".mp4", ".avi", ".mov", ".wmv", ".mkv", ".webm"].includes(ext)) fileType = "video";
+        else if ([".mp3", ".wav", ".aac", ".ogg", ".flac"].includes(ext)) fileType = "audio";
+        else if ([".txt"].includes(ext)) fileType = "text";
 
-        const newFileName = `${fileCounter}${path.extname(file.originalname)}`;
+        const newFileName = `${fileCounter}${ext}`;
         const newFilePath = path.join(groupResourcePath, newFileName);
-
-    
         fs.renameSync(file.path, newFilePath);
-        createdResourcesForCleanup.push(newFilePath); 
+        createdResourcesForCleanup.push(newFilePath);
 
-      
         const newResource = await AdditionalResource.create(
           {
             studyGroupId: newGroup.id,
             filePath: newFilePath,
+            fileType: fileType,
           },
           { transaction }
         );
