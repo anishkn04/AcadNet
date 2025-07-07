@@ -1,4 +1,4 @@
-import type {  CreateGroupInterface, fetchGroupInterface, Groups, UserProfileData } from "@/models/User";
+import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
 import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
@@ -8,7 +8,8 @@ type UserInfoType ={
     updateProfile: (updates:UserProfileData) => Promise<void>
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
     retreiveGroups: () => Promise<Groups |undefined>
-    user : string
+    user : string,
+    userId:Number | undefined
 }
 
 type Props = {children:ReactNode}
@@ -18,6 +19,7 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 
 export const UserInfoProvider = ({children}:Props) =>{
     const [user,setUser] = useState<string>("")
+    const[userId,setUserId] = useState<Number>()
     const {isAuthenticated} = useAuth()
     //fetch the user info
     const getInfo = async():Promise<UserProfileData | null> =>{
@@ -49,12 +51,13 @@ export const UserInfoProvider = ({children}:Props) =>{
         const fetchUsername = async() =>{
             const data = await getInfo();
             setUser(data?.username ?? '')
+            setUserId(data?.user_id ?? 0)
         }
         if(isAuthenticated){
             fetchUsername()
         }
 
-    },[])
+    },[isAuthenticated])
   
     //groups
     const createGroup = async(createGroupData:CreateGroupInterface):Promise<boolean>=>{
@@ -65,8 +68,8 @@ export const UserInfoProvider = ({children}:Props) =>{
             }else if(status === 400 && success === false){
                 return false
             }
-        }catch{
-          console.log('catch')
+        }catch(e){
+          console.log('error',e)
         }
         return false
     }
@@ -82,7 +85,7 @@ export const UserInfoProvider = ({children}:Props) =>{
  
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
             {children}
         </UserInfoContext.Provider>
     )

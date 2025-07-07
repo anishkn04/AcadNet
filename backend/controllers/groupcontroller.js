@@ -4,7 +4,7 @@ import fs from 'fs'
 
 export const getGroups = async (req,res)=>{
     try{
-        console.log("Reached Here")
+  
         const allGroups = await getAllGroups(req)
         console.log(allGroups)
         jsonRes(res,200,true,allGroups)

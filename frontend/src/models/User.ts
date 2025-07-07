@@ -46,17 +46,23 @@ export interface UserProfileData {
 
 //study groups
 export interface subTopics{
+  id:string
   title:string,
   content?:string
 }
 export interface topics{
+  id:string
   title:string,
   description?:string,
   subTopics:subTopics[];
 }
-export interface Resource{
-  // type: 'pdf' | 'video' | 'image' | 'other';
-  filePath:string
+export interface Resource {
+  filePath: string;
+  file?: File;
+  linkedTo?: {
+    topic: number | null;
+    subtopic: number | null;
+  };
 }
 export interface CreateGroupInterface{
   name:string,
@@ -76,6 +82,10 @@ export interface Groups{
   isPrivate:boolean,
   createdAt: string; 
   updatedAt: string; 
+  creator?: {
+    user_id: number;
+    username: string;
+  };
 }
 export interface fetchGroupInterface{
   data:Groups[],
