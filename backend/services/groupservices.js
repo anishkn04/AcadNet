@@ -8,6 +8,7 @@ import Topic from "../models/topics.model.js";
 import SubTopic from "../models/subtopics.model.js";
 import fs from "fs";
 import path from "path";
+import Membership from "../models/membership.model.js";
 
 export const getAllGroups= async (req)=>{
     try{
@@ -77,6 +78,17 @@ export const createStudyGroupWithSyllabus = async (
         description: groupData.description || null,
         creatorId: creatorId,
         isPrivate: groupData.isPrivate || false,
+      },
+      { transaction }
+    );
+
+
+    // Add creator as a member of the group
+    await Membership.create(
+      {
+        userId: creatorId,
+        studyGroupId: newGroup.id,
+        isAnonymous: false,
       },
       { transaction }
     );

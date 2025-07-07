@@ -14,7 +14,7 @@ import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
 import StudyPlatform from "@/pages/StudyPlatform";
 import MyGroup from "@/pages/MyGroup";
-import Overview from "@/pages/overview";
+import Overview from "@/pages/Overview";
 import GroupAdmin from "@/pages/GroupAdmin";
 
 export const router = createBrowserRouter([

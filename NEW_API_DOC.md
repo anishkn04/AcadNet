@@ -37,6 +37,89 @@
   - 201 Created: Group object with syllabus and resources
   - 4xx/5xx: Error message
 
+### GET /api/v1/group/overview
+- **Description:** Get an overview of all study groups, including group name, description, file counts (by type), total files, member count, syllabus, and creator name.
+- **Auth:** Required
+- **CSRF:** Required
+- **Response:**
+  - 200 OK: Array of group overviews
+  - 4xx/5xx: Error message
+
+**Example Response:**
+```json
+[
+  {
+    "id": "...",
+    "name": "Physics Group",
+    "description": "A group for physics students",
+    "fileCounts": { "pdf": 2, "image": 1 },
+    "totalFiles": 3,
+    "membersCount": 5,
+    "syllabus": {
+      "id": 1,
+      "studyGroupId": "...",
+      "topics": [
+        {
+          "id": 1,
+          "syllabusId": 1,
+          "title": "Mechanics",
+          "description": "Kinematics, Dynamics, etc.",
+          "subTopics": [
+            { "id": 1, "topicId": 1, "title": "Kinematics", "content": "Motion in 1D, 2D" }
+          ]
+        }
+      ]
+    },
+    "creatorName": "John Doe"
+  }
+]
+```
+
+### GET /api/v1/group/:groupId
+- **Description:** Get all details for a specific group (for logged-in user), including all resources, members, syllabus, and creator info.
+- **Auth:** Required
+- **CSRF:** Required
+- **Response:**
+  - 200 OK: Group details object
+  - 404 Not Found: Group not found
+  - 4xx/5xx: Error message
+
+**Example Response:**
+```json
+{
+  "id": "...",
+  "name": "Physics Group",
+  "description": "A group for physics students",
+  "creatorId": 1,
+  "groupCode": "ABC123",
+  "isPrivate": false,
+  "syllabus": {
+    "id": 1,
+    "studyGroupId": "...",
+    "topics": [
+      {
+        "id": 1,
+        "syllabusId": 1,
+        "title": "Mechanics",
+        "description": "Kinematics, Dynamics, etc.",
+        "subTopics": [
+          { "id": 1, "topicId": 1, "title": "Kinematics", "content": "Motion in 1D, 2D" }
+        ]
+      }
+    ]
+  },
+  "additionalResources": [
+    { "id": 1, "studyGroupId": "...", "filePath": "resources/.../1.pdf", "fileType": "pdf" }
+  ],
+  "Memberships": [
+    { "id": 1, "userId": 1, "studyGroupId": "...", "isAnonymous": false }
+  ],
+  "UserModel": { "username": "johndoe", "fullName": "John Doe" },
+  "created_at": "...",
+  "updated_at": "..."
+}
+```
+
 ---
 
 ## Data Models
