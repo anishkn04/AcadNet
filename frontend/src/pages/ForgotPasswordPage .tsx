@@ -1,6 +1,6 @@
 // src/pages/ForgotPasswordPage.tsx
 // MODIFIED: Uses methods from useAuth context instead of direct API calls.
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/userContext'; // Import useAuth
+import { useAuth } from '@/hooks/userContext'; 
 
 // Type for Step 1 form inputs (Email)
 type ForgotPasswordEmailInputs = {
@@ -90,7 +90,7 @@ const ForgotPasswordPage = () => {
     setFormMessage({ text: '', type: '' });
     setIsSubmitting(true);
 
-    const success = await forgotPassword(data.email); // Use context method
+    const success = await forgotPassword(data.email); 
     if (success) {
       setEmailForReset(data.email);
       setFormMessage({
@@ -182,7 +182,6 @@ const ForgotPasswordPage = () => {
               </Button>
             </form>
           )}
-
           {/* Step 2: OTP and New Password Form */}
           {currentStep === 2 && (
             <form onSubmit={handleSubmitReset(handleResetPassword)} className="space-y-4">

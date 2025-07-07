@@ -8,8 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner,faEye ,faEyeSlash, faSpaghettiMonsterFlying} from "@fortawesome/free-solid-svg-icons";
-
+import { faSpinner,faEye ,faEyeSlash} from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import apiClient from "@/lib/apiClient";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as Yup from "yup";
@@ -18,7 +19,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/userContext"; 
 import { useNavigate } from "react-router-dom";
 import type { RegisterFormsInputs } from "@/models/User";
-import { useEffect, useState} from "react";
+import {useState} from "react";
 import PasswordStrengthMeter from "@/components/own_components/PasswordStrengthMeter";
 import LoadingPage from "./LoadingPage";
 
@@ -165,6 +166,19 @@ export default function Register() {
                     </div>
                     Sign Up
                   </Button>
+                  <div className="after:border-border py-5 relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                  <span className="bg-card text-muted-foreground relative z-10 px-2">
+                    Or continue with
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <a href={(apiClient.defaults.baseURL ?? "") + "auth/github"}>
+                    <Button variant="outline" type="button" className="w-full cursor-pointer">
+                      <FontAwesomeIcon icon={faGithub} className="mr-2" />
+                      Login with GitHub
+                    </Button>
+                  </a>
+                </div>
               </form>
             </CardContent>
           </Card>
