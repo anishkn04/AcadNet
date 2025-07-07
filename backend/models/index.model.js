@@ -35,6 +35,8 @@ SubTopic.belongsTo(Topic, { foreignKey: "topicId" });
 
 StudyGroup.hasMany(AdditionalResource, { foreignKey: "studyGroupId" });
 AdditionalResource.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+AdditionalResource.belongsTo(Topic, { foreignKey: "topicId" });
+AdditionalResource.belongsTo(SubTopic, { foreignKey: "subTopicId" });
 
 // User-OTP
 UserModel.hasMany(OTP, { foreignKey: "user_id" });

@@ -13,6 +13,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /resources
 /resources/*
+resources/
+resources/*/
 # Runtime data
 pids
 *.pid

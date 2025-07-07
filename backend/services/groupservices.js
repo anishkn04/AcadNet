@@ -8,6 +8,7 @@ import Topic from "../models/topics.model.js";
 import SubTopic from "../models/subtopics.model.js";
 import fs from "fs";
 import path from "path";
+import Membership from "../models/membership.model.js";
 
 export const getAllGroups= async (req)=>{
     try{
@@ -82,27 +83,45 @@ export const createStudyGroupWithSyllabus = async (
     );
 
 
+    // Add creator as a member of the group
+    await Membership.create(
+      {
+        userId: creatorId,
+        studyGroupId: newGroup.id,
+        isAnonymous: false,
+      },
+      { transaction }
+    );
+
+
     const createdResources = [];
     if (additionalResourceFiles && additionalResourceFiles.length > 0) {
-
       const groupResourcePath = `resources/${newGroup.id}_resources`;
       fs.mkdirSync(groupResourcePath, { recursive: true });
 
       let fileCounter = 1;
       for (const file of additionalResourceFiles) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        let fileType = "other";
+        if ([".pdf"].includes(ext)) fileType = "pdf";
+        else if ([".doc", ".docx"].includes(ext)) fileType = "doc";
+        else if ([".xls", ".xlsx"].includes(ext)) fileType = "excel";
+        else if ([".ppt", ".pptx"].includes(ext)) fileType = "ppt";
+        else if ([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"].includes(ext)) fileType = "image";
+        else if ([".mp4", ".avi", ".mov", ".wmv", ".mkv", ".webm"].includes(ext)) fileType = "video";
+        else if ([".mp3", ".wav", ".aac", ".ogg", ".flac"].includes(ext)) fileType = "audio";
+        else if ([".txt"].includes(ext)) fileType = "text";
 
-        const newFileName = `${fileCounter}${path.extname(file.originalname)}`;
+        const newFileName = `${fileCounter}${ext}`;
         const newFilePath = path.join(groupResourcePath, newFileName);
-
-    
         fs.renameSync(file.path, newFilePath);
-        createdResourcesForCleanup.push(newFilePath); 
+        createdResourcesForCleanup.push(newFilePath);
 
-      
         const newResource = await AdditionalResource.create(
           {
             studyGroupId: newGroup.id,
             filePath: newFilePath,
+            fileType: fileType,
           },
           { transaction }
         );
@@ -175,4 +194,74 @@ export const createStudyGroupWithSyllabus = async (
 
     throw error;
   }
+};
+
+// Get overview for all groups
+export const getGroupOverviewList = async () => {
+  const groups = await StudyGroup.findAll({
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['fileType'],
+      },
+      {
+        model: Membership,
+        attributes: ['id'],
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+
+  return groups.map((group) => {
+    // File count by type
+    const fileTypeCount = {};
+    group.AdditionalResources?.forEach((r) => {
+      fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
+    });
+    return {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      fileCounts: fileTypeCount,
+      totalFiles: group.AdditionalResources?.length || 0,
+      membersCount: group.Memberships?.length || 0,
+      syllabus: group.Syllabus,
+      creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+    };
+  });
+};
+
+// Get all details for a group (for logged-in user)
+export const getGroupDetailsById = async (groupId) => {
+  const group = await StudyGroup.findByPk(groupId, {
+    include: [
+      {
+        model: AdditionalResource,
+      },
+      {
+        model: Membership,
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+  if (!group) return null;
+  return group;
 };
