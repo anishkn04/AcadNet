@@ -157,6 +157,12 @@ const UserProfile = () => {
                                     type="text"
                                     defaultValue={userInformation?.phone}
                                     disabled={!formVisible}
+                                    maxLength={10}
+                                    minLength={10}
+                                    pattern="\d{10}"
+                                    inputMode="numeric"
+                                    autoComplete="tel"
+                                    placeholder="Enter 10-digit phone number"
                                 />
                                 {errors.phone && <span className="text-red-500 text-sm">{errors.phone.message}</span>}
                             </div>

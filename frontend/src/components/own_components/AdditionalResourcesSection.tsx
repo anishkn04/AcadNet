@@ -1,34 +1,67 @@
 import React, { useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "../ui/button";
-import type { CreateGroupInterface, Resource } from "@/models/User";
+import type { CreateGroupInterface, Resource, topics } from "@/models/User";
 
-const AdditionalResourcesSection: React.FC = () => {
+interface AdditionalResourcesSectionProps {
+  topics: topics[];
+  setValue?: any;
+  getValues?: any;
+}
+
+const AdditionalResourcesSection: React.FC<AdditionalResourcesSectionProps> = ({ topics }) => {
   const { setValue, watch, getValues } = useFormContext<CreateGroupInterface>();
   const currentResources = watch('additionalResources');
 
-  const handleFileUpload = useCallback(
-
-    // type: Resource['type']
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const existingResources = getValues('additionalResources') || [];
-        const tempLocalUrl = URL.createObjectURL(file); 
-        const newResource: Resource = {
-          // type: type,
-          filePath: tempLocalUrl, 
-        };
-        setValue(
-          'additionalResources',
-          [...existingResources, newResource],
-          { shouldDirty: true, shouldValidate: true }
-        );
-        e.target.value = '';
-      }
+  // Helper: Build dropdown options
+const buildOptions = () => {
+  const options = [
+    {
+      value: JSON.stringify({ topic: null, subtopic: null }),
+      label: 'General (All Topics)',
     },
-    [setValue, getValues]
-  );
+  ];
+
+  topics.forEach((topic) => {
+    options.push({
+      value: JSON.stringify({ topic: topic.id, subtopic: null }),
+      label: `Topic: ${topic.title}`,
+    });
+
+    topic.subTopics?.forEach((sub) => {
+      options.push({
+        value: JSON.stringify({ topic: topic.id, subtopic: sub.id }),
+        label: `↳ Subtopic: ${sub.title}`,
+      });
+    });
+  });
+
+  return options;
+};
+const handleFileUpload = useCallback(
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const existingResources = getValues('additionalResources') || [];
+      const newResource: Resource = {
+        filePath: URL.createObjectURL(file),
+        file,
+        linkedTo: {
+          topic: null,
+          subtopic: null
+        },
+      };
+      setValue(
+        'additionalResources',
+        [...existingResources, newResource],
+        { shouldDirty: true, shouldValidate: true }
+      );
+      e.target.value = '';
+    }
+  },
+  [setValue, getValues]
+);
+
 
   const removeResource = useCallback((indexToRemove: number) => {
     const existingResources = getValues('additionalResources') || [];
@@ -38,6 +71,22 @@ const AdditionalResourcesSection: React.FC = () => {
     const updatedResources = existingResources.filter((_, index) => index !== indexToRemove);
     setValue('additionalResources', updatedResources, { shouldDirty: true, shouldValidate: true });
   }, [setValue, getValues]);
+
+  // Handle dropdown change
+const handleLinkedToChange = (index: number, value: string) => {
+  const parsed = JSON.parse(value);
+  const resources = getValues('additionalResources') || [];
+
+  resources[index].linkedTo = {
+    topic: parsed.topic !== null ? parsed.topic : null,
+    subtopic: parsed.subtopic !== null ? parsed.subtopic : null,
+  };
+
+  setValue('additionalResources', [...resources], { shouldDirty: true, shouldValidate: true });
+};
+
+
+  const options = buildOptions();
 
   return (
     <>
@@ -134,20 +183,32 @@ const AdditionalResourcesSection: React.FC = () => {
           <h4 className="font-semibold text-gray-800 mb-2">Current Resources:</h4>
           <ul className="space-y-2">
             {currentResources.map((res, index) => (
-              <li key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded-md">
-                <span className="text-sm text-gray-700">
+              <li key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded-md gap-2">
+                <span className="text-sm text-gray-700 flex-1">
                   <span className="font-medium capitalize">file</span>: {res.filePath ? (
                     <a href={res.filePath} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
                       {res.filePath.length > 50 ? res.filePath.substring(0, 47) + '...' : res.filePath}
                     </a>
                   ) : 'File selected (pending upload)'}
                 </span>
+           <select
+              className="ml-2 rounded border px-2 py-1 text-sm"
+              value={JSON.stringify(res.linkedTo || { topic: null, subtopic: null })}
+              onChange={e => handleLinkedToChange(index, e.target.value)}
+            >
+              {options.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => removeResource(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 ml-2"
                 >
                   Remove
                 </Button>

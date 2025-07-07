@@ -25,12 +25,14 @@ const OTPValidation = Yup.object().shape({
     .matches(/^[0-9]+$/, "Must be only digits"),
 });
 
+const OTP_VALIDITY_MINUTES = 5;
+
 const OtpFerification = () => {
-  const [minute, setMinute] = useState(1);
+  const [minute, setMinute] = useState(OTP_VALIDITY_MINUTES);
   const [second, setSecond] = useState(0);
   const { verifySignupOtp, sendSignupOtp } = useAuth();
   const [formMessage, setFormMessage] = useState({ text: '', type: '' });
-  const [isResendDisabled, setIsResendDisabled] = useState(false);
+  const [isOtpExpired, setIsOtpExpired] = useState(false); // NEW
   const navigate = useNavigate();
 
   const {
@@ -44,6 +46,10 @@ const OtpFerification = () => {
   const handleOtp = async ({ otp }: OtpFormInput) => {
     try {
       setFormMessage({ text: '', type: '' });
+      if (isOtpExpired) {
+        setFormMessage({ text: "OTP has expired. Please resend OTP.", type: 'error' });
+        return;
+      }
       const success = await verifySignupOtp(otp);
       if (success) {
         navigate('/login', { replace: true });
@@ -56,44 +62,38 @@ const OtpFerification = () => {
   const triggerOtp = async () => {
     try {
       setFormMessage({ text: '', type: '' });
-      setIsResendDisabled(true);
+      setIsOtpExpired(false); // Reset expiry
       const sentSuccess = await sendSignupOtp();
       if (sentSuccess) {
         setFormMessage({ text: "The OTP is sent to your mail.", type: 'success' });
-        setMinute(1);
+        setMinute(OTP_VALIDITY_MINUTES);
         setSecond(0);
       } else {
         setFormMessage({ text: "Failed to send OTP. Please try again later.", type: "error" });
       }
     } catch (e: any) {
       setFormMessage({ text: e.message || "Failed to send OTP. Please try again later.", type: "error" });
-      setIsResendDisabled(false);
     }
   };
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isResendDisabled && (minute > 0 || second > 0)) {
+    if ((minute > 0 || second > 0) && !isOtpExpired) {
       interval = setInterval(() => {
         if (second > 0) {
           setSecond(prev => prev - 1);
         } else if (minute > 0) {
           setSecond(59);
           setMinute(prev => prev - 1);
-        } else {
-          clearInterval(interval!);
-          setIsResendDisabled(false);
         }
       }, 1000);
-    } else if (minute === 0 && second === 0 && isResendDisabled) {
-      setIsResendDisabled(false);
+    } else if (minute === 0 && second === 0 && !isOtpExpired) {
+      setIsOtpExpired(true);
     }
     return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
+      if (interval) clearInterval(interval);
     };
-  }, [isResendDisabled, minute, second]);
+  }, [minute, second, isOtpExpired]);
 
   return (
     <div className="flex bg-muted justify-center h-svh items-center w-full ">
@@ -106,7 +106,12 @@ const OtpFerification = () => {
         <Card className="w-full ">
           <CardHeader className="text-center">
             <CardTitle>OTP Verification</CardTitle>
-            <CardDescription>Please! Enter the OTP</CardDescription>
+            <CardDescription>
+              Please! Enter the OTP<br />
+              <span className="text-xs text-gray-500">
+                OTP expires in 5 minutes.
+              </span>
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {formMessage.text && (
@@ -131,6 +136,7 @@ const OtpFerification = () => {
                   placeholder="------"
                   {...register('otp')}
                   className="text-center text-2xl tracking-[1em]"
+                  disabled={isOtpExpired}
                 />
                 {errors.otp && (
                   <p className="text-red-500 text-center -mb-3 ml-2">
@@ -138,7 +144,7 @@ const OtpFerification = () => {
                   </p>
                 )}
                 <div className="flex justify-between items-center">
-                  {isResendDisabled && (minute > 0 || second > 0) ? (
+                  {!isOtpExpired ? (
                     <p className="opacity-80">
                       Time Remaining:{" "}
                       <span className="font-medium">
@@ -147,20 +153,18 @@ const OtpFerification = () => {
                       </span>
                     </p>
                   ) : (
-                    <div></div>
+                    <span className="text-red-500 font-medium">OTP expired</span>
                   )}
                   <button
                     type="button"
-                    className={`underline cursor-pointer ${
-                      isResendDisabled ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                    className={`underline cursor-pointer `}
                     onClick={triggerOtp}
-                    disabled={isResendDisabled}
+                    
                   >
                     Resend OTP
                   </button>
                 </div>
-                <Button type="submit" className="cursor-pointer">
+                <Button type="submit" className="cursor-pointer" disabled={isOtpExpired}>
                   Verify OTP
                 </Button>
               </div>
