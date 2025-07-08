@@ -1,3 +1,5 @@
+// User.ts - CORRECTED INTERFACES
+
 export type UserProfile = {
   userName: string;
   email: string;
@@ -45,7 +47,7 @@ export interface UserProfileData {
 }
 
 //study groups
-export interface subTopics{
+export interface subTopics{ 
   id:string
   title:string,
   content?:string
@@ -56,37 +58,65 @@ export interface topics{
   description?:string,
   subTopics:subTopics[];
 }
+export interface Topics{ 
+  id:string
+  title:string,
+  description?:string,
+  SubTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
+}
 export interface Resource {
   filePath: string;
+  fileType: string;
   file?: File;
   linkedTo?: {
-    topic: number | null;
-    subtopic: number | null;
+    topicId: number | null;
+    subTopicId: number | null;
   };
 }
+
+// *** CRITICAL CHANGE HERE: ALIGN CREATEGROUPINTERFACE WITH GROUPS FOR SYLLABUS STRUCTURE ***
 export interface CreateGroupInterface{
   name:string,
   isPrivate?:boolean,
   description?:string,
-  syllabus:{
-    topics:topics[]
+  syllabus:{ // Changed to 'Syllabus' (capital S)
+    topics:topics[] // Changed to 'Topics' (capital T)
   },
-  additionalResources:Resource[],
+  additionalResources:Resource[], // This was already 'AdditionalResources' in CreateGroupInterface, but 'additionalResources' in Groups. Let's make them consistent.
 }
+
 
 export interface Groups{
   id: number;
   name:string,
   description:string,
-  creatorId: number; 
+  creatorId: number;
   isPrivate:boolean,
-  createdAt: string; 
-  updatedAt: string; 
+  createdAt: string;
+  updatedAt: string;
+  groupCode: string;
   creator?: {
     user_id: number;
     username: string;
   };
+  Syllabus:{ // Capital S
+    id?: string;
+    Topics:Topics[] // Capital T
+  },
+  AdditionalResources:Resource[], // Assuming backend returns lowercase 'a'
+  members:member[],
+  UserModel?:{
+    username:string,
+    fullName:string,
+  }
 }
+
 export interface fetchGroupInterface{
   data:Groups[],
+}
+export interface member{
+  id:number,
+  userId:number,
+  studyGroupId:string,
+  isAnonymous:boolean
 }

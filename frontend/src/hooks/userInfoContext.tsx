@@ -1,7 +1,8 @@
 import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
-import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, fetchGroupDetailsByCodeAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
+import { isAxiosError } from "axios";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
@@ -9,7 +10,8 @@ type UserInfoType ={
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
     retreiveGroups: () => Promise<Groups |undefined>
     user : string,
-    userId:Number | undefined
+    userId:Number | undefined,
+    getGroupDetailsByCode: (groupCode: string) => Promise<any>
 }
 
 type Props = {children:ReactNode}
@@ -65,6 +67,7 @@ export const UserInfoProvider = ({children}:Props) =>{
         try{
             const {success,status} = await createGroupAPI(createGroupData)
             if(status === 201 && success === true){
+                console.log('here')
                 return true
             }else if(status === 400 && success === false){
                 return false
@@ -83,10 +86,27 @@ export const UserInfoProvider = ({children}:Props) =>{
             return 
         }
     }
- 
+    // Fetch group details by groupCode
+    const getGroupDetailsByCode = async (groupCode: string) => {
+        try {
+            const { data, status } = await fetchGroupDetailsByCodeAPI(groupCode);
+            if (status === 200) {
+                console.log(data)
+                return data;
+            } else {
+                return null;
+            }
+        } catch (e) {
+            if(isAxiosError(e)){
+                console.log
+            }
+            
+            return null;
+        }
+    }
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId, getGroupDetailsByCode}}>
             {children}
         </UserInfoContext.Provider>
     )
