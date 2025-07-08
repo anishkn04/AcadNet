@@ -47,18 +47,18 @@ export interface UserProfileData {
 }
 
 //study groups
-export interface subTopics{ // This interface name is fine (lowercase 's')
+export interface subTopics{ 
   id:string
   title:string,
   content?:string
 }
-export interface topics{ // This interface name is fine (lowercase 't')
+export interface topics{
   id:string
   title:string,
   description?:string,
-  subTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
+  subTopics:subTopics[];
 }
-export interface Topics{ // This interface name is fine (lowercase 't')
+export interface Topics{ 
   id:string
   title:string,
   description?:string,
