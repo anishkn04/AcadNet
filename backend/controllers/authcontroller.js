@@ -11,8 +11,10 @@ import {
   otpSender,
   otpChecker,
   resetOTPgenerator,
-  changePasswordService
+  changePasswordService,
+  terminateUser
 } from "../services/authservices.js";
+import UserModel from "../models/user.model.js";
 import { randomBytes } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -363,5 +365,23 @@ export const changePassword = async (req, res) => {
     return jsonRes(res, 200, true, "Password has been reset successfully.");
   } catch (err) {
     return jsonRes(res, err.code || 500, false, err.message);
+  }
+};
+
+
+export const deleteUser = async (req, res) => {
+  try {
+    const userid = req.id;
+    
+    await terminateUser(userid)
+    // Clear cookies on successful deletion
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.clearCookie("csrfToken");
+
+    return jsonRes(res, 200, true, "User deleted successfully");
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to delete user");
   }
 };

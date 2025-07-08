@@ -14,7 +14,8 @@ import {
   resetPasswordSender,
   resetVerifier,
   changePassword,
-    oAuthFail
+    oAuthFail,
+    deleteUser
 } from "../controllers/authcontroller.js";
 import csrfMiddleware from "../middlewares/csrf.js";
 import authMiddleware from "../middlewares/authmiddleware.js";
@@ -340,4 +341,5 @@ router.post("/password-verify", resetVerifier);
  */
 router.post("/change-password", changePassword);
 
+router.post("/delete-user",authMiddleware,csrfMiddleware,deleteUser)
 export default router;
