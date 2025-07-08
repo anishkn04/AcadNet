@@ -31,7 +31,7 @@ type Props = { children: React.ReactNode };
 
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
-const SESSION_CHECK_INTERVAL = 30 * 60 * 1000;
+const SESSION_CHECK_INTERVAL = 60 * 1000;
 const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 
 export const UserProvider = ({ children }: Props) => {
@@ -45,50 +45,44 @@ export const UserProvider = ({ children }: Props) => {
 
 
   const startSessionMonitoring = () => {
-    if (sessionCheckIntervalRef.current) {
-      clearInterval(sessionCheckIntervalRef.current);
-    }
-    if (tokenRefreshIntervalRef.current) {
-      clearInterval(tokenRefreshIntervalRef.current);
-    }
+    stopSessionMonitoring();
 
     sessionCheckIntervalRef.current = setInterval(async () => {
       try {
         const { data, status } = await checkSessionAPI();
         if (status === 200 && data.success === true) {
-          console.log('session is running')
+          if (!isAuthenticated) setIsAuthenticated(true);
+          console.log('session is running');
         } else {
-         setIsAuthenticated(false)
+          if (isAuthenticated) setIsAuthenticated(false);
           stopSessionMonitoring();
           toast.info("Your session has expired. Please log in again.");
         }
       } catch (error) {
-        setIsAuthenticated(false)
-        console.log(error)
+        if (isAuthenticated) setIsAuthenticated(false);
+        console.log(error);
       }
     }, SESSION_CHECK_INTERVAL);
 
-tokenRefreshIntervalRef.current = setInterval(async () => {
-  try {
-    const { data, status } = await refresTokenAPI();
-    if (status === 200 && data.success === true) {
-      // // Try verifying session immediately
-      // const sessionRes = await checkSessionAPI();
-      // if (sessionRes.status === 200 && sessionRes.data.success === true) {
-        setIsAuthenticated(true);
-      // } else {
-      //   setIsAuthenticated(false);
-      // }
-    } else {
-      setIsAuthenticated(false);
-      console.log('couldnt refresh the session')
-    }
-  } catch (err) {
-    console.error("Refresh failed:", err);
-    setIsAuthenticated(false);
-    toast.info("Could not refresh session. Please log in again.");
-  }
-}, TOKEN_REFRESH_INTERVAL);
+    tokenRefreshIntervalRef.current = setInterval(async () => {
+      try {
+        const { data, status } = await refresTokenAPI();
+        if (status === 200 && data.success === true) {
+          setIsAuthenticated(true);
+          const sessionRes = await checkSessionAPI();
+          if (!(sessionRes.status === 200 && sessionRes.data.success === true)) {
+            setIsAuthenticated(false);
+          }
+        } else {
+          setIsAuthenticated(false);
+          console.log('couldnt refresh the session');
+        }
+      } catch (err) {
+        console.error("Refresh failed:", err);
+        setIsAuthenticated(false);
+        toast.info("Could not refresh session. Please log in again.");
+      }
+    }, TOKEN_REFRESH_INTERVAL);
   };
 
   const stopSessionMonitoring = () => {
@@ -102,28 +96,31 @@ tokenRefreshIntervalRef.current = setInterval(async () => {
     }
   };
 
+  useEffect(()=>{})
+
 useEffect(() => {
+  let mounted = true;
   const verifyUserSession = async () => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       const { data, status } = await checkSessionAPI();
       if (status === 200 && data.success === true) {
-        setIsAuthenticated(true);
+        if (mounted) setIsAuthenticated(true);
         startSessionMonitoring();
       } else {
-        // Session is invalid or expired.
-        setIsAuthenticated(false);
+        if (mounted) setIsAuthenticated(false);
       }
     } catch (error) {
-      setIsAuthenticated(false);
+      if (mounted) setIsAuthenticated(false);
       console.log("Session check failed:", error);
     } finally {
-      setIsLoading(false); // Stop loading
+      if (mounted) setIsLoading(false);
     }
   };
   verifyUserSession();
 
   return () => {
+    mounted = false;
     stopSessionMonitoring();
   };
 }, []);
@@ -234,7 +231,7 @@ useEffect(() => {
       } else {
         return false;
       }
-    } catch (error:any) {
+    } catch (error) {
     let errorMessage = "Network Error. Please check your internet connection.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage = error.response.data.message || error.message;

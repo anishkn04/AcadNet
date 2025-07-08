@@ -13,6 +13,9 @@ import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
 import StudyPlatform from "@/pages/StudyPlatform";
+import MyGroup from "@/pages/MyGroup";
+import Overview from "@/pages/Overview";
+import GroupAdmin from "@/pages/GroupAdmin";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +52,10 @@ export const router = createBrowserRouter([
           </ProtectedRoutes>
         ),
       },
+      {
+        path:'overview',
+        element:<Overview/>
+      }
     ],
   },
   {
@@ -60,9 +67,18 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        index: true,
+        index:true,
         element: <UserProfile />,
       },
+      {
+        path:'mygroup',
+        element:<MyGroup/>
+      },
+      
+      {
+        path:'groupadmin',
+        element:<GroupAdmin/>
+      }
     ],
   },
   {
