@@ -47,8 +47,8 @@ const handleFileUpload = useCallback(
         filePath: URL.createObjectURL(file),
         file,
         linkedTo: {
-          topic: null,
-          subtopic: null
+          topicId: null,
+          subTopicId: null
         },
       };
       setValue(
@@ -78,8 +78,8 @@ const handleLinkedToChange = (index: number, value: string) => {
   const resources = getValues('additionalResources') || [];
 
   resources[index].linkedTo = {
-    topic: parsed.topic !== null ? parsed.topic : null,
-    subtopic: parsed.subtopic !== null ? parsed.subtopic : null,
+    topicId: parsed.topic !== null ? parsed.topic : null,
+    subTopicId: parsed.subtopic !== null ? parsed.subtopic : null,
   };
 
   setValue('additionalResources', [...resources], { shouldDirty: true, shouldValidate: true });

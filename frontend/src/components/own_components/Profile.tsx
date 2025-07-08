@@ -11,15 +11,28 @@ import { useAuth } from "@/hooks/userContext";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/Avatar";
 import { Link } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
+
 export default function Profile() {
   const { logout } = useAuth();
-  const {user} = useData()
-  const header = user.slice(0,2).toUpperCase()
+  const { user } = useData();
+
+  // If user is undefined (still loading or not logged in), render a simpler avatar or null
+  if (!user) {
+    return (
+      <Avatar className="cursor-pointer w-10 h-10">
+        <AvatarFallback className="bg-gray-200 animate-pulse">...</AvatarFallback> {/* Or a simple login button */}
+      </Avatar>
+    );
+  }
+
+  // Now, 'user' is guaranteed to be defined if we reach this point
+  const header = user.slice(0, 2).toUpperCase();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="cursor-pointer w-10 h-10 ">
-          <AvatarImage  src="" />
+          <AvatarImage src="" />
           <AvatarFallback className="bg-blue-300/50">{header}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

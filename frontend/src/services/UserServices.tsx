@@ -52,3 +52,21 @@ export const fetchGroupAPI = async () => {
         throw error
     }
 }
+
+export const fetchGroupDetailsByCodeAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.get<any>(`/group/${groupCode}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const fetchGroupDetailsByIdAPI = async (groupId: string | number) => {
+    try {
+        const response = await apiClient.get<any>(`/group/details/${groupId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}

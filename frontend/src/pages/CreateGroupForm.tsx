@@ -20,7 +20,7 @@ const CreateGroupForm: React.FC = () => {
       return "At least one topic is required in the syllabus.";
     }
     for (const topic of data.syllabus.topics) {
-      if (!topic.title || topic.title.trim() === "") {
+      if (!topic.title || topic.title.trim() === "") {                        
         return "Each topic must have a title.";
       }
       if (!Array.isArray(topic.subTopics) || topic.subTopics.length === 0) {
@@ -67,6 +67,7 @@ const CreateGroupForm: React.FC = () => {
           toast.error(message || "An unexpected error occurred.");
         }
       } else if (err?.message) {
+        console.log(err.message)
         toast.error(err.message);
       } else {
         toast.error("An unexpected error occurred.");

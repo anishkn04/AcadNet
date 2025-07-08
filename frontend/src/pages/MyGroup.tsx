@@ -15,7 +15,10 @@ const MyGroup = () => {
     const fetchGroups = async () => {
       const data = await retreiveGroups();
       if (Array.isArray(data)) {
-        const filtered = data.filter((group) => Number(group.creatorId) === Number(userId));
+        const filtered = data.filter((group) =>
+          Number(group.creatorId) === Number(userId) ||
+          (Array.isArray(group.members) && group.members.some(member => Number(member.userId) === Number(userId)))
+        );
         setMyGroups(filtered);
       } else {
         setMyGroups([]);
@@ -64,7 +67,7 @@ const MyGroup = () => {
               </CardHeader>
               <CardContent>
                 <div className='flex flex-col gap-2 sm:flex-row '>
-                  <Button onClick={()=>navigate(`/group?id=${group.id}`)}>Enter Group</Button>
+                  <Button onClick={()=>navigate(`/group?code=${group.groupCode}`)}>Enter Group</Button>
                   <Button onClick={() => navigate(`/user/groupadmin?id=${group.id}`)}>Settings</Button>
                 </div>
               </CardContent>

@@ -48,13 +48,13 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
   });
 
   // Handler for entering a group you created
-  const handleEnterGroup = (groupId: number | string) => {
-    navigate(`/group?id=${groupId}`);
+  const handleEnterGroup = (group: Groups) => {
+    navigate(`/group?code=${group.groupCode}`);
   };
 
   // Handler for joining a group (to be implemented)
-  const handleJoinGroup = (groupId: number | string) => {
-    navigate(`/overview?id=${groupId}`);
+  const handleJoinGroup = (group: Groups) => {
+    navigate(`/overview?code=${group.groupCode}`);
   };
 
   return (
@@ -78,9 +78,12 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
                 </CardHeader>
                 <CardContent>
                   {isCreator ? (
-                    <Button  onClick={() => handleEnterGroup(group.id)}>Enter Group</Button>
+                    <Button  onClick={() => handleEnterGroup(group)}>Enter Group</Button>
                   ) : (
-                    <Button onClick={() => handleJoinGroup(group.id)}>Join Group</Button>
+                    <div className='flex gap-2 flex-col sm:flex-row'>
+                      <Button onClick={() => handleJoinGroup(group)}>View</Button>
+                      <Button  onClick={() => handleEnterGroup(group)}>Join Group</Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
