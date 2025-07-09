@@ -13,7 +13,7 @@ const ResourceLike = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "user_models",
+        model: "users",
         key: "user_id",
       },
     },
