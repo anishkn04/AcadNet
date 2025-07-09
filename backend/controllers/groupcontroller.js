@@ -1,4 +1,4 @@
-import { getAllGroups , createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsById} from "../services/groupservices.js";
+import { getAllGroups , createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsById, likeResource, dislikeResource, getResourceLikeStatus} from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 
@@ -104,5 +104,57 @@ export const groupDetails = async (req, res) => {
     jsonRes(res, 200, true, group);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group details.");
+  }
+};
+
+// Like/Dislike Controllers
+export const likeAdditionalResource = async (req, res) => {
+  try {
+ 
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await likeResource(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to like resource.");
+  }
+};
+
+export const dislikeAdditionalResource = async (req, res) => {
+  try {
+    const userId = req.id; // from auth middleware
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await dislikeResource(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to dislike resource.");
+  }
+};
+
+export const getResourceStatus = async (req, res) => {
+  try {
+    const userId = req.id; // from auth middleware
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await getResourceLikeStatus(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to get resource status.");
   }
 };

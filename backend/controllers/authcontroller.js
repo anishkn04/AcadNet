@@ -385,3 +385,4 @@ export const deleteUser = async (req, res) => {
     return jsonRes(res, err.code || 500, false, err.message || "Failed to delete user");
   }
 };
+
