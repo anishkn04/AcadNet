@@ -298,3 +298,29 @@ export const getGroupDetailsByCode = async (groupCode) => {
   });
   return group;
 };
+
+// Service to join a group by group code
+export const joinGroup = async (userId, groupCode) => {
+  if (!userId || !groupCode) {
+    throwWithCode("User ID and group code are required.", 400);
+  }
+  // Find the group by code
+  const group = await StudyGroup.findOne({ where: { code: groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+  // Check if user is already a member
+  const existingMembership = await Membership.findOne({
+    where: { userId, studyGroupId: group.id },
+  });
+  if (existingMembership) {
+    throwWithCode("User is already a member of this group.", 409);
+  }
+  // Add user as a member
+  const membership = await Membership.create({
+    userId,
+    studyGroupId: group.id,
+    isAnonymous: false,
+  });
+  return membership;
+};
