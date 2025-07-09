@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupOverviewByCode } from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, groupOverviewByCode } from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -13,7 +13,7 @@ router.get("/groups",authMiddleware,csrfMiddleware,getGroups)
 router.post(
  "/create",
  authMiddleware, csrfMiddleware, addUser,
- upload.array("additionalResources", 10), // a new middleware to accept up to 10 files
+ upload.array("additionalResources", 10), 
  createGroup
 );
 
@@ -35,5 +35,9 @@ router.post("/join/:groupCode", authMiddleware, csrfMiddleware, addUser, async (
     res.status(err.code || 500).json({ success: false, message: err.message || "Failed to join group." });
   }
 });
+
+router.post("/resource/:resourceId/like", authMiddleware, csrfMiddleware, addUser, likeAdditionalResource);
+router.post("/resource/:resourceId/dislike", authMiddleware, csrfMiddleware, addUser, dislikeAdditionalResource);
+router.get("/resource/:resourceId/status", authMiddleware, csrfMiddleware, addUser, getResourceStatus);
 
 export default router

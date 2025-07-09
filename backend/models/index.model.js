@@ -5,6 +5,7 @@ import Syllabus from "./syallabus.model.js";
 import Topic from "./topics.model.js";
 import SubTopic from "./subtopics.model.js";
 import AdditionalResource from "./additionalResources.model.js";
+import ResourceLike from "./resourceLike.model.js";
 import OTP from "./otp.model.js";
 import RefreshToken from "./refresh.sequelize.model.js";
 
@@ -46,6 +47,13 @@ OTP.belongsTo(UserModel, { foreignKey: "user_id" });
 UserModel.hasMany(RefreshToken, { foreignKey: "user_id" });
 RefreshToken.belongsTo(UserModel, { foreignKey: "user_id" });
 
+// Resource Likes
+UserModel.hasMany(ResourceLike, { foreignKey: "userId" });
+ResourceLike.belongsTo(UserModel, { foreignKey: "userId" });
+
+AdditionalResource.hasMany(ResourceLike, { foreignKey: "resourceId" });
+ResourceLike.belongsTo(AdditionalResource, { foreignKey: "resourceId" });
+
 
 export {
   UserModel,
@@ -55,6 +63,7 @@ export {
   Topic,
   SubTopic,
   AdditionalResource,
+  ResourceLike,
   OTP,
   RefreshToken
 };
