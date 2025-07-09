@@ -240,15 +240,18 @@ export const getGroupOverviewList = async () => {
   });
 };
 
-// Get all details for a group (for logged-in user)
-export const getGroupDetailsById = async (groupId) => {
-  const group = await StudyGroup.findByPk(groupId, {
+// Get overview for a single group by group code
+export const getGroupOverviewByCode = async (groupCode) => {
+  const group = await StudyGroup.findOne({
+    where: { code: groupCode },
     include: [
       {
         model: AdditionalResource,
+        attributes: ['fileType'],
       },
       {
         model: Membership,
+        attributes: ['id'],
       },
       {
         model: Syllabus,
@@ -263,5 +266,35 @@ export const getGroupDetailsById = async (groupId) => {
     ],
   });
   if (!group) return null;
+  const fileTypeCount = {};
+  group.AdditionalResources?.forEach((r) => {
+    fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
+  });
+  return {
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    fileCounts: fileTypeCount,
+    totalFiles: group.AdditionalResources?.length || 0,
+    membersCount: group.Memberships?.length || 0,
+    syllabus: group.Syllabus,
+    creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+  };
+};
+
+// Get all details for a group by group code
+export const getGroupDetailsByCode = async (groupCode) => {
+  const group = await StudyGroup.findOne({
+    where: { groupCode },
+    include: [
+      {
+        model: Membership,
+        as: "members",
+        include: [User],
+      },
+      AdditionalResources,
+      Syallabus,
+    ],
+  });
   return group;
 };

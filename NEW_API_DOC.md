@@ -120,6 +120,46 @@
 }
 ```
 
+
+## Get Single Group Overview by Group Code
+
+- **Endpoint:** `GET /api/v1/group/overview/:groupCode`
+- **Description:** Returns an overview of a single group by its group code. Useful for sharing or direct access.
+- **Request Params:**
+  - `groupCode` (string, required): The unique code of the group.
+- **Response Example:**
+
+```
+{
+  "success": true,
+  "data": {
+    "groupName": "Physics Study Group",
+    "description": "A group for physics enthusiasts",
+    "fileCounts": {
+      "pdf": 3,
+      "image": 2
+    },
+    "memberCount": 5,
+    "syllabus": [
+      {
+        "syllabusName": "Mechanics",
+        "topics": [
+          {
+            "topicName": "Kinematics",
+            "subtopics": ["Projectile Motion", "Circular Motion"]
+          }
+        ]
+      }
+    ],
+    "creatorName": "John Doe"
+  }
+}
+```
+- **Errors:**
+  - 400: Group code is required
+  - 404: Group not found
+
+
 ---
 
 ## Data Models

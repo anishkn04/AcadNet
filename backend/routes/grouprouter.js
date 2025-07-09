@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails } from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupOverviewByCode } from '../controllers/groupcontroller.js'
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
 import upload from '../middlewares/multer.js';
@@ -17,6 +17,7 @@ router.post(
 );
 
 router.get("/overview",  groupOverview);
-router.get("/details/:groupId", authMiddleware, csrfMiddleware, groupDetails);
+router.get("/details/:groupCode", groupDetails);
+router.get("/overview/:groupCode", groupOverviewByCode);
 
 export default router

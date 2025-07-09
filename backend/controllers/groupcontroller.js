@@ -1,4 +1,4 @@
-import { getAllGroups , createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsById} from "../services/groupservices.js";
+import { getAllGroups , createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsById, getGroupOverviewByCode } from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 
@@ -98,11 +98,30 @@ export const groupOverview = async (req, res) => {
 
 export const groupDetails = async (req, res) => {
   try {
-    const groupId = req.params.groupId;
-    const group = await getGroupDetailsById(groupId);
+    const groupCode = req.params.groupCode;
+    if (!groupCode) {
+      return jsonRes(res, 400, false, "Group code is required.");
+    }
+    const group = await getGroupDetailsById(groupCode);
     if (!group) return jsonRes(res, 404, false, "Group not found");
     jsonRes(res, 200, true, group);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group details.");
+  }
+};
+
+export const groupOverviewByCode = async (req, res) => {
+  try {
+    const groupCode = req.params.groupCode;
+    if (!groupCode) {
+      return jsonRes(res, 400, false, "Group code is required.");
+    }
+    const overview = await getGroupOverviewByCode(groupCode);
+    if (!overview) {
+      return jsonRes(res, 404, false, "Group not found");
+    }
+    jsonRes(res, 200, true, overview);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group overview by code.");
   }
 };
