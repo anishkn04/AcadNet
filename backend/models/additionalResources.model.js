@@ -3,7 +3,7 @@ import sequelize from "../config/database.js";
 import { type } from "os";
 
 const AdditionalResource = sequelize.define(
- "AdditionalResource",
+ "additionalResource",
  {
   id: {
    type: DataTypes.INTEGER,
