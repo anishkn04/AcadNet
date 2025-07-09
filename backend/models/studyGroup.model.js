@@ -25,7 +25,7 @@ async function generateUniqueGroupCode() {
 }
 
 const StudyGroup = sequelize.define(
-  "StudyGroup",
+  "studyGroup",
   {
     id: {
       type: DataTypes.UUID,

@@ -1,4 +1,4 @@
-import { getAllGroups , createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsById, getGroupOverviewByCode } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupOverviewByCode } from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 

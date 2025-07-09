@@ -129,7 +129,7 @@
   - `groupCode` (string, required): The unique code of the group.
 - **Response Example:**
 
-```
+```json
 {
   "success": true,
   "data": {
