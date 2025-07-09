@@ -110,7 +110,7 @@ export const groupDetails = async (req, res) => {
 // Like/Dislike Controllers
 export const likeAdditionalResource = async (req, res) => {
   try {
- 
+    const userId = req.id; 
     const { resourceId } = req.params;
 
     if (!resourceId) {
