@@ -1,0 +1,53 @@
+### Group Creation API Test
+
+This HTTP file contains requests to test the group creation functionality.
+
+### Test Group Creation
+POST http://localhost:3000/api/v1/group/create
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="name"
+
+Test Study Group
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+A test group for debugging the groupCode issue
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="isPrivate"
+
+false
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="syllabus"
+
+{
+  "topics": [
+    {
+      "title": "Introduction to Programming",
+      "description": "Basic programming concepts",
+      "subTopics": [
+        {
+          "title": "Variables and Data Types",
+          "content": "Understanding different data types"
+        }
+      ]
+    }
+  ]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Test Group Details by Code
+GET http://localhost:3000/api/v1/group/details/ABC123
+
+### Test Group Details by ID (NEW - for frontend)
+GET http://localhost:3000/api/v1/group/details/id/GROUP_UUID_HERE
+
+### Test Like Resource
+POST http://localhost:3000/api/v1/group/resource/1/like
+
+### Test Dislike Resource  
+POST http://localhost:3000/api/v1/group/resource/1/dislike
+
+### Test Get Resource Status
+GET http://localhost:3000/api/v1/group/resource/1/status
