@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
 const AddressModel = sequelize.define(
-  "Address",
+  "address",
   {
     address_id: {
       type: DataTypes.INTEGER,
