@@ -24,12 +24,15 @@ export const Footer: React.FC = () => {
                   className="hover:text-[#1993e5] transition-colors"
                   to="/join"
                 >
-                  Group
+                  Groups
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-[#1993e5] transition-colors" to="#">
-                  Guide
+                <Link
+                  className="hover:text-[#1993e5] transition-colors"
+                  to="/guide"
+                >
+                  User Guide
                 </Link>
               </li>
               <li>
