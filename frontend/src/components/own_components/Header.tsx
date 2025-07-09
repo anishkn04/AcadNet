@@ -38,13 +38,13 @@ export const Header: React.FC = () => {
             to={"/join"}
             className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
           >
-            Group
+            Groups
           </Link>
           <Link
             className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-            to="#"
+            to="/guide"
           >
-            Guide
+            User Guide
           </Link>
           <Link
             className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
