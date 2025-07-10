@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupOverviewByCode , likeResource, dislikeResource, getResourceLikeStatus} from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus } from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 
@@ -102,7 +102,22 @@ export const groupDetails = async (req, res) => {
     if (!groupCode) {
       return jsonRes(res, 400, false, "Group code is required.");
     }
-    const group = await getGroupDetailsById(groupCode);
+    const group = await getGroupDetailsByCode(groupCode);
+    console.log(group)
+    if (!group) return jsonRes(res, 404, false, "Group not found");
+    jsonRes(res, 200, true, group);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group details.");
+  }
+};
+
+export const groupDetailsById = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    if (!groupId) {
+      return jsonRes(res, 400, false, "Group ID is required.");
+    }
+    const group = await getGroupDetailsById(groupId);
     if (!group) return jsonRes(res, 404, false, "Group not found");
     jsonRes(res, 200, true, group);
   } catch (err) {

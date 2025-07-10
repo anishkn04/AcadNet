@@ -72,6 +72,26 @@ export const createStudyGroupWithSyllabus = async (
       }
     }
 
+    // Generate unique group code
+    const generateGroupCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    let groupCode, existingGroup, attempts = 0;
+    do {
+      groupCode = generateGroupCode();
+      existingGroup = await StudyGroup.findOne({ where: { groupCode: groupCode } });
+      attempts++;
+    } while (existingGroup && attempts < 10);
+    
+    if (existingGroup) {
+      throwWithCode("Failed to generate unique group code after multiple attempts.", 500);
+    }
 
     const newGroup = await StudyGroup.create(
       {
@@ -79,6 +99,7 @@ export const createStudyGroupWithSyllabus = async (
         description: groupData.description || null,
         creatorId: creatorId,
         isPrivate: groupData.isPrivate || false,
+        groupCode: groupCode,
       },
       { transaction }
     );
@@ -293,8 +314,32 @@ export const getGroupDetailsByCode = async (groupCode) => {
         as: "members",
         include: [User],
       },
-      AdditionalResources,
-      Syallabus,
+      AdditionalResource,
+      Syllabus,
+    ],
+  });
+  console.log("Reached here")
+  return group;
+};
+
+// Get all details for a group by group ID
+export const getGroupDetailsById = async (groupId) => {
+  const group = await StudyGroup.findByPk(groupId, {
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
     ],
   });
   return group;
