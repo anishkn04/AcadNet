@@ -1,6 +1,7 @@
 import StudyGroup from "../models/studyGroup.model.js"
 import throwWithCode from "../utils/errorthrow.js";
 import AdditionalResource from "../models/additionalResources.model.js";
+import ResourceLike from "../models/resourceLike.model.js";
 import sequelize from "../config/database.js";
 import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
@@ -71,6 +72,26 @@ export const createStudyGroupWithSyllabus = async (
       }
     }
 
+    // Generate unique group code
+    const generateGroupCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    let groupCode, existingGroup, attempts = 0;
+    do {
+      groupCode = generateGroupCode();
+      existingGroup = await StudyGroup.findOne({ where: { groupCode: groupCode } });
+      attempts++;
+    } while (existingGroup && attempts < 10);
+    
+    if (existingGroup) {
+      throwWithCode("Failed to generate unique group code after multiple attempts.", 500);
+    }
 
     const newGroup = await StudyGroup.create(
       {
@@ -78,6 +99,7 @@ export const createStudyGroupWithSyllabus = async (
         description: groupData.description || null,
         creatorId: creatorId,
         isPrivate: groupData.isPrivate || false,
+        groupCode: groupCode,
       },
       { transaction }
     );
@@ -292,8 +314,32 @@ export const getGroupDetailsByCode = async (groupCode) => {
         as: "members",
         include: [User],
       },
-      AdditionalResources,
-      Syallabus,
+      AdditionalResource,
+      Syllabus,
+    ],
+  });
+  console.log("Reached here")
+  return group;
+};
+
+// Get all details for a group by group ID
+export const getGroupDetailsById = async (groupId) => {
+  const group = await StudyGroup.findByPk(groupId, {
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
     ],
   });
   return group;
@@ -324,3 +370,125 @@ export const joinGroup = async (userId, groupCode) => {
   });
   return membership;
 };
+
+// Like/Dislike Additional Resource Services
+export const likeResource = async (userId, resourceId) => {
+  let transaction;
+  
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if resource exists
+    const resource = await AdditionalResource.findByPk(resourceId, { transaction });
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    // Check if user already has a reaction to this resource
+    const existingLike = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      transaction
+    });
+
+    if (existingLike) {
+      if (existingLike.likeType === 'like') {
+        // User already liked, remove the like
+        await existingLike.destroy({ transaction });
+        await AdditionalResource.decrement('likesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'removed_like', message: 'Like removed successfully' };
+      } else {
+        // User disliked before, change to like
+        existingLike.likeType = 'like';
+        await existingLike.save({ transaction });
+        await AdditionalResource.increment('likesCount', { where: { id: resourceId }, transaction });
+        await AdditionalResource.decrement('dislikesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'changed_to_like', message: 'Changed from dislike to like successfully' };
+      }
+    } else {
+      // User hasn't reacted before, add like
+      await ResourceLike.create({ userId, resourceId, likeType: 'like' }, { transaction });
+      await AdditionalResource.increment('likesCount', { where: { id: resourceId }, transaction });
+      await transaction.commit();
+      return { action: 'added_like', message: 'Resource liked successfully' };
+    }
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    throw error;
+  }
+};
+
+export const dislikeResource = async (userId, resourceId) => {
+  let transaction;
+  
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if resource exists
+    const resource = await AdditionalResource.findByPk(resourceId, { transaction });
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    // Check if user already has a reaction to this resource
+    const existingLike = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      transaction
+    });
+
+    if (existingLike) {
+      if (existingLike.likeType === 'dislike') {
+        // User already disliked, remove the dislike
+        await existingLike.destroy({ transaction });
+        await AdditionalResource.decrement('dislikesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'removed_dislike', message: 'Dislike removed successfully' };
+      } else {
+        // User liked before, change to dislike
+        existingLike.likeType = 'dislike';
+        await existingLike.save({ transaction });
+        await AdditionalResource.increment('dislikesCount', { where: { id: resourceId }, transaction });
+        await AdditionalResource.decrement('likesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'changed_to_dislike', message: 'Changed from like to dislike successfully' };
+      }
+    } else {
+      // User hasn't reacted before, add dislike
+      await ResourceLike.create({ userId, resourceId, likeType: 'dislike' }, { transaction });
+      await AdditionalResource.increment('dislikesCount', { where: { id: resourceId }, transaction });
+      await transaction.commit();
+      return { action: 'added_dislike', message: 'Resource disliked successfully' };
+    }
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    throw error;
+  }
+};
+
+export const getResourceLikeStatus = async (userId, resourceId) => {
+  try {
+    const resource = await AdditionalResource.findByPk(resourceId, {
+      attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount']
+    });
+    
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    const userReaction = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      attributes: ['likeType']
+    });
+
+    return {
+      resource,
+      userReaction: userReaction ? userReaction.likeType : null
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+

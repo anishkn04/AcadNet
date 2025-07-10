@@ -375,3 +375,19 @@ export const changePasswordService = async (
     throw err;
   }
 };
+
+
+
+export const terminateUser= async (userid)=>{
+  try{
+    const user = await UserModel.findByPk(userid);
+    
+    if (!user) {
+      throwWithCode("No User Found",404)
+    }
+
+    await user.destroy();
+  }catch(err){
+    throw err
+  }
+}
