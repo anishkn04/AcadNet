@@ -85,6 +85,7 @@ export interface CreateGroupInterface{
   additionalResources:Resource[], // This was already 'AdditionalResources' in CreateGroupInterface, but 'additionalResources' in Groups. Let's make them consistent.
 }
 
+
 export interface Groups{
   id: number;
   name:string,

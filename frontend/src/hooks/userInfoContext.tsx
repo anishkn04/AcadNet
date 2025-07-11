@@ -2,6 +2,7 @@ import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/Us
 import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
+import { isAxiosError } from "axios";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;

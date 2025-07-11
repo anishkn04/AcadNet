@@ -45,4 +45,8 @@ const StudyGroup = sequelize.define(
   }
 );
 
+// Association for group-membership
+StudyGroup.hasMany(Membership, { foreignKey: "studyGroupId" });
+Membership.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+
 export default StudyGroup;
