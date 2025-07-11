@@ -17,20 +17,20 @@ const AdditionalResourcesSection: React.FC<AdditionalResourcesSectionProps> = ({
 const buildOptions = () => {
   const options = [
     {
-      value: JSON.stringify({ topic: null, subtopic: null }),
+      value: JSON.stringify({ topicId: null, subTopicId: null }),
       label: 'General (All Topics)',
     },
   ];
 
   topics.forEach((topic) => {
     options.push({
-      value: JSON.stringify({ topic: topic.id, subtopic: null }),
+      value: JSON.stringify({ topicId: topic.id, subTopicId: null }),
       label: `Topic: ${topic.title}`,
     });
 
     topic.subTopics?.forEach((sub) => {
       options.push({
-        value: JSON.stringify({ topic: topic.id, subtopic: sub.id }),
+        value: JSON.stringify({ topicId: topic.id, subTopicId: sub.id }),
         label: `↳ Subtopic: ${sub.title}`,
       });
     });

@@ -54,6 +54,13 @@ ResourceLike.belongsTo(UserModel, { foreignKey: "userId" });
 AdditionalResource.hasMany(ResourceLike, { foreignKey: "resourceId" });
 ResourceLike.belongsTo(AdditionalResource, { foreignKey: "resourceId" });
 
+// User-Membership direct associations
+UserModel.hasMany(Membership, { foreignKey: "userId" });
+Membership.belongsTo(UserModel, { foreignKey: "userId" });
+
+StudyGroup.hasMany(Membership, { foreignKey: "studyGroupId" });
+Membership.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+
 
 export {
   UserModel,

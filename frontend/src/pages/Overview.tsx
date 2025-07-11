@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { fetchGroupDetailsByCodeAPI } from '@/services/UserServices';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { fetchOverviewAPI } from '@/services/UserServices';
 
 const Overview = () => {
   const location = useLocation();
@@ -16,19 +16,11 @@ const Overview = () => {
     const fetchData = async () => {
       setLoading(true);
       if (groupCode) {
-        try {
-          const { data, status } = await fetchGroupDetailsByCodeAPI(groupCode);
-          if (status === 200 && data) {
-            setGroup(data.message || data);
-          } else {
-            setGroup(null);
-          }
-        } catch (e) {
-          setGroup(null);
+        const {data,status} = await fetchOverviewAPI(groupCode)
+        if(status === 200){
+          console.log(data)
         }
-      }
-      setLoading(false);
-    };
+      };}
     fetchData();
   }, [groupCode]);
 
@@ -61,13 +53,13 @@ const Overview = () => {
             <div>
               <span className="font-semibold">Files:</span> {totalFiles}
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               {Object.entries(fileCounts).map(([type, count]) => (
                 <span key={type} className="inline-flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                  {type.toUpperCase()}: {count}
+                  {type.toUpperCase()}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>

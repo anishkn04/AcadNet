@@ -56,17 +56,17 @@ export interface topics{
   id:string
   title:string,
   description?:string,
-  subTopics:subTopics[];
+  subTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
 }
-export interface Topics{ 
-  id:string
-  title:string,
-  description?:string,
-  SubTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
-}
+// export interface Topics{ 
+//   id:string
+//   title:string,
+//   description?:string,
+//   SubTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
+// }
 export interface Resource {
   filePath: string;
-  fileType: string;
+  fileType?: string;
   file?: File;
   linkedTo?: {
     topicId: number | null;
@@ -99,9 +99,9 @@ export interface Groups{
     user_id: number;
     username: string;
   };
-  Syllabus:{ // Capital S
+  syllabus:{ // Capital S
     id?: string;
-    Topics:Topics[] // Capital T
+    topics:topics[] // Capital T
   },
   AdditionalResources:Resource[], // Assuming backend returns lowercase 'a'
   members:member[],

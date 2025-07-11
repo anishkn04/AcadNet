@@ -1,5 +1,5 @@
 import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
-import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, fetchGroupDetailsByCodeAPI } from "@/services/UserServices";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
 import { isAxiosError } from "axios";
@@ -11,7 +11,6 @@ type UserInfoType ={
     retreiveGroups: () => Promise<Groups |undefined>
     user : string,
     userId:Number | undefined,
-    getGroupDetailsByCode: (groupCode: string) => Promise<any>
 }
 
 type Props = {children:ReactNode}
@@ -52,7 +51,6 @@ export const UserInfoProvider = ({children}:Props) =>{
     useEffect(()=>{
         const fetchUsername = async() =>{
             const data = await getInfo();
-            console.log(data?.username)
             setUser(data?.username ?? '')
             setUserId(data?.user_id ?? 0)
         }
@@ -87,26 +85,10 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
     }
     // Fetch group details by groupCode
-    const getGroupDetailsByCode = async (groupCode: string) => {
-        try {
-            const { data, status } = await fetchGroupDetailsByCodeAPI(groupCode);
-            if (status === 200) {
-                console.log(data)
-                return data;
-            } else {
-                return null;
-            }
-        } catch (e) {
-            if(isAxiosError(e)){
-                console.log
-            }
-            
-            return null;
-        }
-    }
+
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId, getGroupDetailsByCode}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
             {children}
         </UserInfoContext.Provider>
     )

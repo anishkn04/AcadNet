@@ -32,8 +32,9 @@ export const createGroupAPI = async (createGroupData: CreateGroupInterface) => {
         formData.append('syllabus', JSON.stringify({ topics: createGroupData.syllabus.topics }));
         if (Array.isArray(createGroupData.additionalResources)) {
             createGroupData.additionalResources.forEach((res) => {
-                if (res.file) {
+                if (res.file && res.linkedTo) {
                     formData.append('additionalResources', res.file);
+                    formData.append('additionalResources',JSON.stringify(res.linkedTo));
                 }
             });
         }
@@ -53,18 +54,18 @@ export const fetchGroupAPI = async () => {
     }
 }
 
-export const fetchGroupDetailsByCodeAPI = async (groupCode: string) => {
-    try {
-        const response = await apiClient.get<any>(`/group/${groupCode}`);
-        return { data: response.data, status: response.status };
-    } catch (error) {
-        throw error;
+export const fetchOverviewAPI = async (groupCode:string | number)=>{
+    try{
+        const response = await apiClient.get<any>(`/group/overview/${groupCode}`)
+        return {data:response.data,status:response.status};
+    }catch(error){
+        throw error
     }
 }
 
-export const fetchGroupDetailsByIdAPI = async (groupId: string | number) => {
+export const fetchGroupDetailsByIdAPI = async (groupCode: string | number) => {
     try {
-        const response = await apiClient.get<any>(`/group/details/${groupId}`);
+        const response = await apiClient.get<any>(`/group/details/${groupCode}`);
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;

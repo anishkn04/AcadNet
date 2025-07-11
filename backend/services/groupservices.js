@@ -236,9 +236,7 @@ export const getGroupOverviewList = async () => {
       },
       {
         model: UserModel,
-        as: 'UserModel',
         attributes: ['username', 'fullName'],
-        foreignKey: 'creatorId',
       },
     ],
   });
@@ -255,7 +253,7 @@ export const getGroupOverviewList = async () => {
       description: group.description,
       fileCounts: fileTypeCount,
       totalFiles: group.AdditionalResources?.length || 0,
-      membersCount: group.Memberships?.length || 0,
+      membersCount: group.memberships?.length || 0,
       syllabus: group.Syllabus,
       creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
     };
@@ -265,7 +263,7 @@ export const getGroupOverviewList = async () => {
 // Get overview for a single group by group code
 export const getGroupOverviewByCode = async (groupCode) => {
   const group = await StudyGroup.findOne({
-    where: { code: groupCode },
+    where: { groupCode: groupCode },
     include: [
       {
         model: AdditionalResource,
@@ -281,9 +279,7 @@ export const getGroupOverviewByCode = async (groupCode) => {
       },
       {
         model: UserModel,
-        as: 'UserModel',
         attributes: ['username', 'fullName'],
-        foreignKey: 'creatorId',
       },
     ],
   });
@@ -298,7 +294,7 @@ export const getGroupOverviewByCode = async (groupCode) => {
     description: group.description,
     fileCounts: fileTypeCount,
     totalFiles: group.AdditionalResources?.length || 0,
-    membersCount: group.Memberships?.length || 0,
+    membersCount: group.memberships?.length || 0,
     syllabus: group.Syllabus,
     creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
   };
@@ -311,11 +307,25 @@ export const getGroupDetailsByCode = async (groupCode) => {
     include: [
       {
         model: Membership,
-        as: "members",
-        include: [User],
+        include: [
+          {
+            model: UserModel,
+            attributes: ['user_id', 'username', 'fullName'],
+          }
+        ],
       },
-      AdditionalResource,
-      Syllabus,
+      {
+        model: AdditionalResource,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        attributes: ['username', 'fullName'],
+      },
     ],
   });
   console.log("Reached here")
@@ -327,6 +337,15 @@ export const getGroupDetailsById = async (groupId) => {
   const group = await StudyGroup.findByPk(groupId, {
     include: [
       {
+        model: Membership,
+        include: [
+          {
+            model: UserModel,
+            attributes: ['user_id', 'username', 'fullName'],
+          }
+        ],
+      },
+      {
         model: AdditionalResource,
         attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
       },
@@ -336,9 +355,7 @@ export const getGroupDetailsById = async (groupId) => {
       },
       {
         model: UserModel,
-        as: 'UserModel',
         attributes: ['username', 'fullName'],
-        foreignKey: 'creatorId',
       },
     ],
   });
@@ -351,7 +368,7 @@ export const joinGroup = async (userId, groupCode) => {
     throwWithCode("User ID and group code are required.", 400);
   }
   // Find the group by code
-  const group = await StudyGroup.findOne({ where: { code: groupCode } });
+  const group = await StudyGroup.findOne({ where: { groupCode: groupCode } });
   if (!group) {
     throwWithCode("Group not found.", 404);
   }
