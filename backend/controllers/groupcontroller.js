@@ -1,4 +1,4 @@
-import { getAllGroups , createStudyGroupWithSyllabus} from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus } from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 
@@ -6,7 +6,7 @@ export const getGroups = async (req,res)=>{
     try{
   
         const allGroups = await getAllGroups(req)
-        console.log(allGroups)
+        console.log("All groups: ", allGroups)
         jsonRes(res,200,true,allGroups)
     }
     catch(err){
@@ -16,8 +16,9 @@ export const getGroups = async (req,res)=>{
 
 
 export const createGroup = async (req, res) => {
+    console.log("Creating group with details: ", req.body)
  const creatorId = req.id;
- let { name, description, isPrivate, syllabus } = req.body;
+ let { name, description, isPrivate, syllabus, additionalResources } = req.body;
  const files = req.files; 
 
  if (typeof syllabus === 'string') {
@@ -84,4 +85,110 @@ export const createGroup = async (req, res) => {
    err.message || "Failed to create study group."
   );
  }
+};
+
+export const groupOverview = async (req, res) => {
+  try {
+    const overview = await getGroupOverviewList();
+    jsonRes(res, 200, true, overview);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group overview.");
+  }
+};
+
+export const groupDetails = async (req, res) => {
+  try {
+    const groupCode = req.params.groupCode;
+    if (!groupCode) {
+      return jsonRes(res, 400, false, "Group code is required.");
+    }
+    const group = await getGroupDetailsByCode(groupCode);
+    console.log(group)
+    if (!group) return jsonRes(res, 404, false, "Group not found");
+    jsonRes(res, 200, true, group);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group details.");
+  }
+};
+
+export const groupDetailsById = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    if (!groupId) {
+      return jsonRes(res, 400, false, "Group ID is required.");
+    }
+    const group = await getGroupDetailsById(groupId);
+    if (!group) return jsonRes(res, 404, false, "Group not found");
+    jsonRes(res, 200, true, group);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group details.");
+  }
+};
+
+export const groupOverviewByCode = async (req, res) => {
+  try {
+    const groupCode = req.params.groupCode;
+    if (!groupCode) {
+      return jsonRes(res, 400, false, "Group code is required.");
+    }
+    const overview = await getGroupOverviewByCode(groupCode);
+    if (!overview) {
+      return jsonRes(res, 404, false, "Group not found");
+    }
+    jsonRes(res, 200, true, overview);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group overview by code.");
+  }
+};
+
+
+export const likeAdditionalResource = async (req, res) => {
+  try {
+    const userId = req.id; 
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await likeResource(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to like resource.");
+  }
+};
+
+export const dislikeAdditionalResource = async (req, res) => {
+  try {
+    const userId = req.id; // from auth middleware
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await dislikeResource(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to dislike resource.");
+  }
+};
+
+export const getResourceStatus = async (req, res) => {
+  try {
+    const userId = req.id; // from auth middleware
+    const { resourceId } = req.params;
+
+    if (!resourceId) {
+      return jsonRes(res, 400, false, "Resource ID is required.");
+    }
+
+    const result = await getResourceLikeStatus(userId, parseInt(resourceId));
+    return jsonRes(res, 200, true, result);
+  } catch (err) {
+    console.log(err);
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to get resource status.");
+  }
 };

@@ -13,7 +13,7 @@ const countryNames = countries.getNames("en");
 const countryEnum = Object.values(countryNames);
 
 const UserModel = sequelize.define(
-  "UserModel",
+  "userModel",
   {
     user_id: {
       type: DataTypes.INTEGER,

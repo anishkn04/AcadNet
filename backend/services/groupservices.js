@@ -1,6 +1,7 @@
 import StudyGroup from "../models/studyGroup.model.js"
 import throwWithCode from "../utils/errorthrow.js";
 import AdditionalResource from "../models/additionalResources.model.js";
+import ResourceLike from "../models/resourceLike.model.js";
 import sequelize from "../config/database.js";
 import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
@@ -8,6 +9,7 @@ import Topic from "../models/topics.model.js";
 import SubTopic from "../models/subtopics.model.js";
 import fs from "fs";
 import path from "path";
+import Membership from "../models/membership.model.js";
 
 export const getAllGroups= async (req)=>{
     try{
@@ -70,6 +72,26 @@ export const createStudyGroupWithSyllabus = async (
       }
     }
 
+    // Generate unique group code
+    const generateGroupCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    let groupCode, existingGroup, attempts = 0;
+    do {
+      groupCode = generateGroupCode();
+      existingGroup = await StudyGroup.findOne({ where: { groupCode: groupCode } });
+      attempts++;
+    } while (existingGroup && attempts < 10);
+    
+    if (existingGroup) {
+      throwWithCode("Failed to generate unique group code after multiple attempts.", 500);
+    }
 
     const newGroup = await StudyGroup.create(
       {
@@ -77,6 +99,18 @@ export const createStudyGroupWithSyllabus = async (
         description: groupData.description || null,
         creatorId: creatorId,
         isPrivate: groupData.isPrivate || false,
+        groupCode: groupCode,
+      },
+      { transaction }
+    );
+
+
+    // Add creator as a member of the group
+    await Membership.create(
+      {
+        userId: creatorId,
+        studyGroupId: newGroup.id,
+        isAnonymous: false,
       },
       { transaction }
     );
@@ -84,25 +118,32 @@ export const createStudyGroupWithSyllabus = async (
 
     const createdResources = [];
     if (additionalResourceFiles && additionalResourceFiles.length > 0) {
-
       const groupResourcePath = `resources/${newGroup.id}_resources`;
       fs.mkdirSync(groupResourcePath, { recursive: true });
 
       let fileCounter = 1;
       for (const file of additionalResourceFiles) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        let fileType = "other";
+        if ([".pdf"].includes(ext)) fileType = "pdf";
+        else if ([".doc", ".docx"].includes(ext)) fileType = "doc";
+        else if ([".xls", ".xlsx"].includes(ext)) fileType = "excel";
+        else if ([".ppt", ".pptx"].includes(ext)) fileType = "ppt";
+        else if ([".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"].includes(ext)) fileType = "image";
+        else if ([".mp4", ".avi", ".mov", ".wmv", ".mkv", ".webm"].includes(ext)) fileType = "video";
+        else if ([".mp3", ".wav", ".aac", ".ogg", ".flac"].includes(ext)) fileType = "audio";
+        else if ([".txt"].includes(ext)) fileType = "text";
 
-        const newFileName = `${fileCounter}${path.extname(file.originalname)}`;
+        const newFileName = `${fileCounter}${ext}`;
         const newFilePath = path.join(groupResourcePath, newFileName);
-
-    
         fs.renameSync(file.path, newFilePath);
-        createdResourcesForCleanup.push(newFilePath); 
+        createdResourcesForCleanup.push(newFilePath);
 
-      
         const newResource = await AdditionalResource.create(
           {
             studyGroupId: newGroup.id,
             filePath: newFilePath,
+            fileType: fileType,
           },
           { transaction }
         );
@@ -176,3 +217,278 @@ export const createStudyGroupWithSyllabus = async (
     throw error;
   }
 };
+
+// Get overview for all groups
+export const getGroupOverviewList = async () => {
+  const groups = await StudyGroup.findAll({
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['fileType'],
+      },
+      {
+        model: Membership,
+        attributes: ['id'],
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+
+  return groups.map((group) => {
+    // File count by type
+    const fileTypeCount = {};
+    group.AdditionalResources?.forEach((r) => {
+      fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
+    });
+    return {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      fileCounts: fileTypeCount,
+      totalFiles: group.AdditionalResources?.length || 0,
+      membersCount: group.Memberships?.length || 0,
+      syllabus: group.Syllabus,
+      creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+    };
+  });
+};
+
+// Get overview for a single group by group code
+export const getGroupOverviewByCode = async (groupCode) => {
+  const group = await StudyGroup.findOne({
+    where: { code: groupCode },
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['fileType'],
+      },
+      {
+        model: Membership,
+        attributes: ['id'],
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+  if (!group) return null;
+  const fileTypeCount = {};
+  group.AdditionalResources?.forEach((r) => {
+    fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
+  });
+  return {
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    fileCounts: fileTypeCount,
+    totalFiles: group.AdditionalResources?.length || 0,
+    membersCount: group.Memberships?.length || 0,
+    syllabus: group.Syllabus,
+    creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+  };
+};
+
+// Get all details for a group by group code
+export const getGroupDetailsByCode = async (groupCode) => {
+  const group = await StudyGroup.findOne({
+    where: { groupCode },
+    include: [
+      {
+        model: Membership,
+        as: "members",
+        include: [userId],
+      },
+      AdditionalResource,
+      Syllabus,
+    ],
+  });
+  console.log("Reached here")
+  return group;
+};
+
+// Get all details for a group by group ID
+export const getGroupDetailsById = async (groupId) => {
+  const group = await StudyGroup.findByPk(groupId, {
+    include: [
+      {
+        model: AdditionalResource,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+      },
+      {
+        model: Syllabus,
+        include: [{ model: Topic, include: [SubTopic] }],
+      },
+      {
+        model: UserModel,
+        as: 'UserModel',
+        attributes: ['username', 'fullName'],
+        foreignKey: 'creatorId',
+      },
+    ],
+  });
+  return group;
+};
+
+// Service to join a group by group code
+export const joinGroup = async (userId, groupCode) => {
+  if (!userId || !groupCode) {
+    throwWithCode("User ID and group code are required.", 400);
+  }
+  // Find the group by code
+  const group = await StudyGroup.findOne({ where: { code: groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+  // Check if user is already a member
+  const existingMembership = await Membership.findOne({
+    where: { userId, studyGroupId: group.id },
+  });
+  if (existingMembership) {
+    throwWithCode("User is already a member of this group.", 409);
+  }
+  // Add user as a member
+  const membership = await Membership.create({
+    userId,
+    studyGroupId: group.id,
+    isAnonymous: false,
+  });
+  return membership;
+};
+
+// Like/Dislike Additional Resource Services
+export const likeResource = async (userId, resourceId) => {
+  let transaction;
+  
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if resource exists
+    const resource = await AdditionalResource.findByPk(resourceId, { transaction });
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    // Check if user already has a reaction to this resource
+    const existingLike = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      transaction
+    });
+
+    if (existingLike) {
+      if (existingLike.likeType === 'like') {
+        // User already liked, remove the like
+        await existingLike.destroy({ transaction });
+        await AdditionalResource.decrement('likesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'removed_like', message: 'Like removed successfully' };
+      } else {
+        // User disliked before, change to like
+        existingLike.likeType = 'like';
+        await existingLike.save({ transaction });
+        await AdditionalResource.increment('likesCount', { where: { id: resourceId }, transaction });
+        await AdditionalResource.decrement('dislikesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'changed_to_like', message: 'Changed from dislike to like successfully' };
+      }
+    } else {
+      // User hasn't reacted before, add like
+      await ResourceLike.create({ userId, resourceId, likeType: 'like' }, { transaction });
+      await AdditionalResource.increment('likesCount', { where: { id: resourceId }, transaction });
+      await transaction.commit();
+      return { action: 'added_like', message: 'Resource liked successfully' };
+    }
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    throw error;
+  }
+};
+
+export const dislikeResource = async (userId, resourceId) => {
+  let transaction;
+  
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if resource exists
+    const resource = await AdditionalResource.findByPk(resourceId, { transaction });
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    // Check if user already has a reaction to this resource
+    const existingLike = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      transaction
+    });
+
+    if (existingLike) {
+      if (existingLike.likeType === 'dislike') {
+        // User already disliked, remove the dislike
+        await existingLike.destroy({ transaction });
+        await AdditionalResource.decrement('dislikesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'removed_dislike', message: 'Dislike removed successfully' };
+      } else {
+        // User liked before, change to dislike
+        existingLike.likeType = 'dislike';
+        await existingLike.save({ transaction });
+        await AdditionalResource.increment('dislikesCount', { where: { id: resourceId }, transaction });
+        await AdditionalResource.decrement('likesCount', { where: { id: resourceId }, transaction });
+        await transaction.commit();
+        return { action: 'changed_to_dislike', message: 'Changed from like to dislike successfully' };
+      }
+    } else {
+      // User hasn't reacted before, add dislike
+      await ResourceLike.create({ userId, resourceId, likeType: 'dislike' }, { transaction });
+      await AdditionalResource.increment('dislikesCount', { where: { id: resourceId }, transaction });
+      await transaction.commit();
+      return { action: 'added_dislike', message: 'Resource disliked successfully' };
+    }
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    throw error;
+  }
+};
+
+export const getResourceLikeStatus = async (userId, resourceId) => {
+  try {
+    const resource = await AdditionalResource.findByPk(resourceId, {
+      attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount']
+    });
+    
+    if (!resource) {
+      throwWithCode("Resource not found.", 404);
+    }
+
+    const userReaction = await ResourceLike.findOne({
+      where: { userId, resourceId },
+      attributes: ['likeType']
+    });
+
+    return {
+      resource,
+      userReaction: userReaction ? userReaction.likeType : null
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+

@@ -1,8 +1,9 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
+import { type } from "os";
 
 const AdditionalResource = sequelize.define(
- "AdditionalResource",
+ "additionalResource",
  {
   id: {
    type: DataTypes.INTEGER,
@@ -17,10 +18,40 @@ const AdditionalResource = sequelize.define(
     key: "id",
    },
   },
+  topicId: {
+   type: DataTypes.INTEGER,
+   allowNull: true,
+   references: {
+    model: "topics",
+    key: "id"
+   }
+  },
+  subTopicId: {
+   type: DataTypes.INTEGER,
+   allowNull: true,
+   references: {
+    model: "sub_topics",
+    key: "id"
+   }
+  },
   filePath: {
    type: DataTypes.STRING,
    allowNull: false,
   },
+  fileType: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  likesCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
+  },
+  dislikesCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
+  }
  },
  {
   tableName: "additional_resources",

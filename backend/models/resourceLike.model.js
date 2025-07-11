@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import sequelize  from "../config/database.js";
+import sequelize from "../config/database.js";
 
-const Membership = sequelize.define(
-  "membership",
+const ResourceLike = sequelize.define(
+  "ResourceLike",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -17,25 +17,31 @@ const Membership = sequelize.define(
         key: "user_id",
       },
     },
-    studyGroupId: {
-      type: DataTypes.UUID,
+    resourceId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "study_groups",
+        model: "additional_resources",
         key: "id",
       },
     },
-    isAnonymous: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    likeType: {
+      type: DataTypes.ENUM('like', 'dislike'),
+      allowNull: false,
     },
   },
   {
-    tableName: "memberships",
+    tableName: "resource_likes",
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'resourceId']
+      }
+    ]
   }
 );
 
-export default Membership;
+export default ResourceLike;

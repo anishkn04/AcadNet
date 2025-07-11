@@ -6,6 +6,7 @@ import { Home } from "../pages/Home";
 import CreateGroup from "../pages/CreateGroup";
 import CreateGroupForm from "@/pages/CreateGroupForm";
 import About from "@/pages/About";
+import Guide from "@/pages/Guide";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -13,6 +14,9 @@ import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
 import StudyPlatform from "@/pages/StudyPlatform";
+import MyGroup from "@/pages/MyGroup";
+import Overview from "@/pages/Overview";
+import GroupAdmin from "@/pages/GroupAdmin";
 
 export const router = createBrowserRouter([
   {
@@ -42,12 +46,20 @@ export const router = createBrowserRouter([
         element: <About />,
       },
       {
+        path: "guide",
+        element: <Guide />,
+      },
+      {
         path: "group",
         element: (
           <ProtectedRoutes>
             <StudyPlatform />
           </ProtectedRoutes>
         ),
+      },
+      {
+        path: "overview",
+        element: <Overview />,
       },
     ],
   },
@@ -62,6 +74,15 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <UserProfile />,
+      },
+      {
+        path: "mygroup",
+        element: <MyGroup />,
+      },
+
+      {
+        path: "groupadmin",
+        element: <GroupAdmin />,
       },
     ],
   },

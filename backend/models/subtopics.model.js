@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import  sequelize  from "../config/database.js";
 
 const SubTopic = sequelize.define(
-  "SubTopic",
+  "subTopic",
   {
     id: {
       type: DataTypes.INTEGER,
