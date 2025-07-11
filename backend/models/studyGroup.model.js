@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 import { v4 as uuidv4 } from "uuid";
-import Membership from "./membership.model.js";
 
 const StudyGroup = sequelize.define(
   "studyGroup",
@@ -45,9 +44,5 @@ const StudyGroup = sequelize.define(
     updatedAt: "updated_at",
   }
 );
-
-// Association for group-membership
-StudyGroup.hasMany(Membership, { foreignKey: "studyGroupId" });
-Membership.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
 
 export default StudyGroup;
