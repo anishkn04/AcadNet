@@ -8,6 +8,10 @@ import AdditionalResource from "./additionalResources.model.js";
 import ResourceLike from "./resourceLike.model.js";
 import OTP from "./otp.model.js";
 import RefreshToken from "./refresh.sequelize.model.js";
+import Forum from "./forum.model.js";
+import Thread from "./thread.model.js";
+import Reply from "./reply.model.js";
+import ReplyLike from "./replyLike.model.js";
 
 
 UserModel.hasMany(StudyGroup, { foreignKey: "creatorId" });
@@ -61,6 +65,38 @@ Membership.belongsTo(UserModel, { foreignKey: "userId" });
 StudyGroup.hasMany(Membership, { foreignKey: "studyGroupId" });
 Membership.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
 
+// Forum Associations
+StudyGroup.hasOne(Forum, { foreignKey: "studyGroupId" });
+Forum.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+
+// Thread Associations
+Forum.hasMany(Thread, { foreignKey: "forumId" });
+Thread.belongsTo(Forum, { foreignKey: "forumId" });
+
+UserModel.hasMany(Thread, { foreignKey: "authorId", as: "authoredThreads" });
+Thread.belongsTo(UserModel, { foreignKey: "authorId", as: "author" });
+
+UserModel.hasMany(Thread, { foreignKey: "lastReplyBy", as: "lastRepliedThreads" });
+Thread.belongsTo(UserModel, { foreignKey: "lastReplyBy", as: "lastReplier" });
+
+// Reply Associations
+Thread.hasMany(Reply, { foreignKey: "threadId" });
+Reply.belongsTo(Thread, { foreignKey: "threadId" });
+
+UserModel.hasMany(Reply, { foreignKey: "authorId", as: "authoredReplies" });
+Reply.belongsTo(UserModel, { foreignKey: "authorId", as: "author" });
+
+// Self-referential association for nested replies
+Reply.hasMany(Reply, { foreignKey: "parentReplyId", as: "childReplies" });
+Reply.belongsTo(Reply, { foreignKey: "parentReplyId", as: "parentReply" });
+
+// Reply Like Associations
+UserModel.hasMany(ReplyLike, { foreignKey: "userId" });
+ReplyLike.belongsTo(UserModel, { foreignKey: "userId" });
+
+Reply.hasMany(ReplyLike, { foreignKey: "replyId" });
+ReplyLike.belongsTo(Reply, { foreignKey: "replyId" });
+
 
 export {
   UserModel,
@@ -72,5 +108,9 @@ export {
   AdditionalResource,
   ResourceLike,
   OTP,
-  RefreshToken
+  RefreshToken,
+  Forum,
+  Thread,
+  Reply,
+  ReplyLike
 };

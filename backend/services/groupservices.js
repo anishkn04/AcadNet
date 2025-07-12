@@ -7,6 +7,7 @@ import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
 import Topic from "../models/topics.model.js";
 import SubTopic from "../models/subtopics.model.js";
+import Forum from "../models/forum.model.js";
 import fs from "fs";
 import path from "path";
 import Membership from "../models/membership.model.js";
@@ -160,6 +161,15 @@ export const createStudyGroupWithSyllabus = async (
       { transaction }
     );
 
+    // Create forum for the group
+    const newForum = await Forum.create(
+      {
+        studyGroupId: newGroup.id,
+        name: "General Discussion",
+        description: `Discussion forum for ${groupData.name}`
+      },
+      { transaction }
+    );
 
     const createdTopics = [];
     for (const topicData of syllabusTopicsData) {
