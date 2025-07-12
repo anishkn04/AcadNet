@@ -198,10 +198,8 @@ const Overview = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Join Group Button - Fixed position bottom right, only show if not member */}
       {showJoinButton && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="flex justify-end">
           <Button 
             onClick={() => handleJoinGroupClick(groupCode)}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-3 text-lg font-semibold"
@@ -211,6 +209,8 @@ const Overview = () => {
           </Button>
         </div>
       )}
+
+      {/* Join Group Button - Fixed position bottom right, only show if not member */}
 
       {/* Join Group Confirmation Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
