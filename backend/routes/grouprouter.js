@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -36,6 +36,11 @@ router.post("/join/:groupCode", authMiddleware, csrfMiddleware, addUser, async (
     res.status(err.code || 500).json({ success: false, message: err.message || "Failed to join group." });
   }
 });
+
+router.post("/leave/:groupCode", authMiddleware, csrfMiddleware, addUser, leaveGroup);
+router.post("/:groupCode/remove/:userId", authMiddleware, csrfMiddleware, addUser, removeGroupMember);
+router.post("/:groupCode/members/:userId/promote", authMiddleware, csrfMiddleware, addUser, promoteGroupMember);
+router.post("/:groupCode/members/:userId/demote", authMiddleware, csrfMiddleware, addUser, demoteGroupMember);
 
 
 router.post("/resource/:resourceId/like", authMiddleware, csrfMiddleware, addUser, likeAdditionalResource);

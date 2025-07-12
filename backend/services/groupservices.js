@@ -547,11 +547,129 @@ export const getResourceLikeStatus = async (userId, resourceId) => {
 
     return {
       resource,
-      userReaction: userReaction ? userReaction.likeType : null
+      userReaction: userReaction ? userReaction.likeType : 'none'
     };
   } catch (error) {
     throw error;
   }
+};
+
+// Leave a study group
+export const leaveGroup = async (userId, groupCode) => {
+  const group = await StudyGroup.findOne({ where: { groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+
+  const membership = await Membership.findOne({
+    where: { userId, studyGroupId: group.id },
+  });
+
+  if (!membership) {
+    throwWithCode("You are not a member of this group.", 404);
+  }
+
+  if (group.creatorId === userId) {
+    throwWithCode("The creator cannot leave the group. You can delete it instead.", 403);
+  }
+
+  await membership.destroy();
+  return { message: "Successfully left the group." };
+};
+
+// Remove a member from a group (admin only)
+export const removeMember = async (adminId, groupCode, userIdToRemove) => {
+  const group = await StudyGroup.findOne({ where: { groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+
+  const adminMembership = await Membership.findOne({
+    where: { userId: adminId, studyGroupId: group.id },
+  });
+
+  if (!adminMembership || adminMembership.role !== "admin") {
+    throwWithCode("You do not have permission to remove members.", 403);
+  }
+
+  if (adminId === userIdToRemove) {
+    throwWithCode("You cannot remove yourself.", 400);
+  }
+
+  const memberToRemove = await Membership.findOne({
+    where: { userId: userIdToRemove, studyGroupId: group.id },
+  });
+
+  if (!memberToRemove) {
+    throwWithCode("User is not a member of this group.", 404);
+  }
+
+  await memberToRemove.destroy();
+  return { message: "Member removed successfully." };
+};
+
+// Promote a member to admin (admin only)
+export const promoteMember = async (adminId, groupCode, userIdToPromote) => {
+  const group = await StudyGroup.findOne({ where: { groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+
+  const adminMembership = await Membership.findOne({
+    where: { userId: adminId, studyGroupId: group.id },
+  });
+
+  if (!adminMembership || adminMembership.role !== "admin") {
+    throwWithCode("You do not have permission to promote members.", 403);
+  }
+
+  const memberToPromote = await Membership.findOne({
+    where: { userId: userIdToPromote, studyGroupId: group.id },
+  });
+
+  if (!memberToPromote) {
+    throwWithCode("User is not a member of this group.", 404);
+  }
+
+  if (memberToPromote.role === "admin") {
+    throwWithCode("User is already an admin.", 400);
+  }
+
+  memberToPromote.role = "admin";
+  await memberToPromote.save();
+  return { message: "Member promoted to admin successfully." };
+};
+
+// Demote a member from admin (creator only)
+export const demoteMember = async (creatorId, groupCode, userIdToDemote) => {
+  const group = await StudyGroup.findOne({ where: { groupCode } });
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+
+  if (group.creatorId !== creatorId) {
+    throwWithCode("Only the group creator can demote admins.", 403);
+  }
+
+  const memberToDemote = await Membership.findOne({
+    where: { userId: userIdToDemote, studyGroupId: group.id },
+  });
+
+  if (!memberToDemote) {
+    throwWithCode("User is not a member of this group.", 404);
+  }
+
+  if (memberToDemote.role !== "admin") {
+    throwWithCode("User is not an admin.", 400);
+  }
+
+  if (group.creatorId === userIdToDemote) {
+    throwWithCode("The creator cannot be demoted.", 403);
+  }
+
+  memberToDemote.role = "member";
+  await memberToDemote.save();
+  return { message: "Admin demoted to member successfully." };
 };
 
 
