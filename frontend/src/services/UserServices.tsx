@@ -138,6 +138,50 @@ export const fetchGroupDetailsByIdAPI = async (groupCode: string | number) => {
     }
 }
 
+export const fetchGroupDetailsByIdDirectAPI = async (groupId: string | number) => {
+    try {
+        const response = await apiClient.get<any>(`/group/details/id/${groupId}`);
+        
+        // Extract data from the nested message structure
+        const backendData = response.data.message || response.data;
+        
+        // Map backend response to frontend expected structure
+        const mappedData: Groups = {
+            ...backendData,
+            // Map AdditionalResources (if returned as lowercase)
+            AdditionalResources: backendData.AdditionalResources || backendData.additionalResources || [],
+            // Map Memberships to members
+            members: (backendData.Memberships || backendData.memberships || []).map((membership: any) => ({
+                id: membership.id,
+                userId: membership.userId || membership.user_id,
+                studyGroupId: membership.studyGroupId || membership.study_group_id,
+                isAnonymous: membership.isAnonymous || false,
+                created_at: membership.created_at,
+                updated_at: membership.updated_at,
+                UserModel: membership.UserModel ? {
+                    user_id: membership.UserModel.user_id,
+                    username: membership.UserModel.username,
+                    fullName: membership.UserModel.fullName
+                } : undefined
+            })),
+            // Map userModel to creator
+            creator: backendData.UserModel ? {
+                user_id: backendData.creatorId,
+                username: backendData.UserModel.username
+            } : undefined,
+            // Map Syllabus to syllabus
+            syllabus: backendData.Syllabus ? {
+                id: backendData.Syllabus.id,
+                topics: backendData.Syllabus.Topics || backendData.Syllabus.topics || []
+            } : { topics: [] }
+        };
+        
+        return { data: mappedData, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const joinGroupAPI = async (groupCode: string) => {
     try {
         const response = await apiClient.post(`/group/join/${groupCode}`);
@@ -169,6 +213,44 @@ export const dislikeResourceAPI = async (resourceId: number) => {
 export const getResourceStatusAPI = async (resourceId: number) => {
     try {
         const response = await apiClient.get(`/group/resource/${resourceId}/status`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Group Admin APIs
+export const removeGroupMemberAPI = async (groupCode: string, userId: number) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/remove/${userId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const promoteGroupMemberAPI = async (groupCode: string, userId: number) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/members/${userId}/promote`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const demoteGroupMemberAPI = async (groupCode: string, userId: number) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/members/${userId}/demote`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Update Group API (for saving group name and description changes)
+export const updateGroupAPI = async (groupId: string, updateData: { name?: string; description?: string }) => {
+    try {
+        const response = await apiClient.put(`/group/update/${groupId}`, updateData);
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;

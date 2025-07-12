@@ -30,6 +30,7 @@ const StudyPlatform = () => {
             if (groupCode) {
                 const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
                 if(status === 200){
+                    console.log('groupdata',data)
                     setGroupData(data)
                     
                     // Fetch resource statuses for all resources
