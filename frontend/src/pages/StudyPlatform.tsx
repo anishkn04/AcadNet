@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileArrowUp } from '@fortawesome/free-solid-svg-icons'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { fetchGroupAPI, fetchGroupDetailsByIdAPI } from '@/services/UserServices'
+import { fetchGroupDetailsByIdAPI } from '@/services/UserServices'
 import type { Groups } from '@/models/User'
 
 const StudyPlatform = () => {
@@ -15,26 +15,11 @@ const StudyPlatform = () => {
         const groupCode = params.get('code')
         const fetchData = async () => {
             if (groupCode) {
-                const { data, status } = await fetchGroupAPI();
-                if (status === 200 && Array.isArray(data.message)) {
-                    const group = data.message.find((g: {groupCode:string}) => g.groupCode === groupCode)
-                    if (group && group.id) {
-                        const { data: groupDetails, status: groupStatus } = await fetchGroupDetailsByIdAPI(group.id)
-                        if (groupStatus === 200 && groupDetails.success) {
-                            console.log("Fetched group details:", groupDetails.message) // Add this for debugging
-                            setGroupData(groupDetails.message)
-                        } else {
-                            setGroupData(null)
-                            console.error("Failed to fetch group details or success was false.")
-                        }
-                    } else {
-                        setGroupData(null)
-                        console.error("Group not found with the provided code or missing ID.")
-                    }
-                } else {
-                    setGroupData(null)
-                    console.error("Failed to fetch all groups or data.message is not an array.")
+                const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
+                if(status === 200){
+                    console.log('groupData:',data)
                 }
+                
             } else {
                 setGroupData(null)
                 console.warn("No group code found in URL.")
@@ -67,7 +52,7 @@ const StudyPlatform = () => {
                             <CardTitle className='font-bold text-2xl'>Syllabus</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {groupData.Syllabus?.Topics && groupData.Syllabus.Topics.length > 0 ? (
+                            {groupData.syllabus?.topics && groupData.syllabus.topics.length > 0 ? (
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full border border-gray-200 bg-white rounded-lg">
                                         <thead className="bg-gray-100">
@@ -78,14 +63,14 @@ const StudyPlatform = () => {
                                             </tr>
                                         </thead>
                                         <tbody className='border-2'>
-                                            {groupData.Syllabus.Topics.map((topic) => (
+                                            {groupData.syllabus.topics.map((topic) => (
                                                 <tr key={topic.id} className="border-b hover:bg-blue-50">
                                                     <td className="px-4 py-2 font-medium text-gray-900 align-top">{topic.title}</td>
                                                     <td className="px-4 py-2 text-gray-600 align-top">{topic.description || '-'}</td>
                                                     <td className="px-4 py-2 align-top">
-                                                        {topic.SubTopics && topic.SubTopics.length > 0 ? (
+                                                        {topic.subTopics && topic.subTopics.length > 0 ? (
                                                             <ul className="list-disc ml-4">
-                                                                {topic.SubTopics.map((subtopic) => (
+                                                                {topic.subTopics.map((subtopic) => (
                                                                     <li key={subtopic.id} className="mb-1">
                                                                         <span className="font-semibold text-blue-700">{subtopic.title}</span>
                                                                         {subtopic.content && (

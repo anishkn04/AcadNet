@@ -6,7 +6,7 @@ export const getGroups = async (req,res)=>{
     try{
   
         const allGroups = await getAllGroups(req)
-        console.log("All groups: ", allGroups)
+        // console.log("All groups: ", allGroups)
         jsonRes(res,200,true,allGroups)
     }
     catch(err){
