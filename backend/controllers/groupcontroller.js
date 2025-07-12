@@ -1,4 +1,5 @@
 import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus } from "../services/groupservices.js";
+import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
 
@@ -190,5 +191,49 @@ export const getResourceStatus = async (req, res) => {
   } catch (err) {
     console.log(err);
     return jsonRes(res, err.code || 500, false, err.message || "Failed to get resource status.");
+  }
+};
+
+export const leaveGroup = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode } = req.params;
+    const result = await groupServices.leaveGroup(userId, groupCode);
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message);
+  }
+};
+
+export const removeGroupMember = async (req, res) => {
+  try {
+    const adminId = req.id;
+    const { groupCode, userId } = req.params;
+    const result = await groupServices.removeMember(adminId, groupCode, userId);
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message);
+  }
+};
+
+export const promoteGroupMember = async (req, res) => {
+  try {
+    const adminId = req.id;
+    const { groupCode, userId } = req.params;
+    const result = await groupServices.promoteMember(adminId, groupCode, userId);
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message);
+  }
+};
+
+export const demoteGroupMember = async (req, res) => {
+  try {
+    const adminId = req.id;
+    const { groupCode, userId } = req.params;
+    const result = await groupServices.demoteMember(adminId, groupCode, userId);
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message);
   }
 };
