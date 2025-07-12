@@ -10,36 +10,59 @@ interface LikeDislikeButtonProps {
   initialLikesCount?: number;
   initialDislikesCount?: number;
   initialUserReaction?: 'like' | 'dislike' | null;
+  onStatusUpdate?: (resourceId: number, newStatus: { likesCount: number; dislikesCount: number; userReaction: 'like' | 'dislike' | null }) => void;
 }
 
 export const LikeDislikeButton = ({ 
   resourceId, 
   initialLikesCount = 0, 
   initialDislikesCount = 0, 
-  initialUserReaction = null 
+  initialUserReaction = null,
+  onStatusUpdate 
 }: LikeDislikeButtonProps) => {
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [dislikesCount, setDislikesCount] = useState(initialDislikesCount);
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(initialUserReaction);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch current status on component mount
+  // Update local state when props change (from parent updates)
   useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const { data, status } = await getResourceStatusAPI(resourceId);
-        if (status === 200 && data.success) {
-          setLikesCount(data.likesCount || 0);
-          setDislikesCount(data.dislikesCount || 0);
-          setUserReaction(data.userReaction || null);
-        }
-      } catch (error) {
-        console.error('Failed to fetch resource status:', error);
-      }
-    };
+    if (initialLikesCount !== undefined) setLikesCount(initialLikesCount);
+    if (initialDislikesCount !== undefined) setDislikesCount(initialDislikesCount);
+    if (initialUserReaction !== undefined) setUserReaction(initialUserReaction);
+  }, [initialLikesCount, initialDislikesCount, initialUserReaction]);
 
-    fetchStatus();
-  }, [resourceId]);
+  // Helper function to fetch and update status
+  const fetchAndUpdateStatus = async () => {
+    try {
+      const { data, status } = await getResourceStatusAPI(resourceId);
+      if (status === 200 && data.success) {
+        // The API returns { resource: {...}, userReaction: ... }
+        const resourceData = data.message.resource;
+        const userReaction = data.message.userReaction;
+        
+        const newStatus = {
+          likesCount: resourceData.likesCount || 0,
+          dislikesCount: resourceData.dislikesCount || 0,
+          userReaction: userReaction
+        };
+        
+        setLikesCount(newStatus.likesCount);
+        setDislikesCount(newStatus.dislikesCount);
+        setUserReaction(newStatus.userReaction);
+        
+        // Notify parent component of the status update
+        if (onStatusUpdate) {
+          onStatusUpdate(resourceId, newStatus);
+        }
+        
+        return newStatus;
+      }
+    } catch (error) {
+      console.error('Failed to fetch resource status:', error);
+    }
+    return null;
+  };
 
   const handleLike = async () => {
     if (isLoading) return;
@@ -48,9 +71,8 @@ export const LikeDislikeButton = ({
     try {
       const { data, status } = await likeResourceAPI(resourceId);
       if (status === 200 && data.success) {
-        setLikesCount(data.likesCount);
-        setDislikesCount(data.dislikesCount);
-        setUserReaction(data.userReaction);
+        // Fetch updated status after like action
+        await fetchAndUpdateStatus();
         toast.success(data.message || 'Reaction updated successfully');
       }
     } catch (error: any) {
@@ -68,9 +90,8 @@ export const LikeDislikeButton = ({
     try {
       const { data, status } = await dislikeResourceAPI(resourceId);
       if (status === 200 && data.success) {
-        setLikesCount(data.likesCount);
-        setDislikesCount(data.dislikesCount);
-        setUserReaction(data.userReaction);
+        // Fetch updated status after dislike action
+        await fetchAndUpdateStatus();
         toast.success(data.message || 'Reaction updated successfully');
       }
     } catch (error: any) {
@@ -98,7 +119,7 @@ export const LikeDislikeButton = ({
           icon={faThumbsUp} 
           className={`w-3 h-3 mr-1 ${userReaction === 'like' ? 'text-white' : 'text-green-600'}`} 
         />
-        {likesCount}
+        {likesCount > 0 && likesCount}
       </Button>
       
       <Button
@@ -116,7 +137,7 @@ export const LikeDislikeButton = ({
           icon={faThumbsDown} 
           className={`w-3 h-3 mr-1 ${userReaction === 'dislike' ? 'text-white' : 'text-red-600'}`} 
         />
-        {dislikesCount}
+        {dislikesCount > 0 && dislikesCount}
       </Button>
     </div>
   );

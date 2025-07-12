@@ -270,7 +270,7 @@ export const getGroupOverviewList = async () => {
   return groups.map((group) => {
     // File count by type
     const fileTypeCount = {};
-    group.AdditionalResources?.forEach((r) => {
+    group.additionalResources?.forEach((r) => {
       fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
     });
     return {
@@ -278,10 +278,10 @@ export const getGroupOverviewList = async () => {
       name: group.name,
       description: group.description,
       fileCounts: fileTypeCount,
-      totalFiles: group.AdditionalResources?.length || 0,
+      totalFiles: group.additionalResources?.length || 0,
       membersCount: group.memberships?.length || 0,
-      syllabus: group.Syllabus,
-      creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+      syllabus: group.syllabus,
+      creatorName: group.userModel?.fullName || group.userModel?.username || '',
     };
   });
 };
@@ -328,7 +328,7 @@ export const getGroupOverviewByCode = async (groupCode) => {
   console.log('Syllabus:', group.Syllabus);
   
   const fileTypeCount = {};
-  group.AdditionalResources?.forEach((r) => {
+  group.additionalResources?.forEach((r) => {
     fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
   });
   
@@ -337,10 +337,10 @@ export const getGroupOverviewByCode = async (groupCode) => {
     name: group.name,
     description: group.description,
     fileCounts: fileTypeCount,
-    totalFiles: group.AdditionalResources?.length || 0,
-    membersCount: group.Memberships?.length || 0,
-    syllabus: group.Syllabus,
-    creatorName: group.UserModel?.fullName || group.UserModel?.username || '',
+    totalFiles: group.additionalResources?.length || 0,
+    membersCount: group.memberships?.length || 0,
+    syllabus: group.syllabus,
+    creatorName: group.userModel?.fullName || group.userModel?.username || '',
   };
   
   console.log('Processed result:', JSON.stringify(result, null, 2));

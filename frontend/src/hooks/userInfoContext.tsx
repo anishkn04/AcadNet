@@ -65,7 +65,6 @@ export const UserInfoProvider = ({children}:Props) =>{
         try{
             const {success,status} = await createGroupAPI(createGroupData)
             if(status === 201 && success === true){
-                console.log('here')
                 return true
             }else if(status === 400 && success === false){
                 return false

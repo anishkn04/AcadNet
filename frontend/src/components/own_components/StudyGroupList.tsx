@@ -33,7 +33,6 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
       if (Array.isArray(data)) {
         setGroups(data);
       } else {
-        console.error("retreiveGroups did not return an array:", data);
         setGroups([]);
       }
     };
@@ -119,15 +118,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
             // Check if current user is a member of this group
             const isMember = group?.members?.some(member => Number(member.userId) === Number(userId));
             
-            // Debug logging
-            console.log(`Group: ${group.name}`, {
-              groupId: group.id,
-              userId: userId,
-              isCreator,
-              isMember,
-              members: group.members,
-              membersCount: group.members?.length || 0
-            });
+      
             
             return (
               <Card key={group.id}>

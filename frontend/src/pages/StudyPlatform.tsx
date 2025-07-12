@@ -3,14 +3,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileArrowUp } from '@fortawesome/free-solid-svg-icons'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { fetchGroupDetailsByIdAPI } from '@/services/UserServices'
+import { fetchGroupDetailsByIdAPI, getResourceStatusAPI } from '@/services/UserServices'
 import type { Groups } from '@/models/User'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar'
-import LikeDislikeButton from '@/components/own_components/LikeDislikeButton'
+import { LikeDislikeButton } from '@/components/own_components/LikeDislikeButton'
 
 const StudyPlatform = () => {
     const [groupData, setGroupData] = useState<Groups | null>(null)
+    const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({})
+    const [loadingStatuses, setLoadingStatuses] = useState(false)
     const location = useLocation()
+
+    // Callback function to handle status updates from LikeDislikeButton
+    const handleStatusUpdate = (resourceId: number, newStatus: { likesCount: number; dislikesCount: number; userReaction: 'like' | 'dislike' | null }) => {
+        setResourceStatuses(prev => ({
+            ...prev,
+            [resourceId]: newStatus
+        }));
+        console.log(`Resource ${resourceId} status updated:`, newStatus); // Debug log
+    };
 
     useEffect(() => {
         const params = new URLSearchParams(location.search)
@@ -19,8 +30,49 @@ const StudyPlatform = () => {
             if (groupCode) {
                 const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
                 if(status === 200){
-                    console.log('groupData:',data)
                     setGroupData(data)
+                    
+                    // Fetch resource statuses for all resources
+                    if (data.AdditionalResources && data.AdditionalResources.length > 0) {
+                        setLoadingStatuses(true);
+                        const statusPromises = data.AdditionalResources.map(async (resource) => {
+                            if (resource.id) {
+                                try {
+                                    const { data: statusData, status: statusStatus } = await getResourceStatusAPI(resource.id);
+                                    if (statusStatus === 200 && statusData.success) {
+                                        // The API returns { resource: {...}, userReaction: ... }
+                                        const resourceData = statusData.message.resource;
+                                        const userReaction = statusData.message.userReaction;
+                                        return { 
+                                            id: resource.id, 
+                                            status: {
+                                                likesCount: resourceData.likesCount || 0,
+                                                dislikesCount: resourceData.dislikesCount || 0,
+                                                userReaction: userReaction
+                                            }
+                                        };
+                                    }
+                                } catch (error) {
+                                    console.error(`Failed to fetch status for resource ${resource.id}:`, error);
+                                }
+                            }
+                            return null;
+                        });
+                        
+                        const statuses = await Promise.all(statusPromises);
+                        const statusMap: Record<number, any> = {};
+                        statuses.forEach(result => {
+                            if (result) {
+                                statusMap[result.id] = result.status;
+                            }
+                        });
+                        console.log('Resource statuses fetched:', statusMap); // Debug log - remove in production
+                        setResourceStatuses(statusMap);
+                        setLoadingStatuses(false);
+                    } else {
+                        // If no additional resources, make sure loading is turned off
+                        setLoadingStatuses(false);
+                    }
                 }
                 
             } else {
@@ -203,29 +255,56 @@ const StudyPlatform = () => {
                                         }
 
                                         return (
-                                            <li key={index} className={`mt-1 flex items-center ${liBgClass} p-2 rounded-lg gap-2`}>
-                                                <span className={`px-2 py-1 rounded ${badgeClass} font-mono text-xs`}>
-                                                    {fileType.toUpperCase() || 'FILE'}
-                                                </span>
-                                                <a
-                                                    href={resource.filePath}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline flex-1"
-                                                >
-                                                    {fileName}
-                                                </a>
-                                                {resource.linkedTo && resource.linkedTo.topicId && (
-                                                    <span className="text-sm text-gray-500 ml-2">
-                                                        (Linked to Topic ID: {resource.linkedTo.topicId})
+                                            <li key={index} className={`mt-1 flex flex-col items-center ${liBgClass} p-2 rounded-lg gap-2`}>
+                                                <div className='flex items-center gap-2'>
+                                                    <span className={`px-2 py-1 rounded ${badgeClass} font-mono text-xs`}>
+                                                        {fileType.toUpperCase() || 'FILE'}
                                                     </span>
-                                                )}
+                                                    <a
+                                                        href={'../../../'+resource.filePath}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline flex-1"
+                                                    >
+                                                        {fileName}
+                                                    </a>
+                                                    {resource.linkedTo && resource.linkedTo.topicId && (
+                                                        <span className="text-sm text-gray-500 ml-2">
+                                                            (Linked to Topic ID: {resource.linkedTo.topicId})
+                                                        </span>
+                                                    )}
+                                                    {/* Show additional status info if available */}
+                                                    {resource.id && (
+                                                        loadingStatuses ? (
+                                                            <div className="text-xs text-gray-400 ml-2">
+                                                                Loading...
+                                                            </div>
+                                                        ) : resourceStatuses[resource.id] && (
+                                                            <div className="text-xs text-gray-600 ml-2 flex items-center gap-1 transition-all duration-300 ease-in-out">
+                                                                {resourceStatuses[resource.id].likesCount > 0 && (
+                                                                    <span className="flex items-center gap-1">
+                                                                        👍 {resourceStatuses[resource.id].likesCount}
+                                                                    </span>
+                                                                )}
+                                                                {resourceStatuses[resource.id].dislikesCount > 0 && (
+                                                                    <span className="flex items-center gap-1">
+                                                                        👎 {resourceStatuses[resource.id].dislikesCount}
+                                                                    </span>
+                                                                )}
+                                                                {resourceStatuses[resource.id].likesCount === 0 && resourceStatuses[resource.id].dislikesCount === 0 && (
+                                                                    <span className="text-gray-400 italic">No reactions yet</span>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
                                                 {resource.id && (
                                                     <LikeDislikeButton
                                                         resourceId={resource.id}
-                                                        initialLikesCount={resource.likesCount}
-                                                        initialDislikesCount={resource.dislikesCount}
-                                                        initialUserReaction={resource.userReaction}
+                                                        initialLikesCount={resourceStatuses[resource.id]?.likesCount ?? (resource.likesCount || 0)}
+                                                        initialDislikesCount={resourceStatuses[resource.id]?.dislikesCount ?? (resource.dislikesCount || 0)}
+                                                        initialUserReaction={resourceStatuses[resource.id]?.userReaction ?? (resource.userReaction || null)}
+                                                        onStatusUpdate={handleStatusUpdate}
                                                     />
                                                 )}
                                             </li>
