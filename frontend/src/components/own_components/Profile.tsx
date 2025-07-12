@@ -26,7 +26,16 @@ export default function Profile() {
   }
 
   // Now, 'user' is guaranteed to be defined if we reach this point
-  const header = user.slice(0, 2).toUpperCase();
+  // Generate avatar initials intelligently
+  let header = '';
+  if (user.toLowerCase().startsWith('user')) {
+    // For usernames like "user1", "user123", use 'U' + number
+    const numberPart = user.replace(/^user/i, '');
+    header = numberPart ? `U${numberPart.slice(0, 1)}` : 'UN';
+  } else {
+    // For normal usernames, use first two characters
+    header = user.slice(0, 2).toUpperCase();
+  }
 
   return (
     <DropdownMenu>

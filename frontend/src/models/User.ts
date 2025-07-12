@@ -65,6 +65,7 @@ export interface topics{
 //   SubTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
 // }
 export interface Resource {
+  id?: number;
   filePath: string;
   fileType?: string;
   file?: File;
@@ -72,6 +73,9 @@ export interface Resource {
     topicId: number | null;
     subTopicId: number | null;
   };
+  likesCount?: number;
+  dislikesCount?: number;
+  userReaction?: 'like' | 'dislike' | null;
 }
 
 // *** CRITICAL CHANGE HERE: ALIGN CREATEGROUPINTERFACE WITH GROUPS FOR SYLLABUS STRUCTURE ***
@@ -118,5 +122,12 @@ export interface member{
   id:number,
   userId:number,
   studyGroupId:string,
-  isAnonymous:boolean
+  isAnonymous:boolean,
+  created_at?: string,
+  updated_at?: string,
+  UserModel?: {
+    user_id: number,
+    username: string,
+    fullName: string
+  }
 }

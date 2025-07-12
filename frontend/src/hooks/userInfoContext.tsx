@@ -1,14 +1,18 @@
 import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
-import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, joinGroupAPI, removeGroupMemberAPI, promoteGroupMemberAPI, demoteGroupMemberAPI, fetchGroupDetailsByIdDirectAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
-import { isAxiosError } from "axios";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
     updateProfile: (updates:UserProfileData) => Promise<void>
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
-    retreiveGroups: () => Promise<Groups |undefined>
+    retreiveGroups: () => Promise<Groups[] |undefined>
+    retreiveGroupById: (groupId: string | number) => Promise<Groups | undefined>
+    joinGroup: (groupCode: string) => Promise<{ success: boolean, message: string }>
+    removeGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
+    promoteGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
+    demoteGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
     user : string,
     userId:Number | undefined,
 }
@@ -65,7 +69,6 @@ export const UserInfoProvider = ({children}:Props) =>{
         try{
             const {success,status} = await createGroupAPI(createGroupData)
             if(status === 201 && success === true){
-                console.log('here')
                 return true
             }else if(status === 400 && success === false){
                 return false
@@ -75,20 +78,104 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
         return false
     }
-    const retreiveGroups = async ():Promise<Groups | undefined> =>{
+    const retreiveGroups = async ():Promise<Groups[] | undefined> =>{
         const {data,status} = await fetchGroupAPI();
         if (status === 200) {
-            return (data.message);
+            // Handle both direct array and message-wrapped responses
+            const groupsData = data;
+            return Array.isArray(groupsData) ? groupsData : [groupsData];
         } else {
             console.log('groupList error');
             return 
         }
     }
-    // Fetch group details by groupCode
+    
+    const retreiveGroupById = async (groupId: string | number): Promise<Groups | undefined> => {
+        try {
+            const {data, status} = await fetchGroupDetailsByIdDirectAPI(groupId);
+            if (status === 200) {
+                return data;
+            } else {
+                console.log('group details by id error');
+                return undefined;
+            }
+        } catch (error) {
+            console.error('Error fetching group by id:', error);
+            return undefined;
+        }
+    }
+    
+    const joinGroup = async (groupCode: string): Promise<{ success: boolean, message: string }> => {
+        try {
+            const { data, status } = await joinGroupAPI(groupCode);
+            if (status === 200) {
+                return { success: true, message: data.message || 'Successfully joined the group!' };
+            } else {
+                return { success: false, message: data.message || 'Failed to join group' };
+            }
+        } catch (error: any) {
+            console.error('Join group error:', error);
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'An error occurred while joining the group' 
+            };
+        }
+    }
+
+    const removeGroupMember = async (groupCode: string, userId: number): Promise<{ success: boolean, message: string }> => {
+        try {
+            const { data, status } = await removeGroupMemberAPI(groupCode, userId);
+            if (status === 200) {
+                return { success: true, message: data.message || 'Member removed successfully!' };
+            } else {
+                return { success: false, message: data.message || 'Failed to remove member' };
+            }
+        } catch (error: any) {
+            console.error('Remove member error:', error);
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'An error occurred while removing the member' 
+            };
+        }
+    }
+
+    const promoteGroupMember = async (groupCode: string, userId: number): Promise<{ success: boolean, message: string }> => {
+        try {
+            const { data, status } = await promoteGroupMemberAPI(groupCode, userId);
+            if (status === 200) {
+                return { success: true, message: data.message || 'Member promoted successfully!' };
+            } else {
+                return { success: false, message: data.message || 'Failed to promote member' };
+            }
+        } catch (error: any) {
+            console.error('Promote member error:', error);
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'An error occurred while promoting the member' 
+            };
+        }
+    }
+
+    const demoteGroupMember = async (groupCode: string, userId: number): Promise<{ success: boolean, message: string }> => {
+        try {
+            const { data, status } = await demoteGroupMemberAPI(groupCode, userId);
+            if (status === 200) {
+                return { success: true, message: data.message || 'Member demoted successfully!' };
+            } else {
+                return { success: false, message: data.message || 'Failed to demote member' };
+            }
+        } catch (error: any) {
+            console.error('Demote member error:', error);
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'An error occurred while demoting the member' 
+            };
+        }
+    }
 
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,user,userId,removeGroupMember,promoteGroupMember,demoteGroupMember,retreiveGroupById}}>
             {children}
         </UserInfoContext.Provider>
     )
