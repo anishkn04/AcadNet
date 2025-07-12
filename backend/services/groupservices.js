@@ -17,7 +17,33 @@ export const getAllGroups= async (req)=>{
         const publicGroups = await StudyGroup.findAll({
       where: {
         isPrivate: false
-      }
+      },
+      include: [
+        {
+          model: Membership,
+          attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'created_at', 'updated_at'],
+          required: false, // LEFT JOIN to include groups even without members
+        },
+        {
+          model: UserModel,
+          attributes: ['username', 'fullName'],
+          required: false,
+        },
+        {
+          model: Syllabus,
+          include: [{ 
+            model: Topic, 
+            include: [SubTopic],
+            required: false 
+          }],
+          required: false,
+        },
+        {
+          model: AdditionalResource,
+          attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at'],
+          required: false,
+        }
+      ]
     });
     return publicGroups
       }catch(error){
@@ -277,28 +303,46 @@ export const getGroupOverviewByCode = async (groupCode) => {
     include: [
       {
         model: AdditionalResource,
-        attributes: ['fileType'],
+        attributes: ['id', 'fileType', 'created_at'],
+        required: false, // LEFT JOIN to include groups even without resources
       },
       {
         model: Membership,
         attributes: ['id'],
+        required: false,
       },
       {
         model: Syllabus,
-        include: [{ model: Topic, include: [SubTopic] }],
+        include: [{ 
+          model: Topic, 
+          include: [SubTopic],
+          required: false 
+        }],
+        required: false,
       },
       {
         model: UserModel,
         attributes: ['username', 'fullName'],
+        required: false,
       },
     ],
   });
-  if (!group) return null;
+  
+  if (!group) {
+    throwWithCode("Group not found.", 404);
+  }
+  
+  console.log('Raw group data:', JSON.stringify(group, null, 2));
+  console.log('AdditionalResources:', group.AdditionalResources);
+  console.log('UserModel:', group.UserModel);
+  console.log('Syllabus:', group.Syllabus);
+  
   const fileTypeCount = {};
   group.additionalResources?.forEach((r) => {
     fileTypeCount[r.fileType] = (fileTypeCount[r.fileType] || 0) + 1;
   });
-  return {
+  
+  const result = {
     id: group.id,
     name: group.name,
     description: group.description,
@@ -308,6 +352,9 @@ export const getGroupOverviewByCode = async (groupCode) => {
     syllabus: group.syllabus,
     creatorName: group.userModel?.fullName || group.userModel?.username || '',
   };
+  
+  console.log('Processed result:', JSON.stringify(result, null, 2));
+  return result;
 };
 
 // Get all details for a group by group code

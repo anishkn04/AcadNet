@@ -78,8 +78,8 @@ const handleLinkedToChange = (index: number, value: string) => {
   const resources = getValues('additionalResources') || [];
 
   resources[index].linkedTo = {
-    topicId: parsed.topic !== null ? parsed.topic : null,
-    subTopicId: parsed.subtopic !== null ? parsed.subtopic : null,
+    topicId: parsed.topicId !== null ? parsed.topicId : null,
+    subTopicId: parsed.subTopicId !== null ? parsed.subTopicId : null,
   };
 
   setValue('additionalResources', [...resources], { shouldDirty: true, shouldValidate: true });
@@ -193,7 +193,7 @@ const handleLinkedToChange = (index: number, value: string) => {
                 </span>
            <select
               className="ml-2 rounded border px-2 py-1 text-sm"
-              value={JSON.stringify(res.linkedTo || { topic: null, subtopic: null })}
+              value={JSON.stringify(res.linkedTo || { topicId: null, subTopicId: null })}
               onChange={e => handleLinkedToChange(index, e.target.value)}
             >
               {options.map(opt => (
