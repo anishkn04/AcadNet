@@ -33,8 +33,8 @@ router.delete("/replies/:replyId", authMiddleware, csrfMiddleware, addUser, dele
 router.post("/replies/:replyId/like", authMiddleware, csrfMiddleware, addUser, likeReply);
 router.post("/replies/:replyId/dislike", authMiddleware, csrfMiddleware, addUser, dislikeReply);
 
-// Admin routes
-router.patch("/groups/:groupCode/threads/:threadId/pin", authMiddleware, csrfMiddleware, addUser, toggleThreadPin);
-router.patch("/groups/:groupCode/threads/:threadId/lock", authMiddleware, csrfMiddleware, addUser, toggleThreadLock);
+// // Admin routes
+// router.patch("/groups/:groupCode/threads/:threadId/pin", authMiddleware, csrfMiddleware, addUser, toggleThreadPin);
+// router.patch("/groups/:groupCode/threads/:threadId/lock", authMiddleware, csrfMiddleware, addUser, toggleThreadLock);
 
 export default router;
