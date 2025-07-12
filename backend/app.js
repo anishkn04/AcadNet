@@ -77,4 +77,9 @@ app.use("/api/v1/group",groupRouter)
 
 app.use(passport.initialize());
 
+// Add a simple health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 export default app;
