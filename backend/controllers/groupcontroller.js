@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -235,5 +235,53 @@ export const demoteGroupMember = async (req, res) => {
     jsonRes(res, 200, true, result);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message);
+  }
+};
+
+// Get all additional resources for a group
+export const getGroupResources = async (req, res) => {
+  try {
+    const { groupCode } = req.params;
+    const resources = await groupServices.getGroupAdditionalResources(groupCode);
+    jsonRes(res, 200, true, resources);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to fetch group resources.");
+  }
+};
+
+// Add additional resources to a group
+export const addGroupResources = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode } = req.params;
+    const { topicId, subTopicId } = req.body;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+      return jsonRes(res, 400, false, "No files provided.");
+    }
+
+    const result = await groupServices.addAdditionalResources(
+      groupCode, 
+      userId, 
+      files, 
+      topicId ? parseInt(topicId) : null, 
+      subTopicId ? parseInt(subTopicId) : null
+    );
+    
+    jsonRes(res, 201, true, result);
+  } catch (err) {
+    // Clean up uploaded files if there's an error
+    if (req.files) {
+      req.files.forEach((file) => {
+        fs.unlink(file.path, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error("Error deleting temp file:", unlinkErr);
+          }
+        });
+      });
+    }
+    
+    jsonRes(res, err.code || 500, false, err.message || "Failed to add additional resources.");
   }
 };

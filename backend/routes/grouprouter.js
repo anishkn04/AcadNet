@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -46,5 +46,16 @@ router.post("/:groupCode/members/:userId/demote", authMiddleware, csrfMiddleware
 router.post("/resource/:resourceId/like", authMiddleware, csrfMiddleware, addUser, likeAdditionalResource);
 router.post("/resource/:resourceId/dislike", authMiddleware, csrfMiddleware, addUser, dislikeAdditionalResource);
 router.get("/resource/:resourceId/status", authMiddleware, csrfMiddleware, addUser, getResourceStatus);
+
+// New routes for additional resources
+router.get("/:groupCode/resources", authMiddleware, csrfMiddleware, getGroupResources);
+router.post(
+  "/:groupCode/resources/add",
+  authMiddleware, 
+  csrfMiddleware, 
+  addUser,
+  upload.array("resources", 10),
+  addGroupResources
+);
 
 export default router
