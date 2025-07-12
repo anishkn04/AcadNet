@@ -1,14 +1,14 @@
 import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
-import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI } from "@/services/UserServices";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, joinGroupAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
-import { isAxiosError } from "axios";
 
 type UserInfoType ={
     getInfo: () => Promise<UserProfileData | null>;
     updateProfile: (updates:UserProfileData) => Promise<void>
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
-    retreiveGroups: () => Promise<Groups |undefined>
+    retreiveGroups: () => Promise<Groups[] |undefined>
+    joinGroup: (groupCode: string) => Promise<{ success: boolean, message: string }>
     user : string,
     userId:Number | undefined,
 }
@@ -75,20 +75,39 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
         return false
     }
-    const retreiveGroups = async ():Promise<Groups | undefined> =>{
+    const retreiveGroups = async ():Promise<Groups[] | undefined> =>{
         const {data,status} = await fetchGroupAPI();
         if (status === 200) {
-            return (data.message);
+            // Handle both direct array and message-wrapped responses
+            const groupsData = data;
+            return Array.isArray(groupsData) ? groupsData : [groupsData];
         } else {
             console.log('groupList error');
             return 
+        }
+    }
+    
+    const joinGroup = async (groupCode: string): Promise<{ success: boolean, message: string }> => {
+        try {
+            const { data, status } = await joinGroupAPI(groupCode);
+            if (status === 200) {
+                return { success: true, message: data.message || 'Successfully joined the group!' };
+            } else {
+                return { success: false, message: data.message || 'Failed to join group' };
+            }
+        } catch (error: any) {
+            console.error('Join group error:', error);
+            return { 
+                success: false, 
+                message: error.response?.data?.message || 'An error occurred while joining the group' 
+            };
         }
     }
     // Fetch group details by groupCode
 
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,user,userId}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,user,userId}}>
             {children}
         </UserInfoContext.Provider>
     )

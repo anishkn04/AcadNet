@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { fetchGroupDetailsByIdAPI } from '@/services/UserServices'
 import type { Groups } from '@/models/User'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar'
+import LikeDislikeButton from '@/components/own_components/LikeDislikeButton'
 
 const StudyPlatform = () => {
     const [groupData, setGroupData] = useState<Groups | null>(null)
@@ -18,6 +20,7 @@ const StudyPlatform = () => {
                 const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
                 if(status === 200){
                     console.log('groupData:',data)
+                    setGroupData(data)
                 }
                 
             } else {
@@ -99,14 +102,55 @@ const StudyPlatform = () => {
                         </CardHeader>
                         <CardContent>
                             {groupData.members && groupData.members.length > 0 ? (
-                                <ul>
-                                    {groupData.members.map((member) => (
-                                        <li key={member.id} className="mt-1">
-                                            Member ID: {member.userId} {member.isAnonymous ? '(Anonymous)' : ''}
-                                            {groupData.creator?.username && member.userId === groupData.creator.user_id && ` (${groupData.creator.username} - Creator)`}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="flex flex-wrap gap-3">
+                                    {groupData.members.map((member) => {
+                                        // Get member info from UserModel if available
+                                        const memberInfo = member.UserModel;
+                                        const isCreator = member.userId === groupData.creatorId;
+                                        
+                                        // Generate avatar initials intelligently
+                                        let avatarInitials = '';
+                                        if (memberInfo?.fullName) {
+                                            // If full name exists, use first letter of first two words
+                                            const nameParts = memberInfo.fullName.trim().split(' ');
+                                            avatarInitials = nameParts.length >= 2 
+                                                ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
+                                                : nameParts[0].slice(0, 2).toUpperCase();
+                                        } else if (memberInfo?.username) {
+                                            // If only username, avoid "User" pattern by using first and last chars or first 2
+                                            const username = memberInfo.username;
+                                            if (username.toLowerCase().startsWith('user')) {
+                                                // For usernames like "user1", "user123", use 'U' + number
+                                                const numberPart = username.replace(/^user/i, '');
+                                                avatarInitials = numberPart ? `U${numberPart.slice(0, 1)}` : 'UN';
+                                            } else {
+                                                // For normal usernames, use first two characters
+                                                avatarInitials = username.slice(0, 2).toUpperCase();
+                                            }
+                                        } else {
+                                            // Fallback
+                                            avatarInitials = `U${member.userId}`.slice(0, 2);
+                                        }
+                                        
+                                        return (
+                                            <div key={member.id} className="relative">
+                                                <Avatar className="w-12 h-12">
+                                                    <AvatarImage src="" />
+                                                    <AvatarFallback className="bg-blue-500 text-white font-semibold">
+                                                        {avatarInitials}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {isCreator && (
+                                                    <div className="absolute -top-1 -right-1">
+                                                        <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                                                            ★
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
                                 <p>No members found.</p>
                             )}
@@ -167,7 +211,7 @@ const StudyPlatform = () => {
                                                     href={resource.filePath}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
+                                                    className="text-blue-600 hover:underline flex-1"
                                                 >
                                                     {fileName}
                                                 </a>
@@ -175,6 +219,14 @@ const StudyPlatform = () => {
                                                     <span className="text-sm text-gray-500 ml-2">
                                                         (Linked to Topic ID: {resource.linkedTo.topicId})
                                                     </span>
+                                                )}
+                                                {resource.id && (
+                                                    <LikeDislikeButton
+                                                        resourceId={resource.id}
+                                                        initialLikesCount={resource.likesCount}
+                                                        initialDislikesCount={resource.dislikesCount}
+                                                        initialUserReaction={resource.userReaction}
+                                                    />
                                                 )}
                                             </li>
                                         );
