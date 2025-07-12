@@ -65,6 +65,7 @@ Membership.belongsTo(UserModel, { foreignKey: "userId" });
 StudyGroup.hasMany(Membership, { foreignKey: "studyGroupId" });
 Membership.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
 
+
 // Forum Associations
 StudyGroup.hasOne(Forum, { foreignKey: "studyGroupId" });
 Forum.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
@@ -96,7 +97,6 @@ ReplyLike.belongsTo(UserModel, { foreignKey: "userId" });
 
 Reply.hasMany(ReplyLike, { foreignKey: "replyId" });
 ReplyLike.belongsTo(Reply, { foreignKey: "replyId" });
-
 
 export {
   UserModel,
