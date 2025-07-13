@@ -4,7 +4,7 @@ import { useData } from '@/hooks/userInfoContext';
 import type { Groups, member } from '@/models/User';
 
 const GroupAdmin = () => {
-  const { retreiveGroupById, removeGroupMember, promoteGroupMember, demoteGroupMember, userId } = useData();
+  const { retreiveGroupByCode, removeGroupMember, promoteGroupMember, demoteGroupMember, userId } = useData();
   const [group, setGroup] = useState<Groups | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [groupName, setGroupName] = useState('');
@@ -17,11 +17,11 @@ const GroupAdmin = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const groupId = params.get('id');
+    const groupCode = params.get('code');
     const fetchGroup = async () => {
-      if (groupId) {
-        console.log('Fetching group details for ID:', groupId);
-        const group = await retreiveGroupById(groupId);
+      if (groupCode) {
+        console.log('Fetching group details for code:', groupCode);
+        const group = await retreiveGroupByCode(groupCode);
         console.log('Received group data:', group);
         if (group) {
           console.log(group)
@@ -31,14 +31,14 @@ const GroupAdmin = () => {
           setMembers(group.members || []);
           console.log('Members set:', group.members);
         } else {
-          console.log('No group found for ID:', groupId);
+          console.log('No group found for code:', groupCode);
           setGroup(null);
           setGroupName('');
           setGroupDescription('');
           setMembers([]);
         }
       } else {
-        console.log('No group ID provided in URL');
+        console.log('No group code provided in URL');
         setGroup(null);
         setGroupName('');
         setGroupDescription('');
@@ -46,7 +46,7 @@ const GroupAdmin = () => {
       }
     };
     fetchGroup();
-  }, [location.search, retreiveGroupById]);
+  }, [location.search, retreiveGroupByCode]);
 
   const handleEdit = () => setEditMode(true);
   const handleSave = async () => {
@@ -102,8 +102,8 @@ const GroupAdmin = () => {
         if (result.success) {
           alert(result.message);
           // Refresh the group data
-          if (group.id) {
-            const updatedGroup = await retreiveGroupById(group.id);
+          if (group.groupCode) {
+            const updatedGroup = await retreiveGroupByCode(group.groupCode);
             if (updatedGroup) {
               setMembers(updatedGroup.members || []);
             }
@@ -129,8 +129,8 @@ const GroupAdmin = () => {
         if (result.success) {
           alert(result.message);
           // Refresh the group data
-          if (group.id) {
-            const updatedGroup = await retreiveGroupById(group.id);
+          if (group.groupCode) {
+            const updatedGroup = await retreiveGroupByCode(group.groupCode);
             if (updatedGroup) {
               setMembers(updatedGroup.members || []);
             }

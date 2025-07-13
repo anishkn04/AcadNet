@@ -131,3 +131,62 @@ export interface member{
     fullName: string
   }
 }
+
+// Forum interfaces
+export interface ForumUser {
+  user_id: number;
+  username: string;
+  fullName: string;
+}
+
+export interface Reply {
+  id: number;
+  threadId: number;
+  authorId: number;
+  content: string;
+  parentReplyId?: number;
+  isEdited: boolean;
+  editedAt?: string;
+  likeCount: number;
+  isDeleted: boolean;
+  created_at: string;
+  updated_at: string;
+  author: ForumUser;
+  childReplies?: Reply[];
+}
+
+export interface Thread {
+  id: number;
+  forumId: number;
+  authorId: number;
+  title: string;
+  content: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  viewCount: number;
+  replyCount: number;
+  lastReplyAt?: string;
+  lastReplyBy?: number;
+  created_at: string;
+  updated_at: string;
+  author: ForumUser;
+  lastReplier?: ForumUser;
+  replies?: Reply[];
+}
+
+export interface Forum {
+  id: number;
+  studyGroupId: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  created_at: string;
+  updated_at: string;
+  threads?: Thread[];
+}
+
+export interface GroupForum {
+  groupCode: string;
+  groupName: string;
+  forum: Forum;
+}

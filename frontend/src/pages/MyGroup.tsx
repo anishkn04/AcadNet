@@ -69,7 +69,7 @@ const MyGroup = () => {
                 <div className='flex flex-col gap-2 sm:flex-row '>
                   <Button onClick={()=>navigate(`/group?code=${group.groupCode}`)}>Enter Group</Button>
                   {Number(group.creatorId) === Number(userId) && (
-                    <Button onClick={() => navigate(`/user/groupadmin?id=${group.id}`)}>Settings</Button>
+                    <Button onClick={() => navigate(`/user/groupadmin?code=${group.groupCode}`)}>Settings</Button>
                   )}
                 </div>
               </CardContent>
