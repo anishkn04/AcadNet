@@ -256,3 +256,76 @@ export const updateGroupAPI = async (groupId: string, updateData: { name?: strin
         throw error;
     }
 }
+
+// Forum APIs
+export const getGroupForumAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.get(`/forum/groups/${groupCode}/forum`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const createThreadAPI = async (groupCode: string, threadData: { title: string; content: string; isPinned?: boolean }) => {
+    try {
+        const response = await apiClient.post(`/forum/groups/${groupCode}/threads`, threadData);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getThreadDetailsAPI = async (threadId: number) => {
+    try {
+        const response = await apiClient.get(`/forum/threads/${threadId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const createReplyAPI = async (threadId: number, replyData: { content: string; parentReplyId?: number }) => {
+    try {
+        const response = await apiClient.post(`/forum/threads/${threadId}/replies`, replyData);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const editReplyAPI = async (replyId: number, content: string) => {
+    try {
+        const response = await apiClient.put(`/forum/replies/${replyId}`, { content });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const deleteReplyAPI = async (replyId: number) => {
+    try {
+        const response = await apiClient.delete(`/forum/replies/${replyId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const likeReplyAPI = async (replyId: number) => {
+    try {
+        const response = await apiClient.post(`/forum/replies/${replyId}/like`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const dislikeReplyAPI = async (replyId: number) => {
+    try {
+        const response = await apiClient.post(`/forum/replies/${replyId}/dislike`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}

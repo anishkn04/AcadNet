@@ -7,12 +7,17 @@ import { fetchGroupDetailsByIdAPI, getResourceStatusAPI } from '@/services/UserS
 import type { Groups } from '@/models/User'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar'
 import { LikeDislikeButton } from '@/components/own_components/LikeDislikeButton'
+import Forum from '@/components/own_components/Forum'
 
 const StudyPlatform = () => {
     const [groupData, setGroupData] = useState<Groups | null>(null)
     const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({})
     const [loadingStatuses, setLoadingStatuses] = useState(false)
     const location = useLocation()
+
+    // Get groupCode from URL
+    const params = new URLSearchParams(location.search)
+    const groupCode = params.get('code')
 
     // Callback function to handle status updates from LikeDislikeButton
     const handleStatusUpdate = (resourceId: number, newStatus: { likesCount: number; dislikesCount: number; userReaction: 'like' | 'dislike' | null }) => {
@@ -24,8 +29,6 @@ const StudyPlatform = () => {
     };
 
     useEffect(() => {
-        const params = new URLSearchParams(location.search)
-        const groupCode = params.get('code')
         const fetchData = async () => {
             if (groupCode) {
                 const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
@@ -82,7 +85,7 @@ const StudyPlatform = () => {
             }
         }
         fetchData()
-    }, [location.search])
+    }, [groupCode])
     if (groupData === null) {
         return (
             <div className='flex justify-center items-center h-screen'>
@@ -209,6 +212,10 @@ const StudyPlatform = () => {
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Forum Discussion Section */}
+                    {groupCode && groupData && <Forum groupCode={groupCode} />}
+                    
                 </div>
                 <div >
                     <Card className='shadow-lg'>
