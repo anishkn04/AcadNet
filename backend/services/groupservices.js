@@ -7,6 +7,7 @@ import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
 import Topic from "../models/topics.model.js";
 import SubTopic from "../models/subtopics.model.js";
+import Forum from "../models/forum.model.js";
 import fs from "fs";
 import path from "path";
 import Membership from "../models/membership.model.js";
@@ -186,6 +187,15 @@ export const createStudyGroupWithSyllabus = async (
       { transaction }
     );
 
+    // Create forum for the group
+    const newForum = await Forum.create(
+      {
+        studyGroupId: newGroup.id,
+        name: "General Discussion",
+        description: `Discussion forum for ${groupData.name}`
+      },
+      { transaction }
+    );
 
     const createdTopics = [];
     for (const topicData of syllabusTopicsData) {
@@ -670,6 +680,208 @@ export const demoteMember = async (creatorId, groupCode, userIdToDemote) => {
   memberToDemote.role = "member";
   await memberToDemote.save();
   return { message: "Admin demoted to member successfully." };
+};
+
+// Get all additional resources for a group with like/dislike counts
+export const getGroupAdditionalResources = async (groupCode) => {
+  try {
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      include: [
+        {
+          model: AdditionalResource,
+          attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'created_at'],
+          include: [
+            {
+              model: Topic,
+              attributes: ['id', 'title'],
+              required: false
+            },
+            {
+              model: SubTopic,
+              attributes: ['id', 'title'],
+              required: false,
+              as: 'subTopic'
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!group) {
+      throwWithCode("Study group not found.", 404);
+    }
+
+    const resources = group.additionalResources.map(resource => ({
+      id: resource.id,
+      fileName: path.basename(resource.filePath),
+      filePath: resource.filePath,
+      fileType: resource.fileType,
+      likesCount: resource.likesCount,
+      dislikesCount: resource.dislikesCount,
+      uploadedAt: resource.created_at,
+      topic: resource.topic ? {
+        id: resource.topic.id,
+        title: resource.topic.title
+      } : null,
+      subTopic: resource.subTopic ? {
+        id: resource.subTopic.id,
+        title: resource.subTopic.title
+      } : null
+    }));
+
+    return {
+      groupCode,
+      groupName: group.name,
+      totalResources: resources.length,
+      resources
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Add additional resources to a group
+export const addAdditionalResources = async (groupCode, userId, files, topicId = null, subTopicId = null) => {
+  let transaction;
+  const createdResourcesForCleanup = [];
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists and user is a member
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      include: [
+        {
+          model: Membership,
+          where: { userId },
+          required: true
+        },
+        {
+          model: Syllabus,
+          include: [
+            {
+              model: Topic,
+              attributes: ['id', 'title']
+            }
+          ]
+        }
+      ],
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Study group not found or you are not a member of this group.", 404);
+    }
+
+    // Validate topic and subtopic if provided
+    if (topicId) {
+      const syllabusId = group.syllabus?.id;
+      if (!syllabusId) {
+        throwWithCode("Group does not have a syllabus.", 400);
+      }
+      
+      const topic = await Topic.findOne({
+        where: { 
+          id: topicId,
+          syllabusId: syllabusId
+        },
+        transaction
+      });
+      
+      if (!topic) {
+        throwWithCode("Invalid topic ID for this group.", 400);
+      }
+    }
+
+    if (subTopicId) {
+      const subTopic = await SubTopic.findOne({
+        where: { 
+          id: subTopicId,
+          topicId: topicId
+        },
+        transaction
+      });
+      
+      if (!subTopic) {
+        throwWithCode("Invalid subtopic ID for the specified topic.", 400);
+      }
+    }
+
+    if (!files || files.length === 0) {
+      throwWithCode("No files provided.", 400);
+    }
+
+    const createdResources = [];
+
+    for (const file of files) {
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.gif'];
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        throwWithCode(`File type ${fileExtension} is not allowed.`, 400);
+      }
+
+      const resourceData = {
+        studyGroupId: group.id,
+        filePath: file.path,
+        fileType: file.mimetype,
+        topicId: topicId || null,
+        subTopicId: subTopicId || null
+      };
+
+      const newResource = await AdditionalResource.create(resourceData, { transaction });
+      createdResourcesForCleanup.push(newResource);
+      
+      createdResources.push({
+        id: newResource.id,
+        fileName: file.originalname,
+        filePath: newResource.filePath,
+        fileType: newResource.fileType,
+        uploadedAt: newResource.created_at
+      });
+    }
+
+    await transaction.commit();
+    
+    return {
+      message: "Additional resources added successfully!",
+      groupCode,
+      addedResources: createdResources
+    };
+
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+
+    // Clean up uploaded files if database operation failed
+    createdResourcesForCleanup.forEach((resource) => {
+      if (resource.filePath && fs.existsSync(resource.filePath)) {
+        fs.unlink(resource.filePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error("Error deleting temp file:", unlinkErr);
+          }
+        });
+      }
+    });
+
+    // Also clean up files that weren't saved to database
+    if (files) {
+      files.forEach((file) => {
+        if (fs.existsSync(file.path)) {
+          fs.unlink(file.path, (unlinkErr) => {
+            if (unlinkErr) {
+              console.error("Error deleting temp file:", unlinkErr);
+            }
+          });
+        }
+      });
+    }
+
+    throw error;
+  }
 };
 
 
