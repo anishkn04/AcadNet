@@ -1,5 +1,5 @@
 import type {  CreateGroupInterface, Groups, UserProfileData } from "@/models/User";
-import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, joinGroupAPI, removeGroupMemberAPI, promoteGroupMemberAPI, demoteGroupMemberAPI, fetchGroupDetailsByIdDirectAPI } from "@/services/UserServices";
+import { createGroupAPI, editUserAPI, fetchGroupAPI, fetchUserAPI, joinGroupAPI, removeGroupMemberAPI, promoteGroupMemberAPI, demoteGroupMemberAPI, fetchGroupDetailsByIdDirectAPI, fetchGroupDetailsByIdAPI } from "@/services/UserServices";
 import React, { createContext, useEffect, type ReactNode,useState } from "react";
 import { useAuth } from "./userContext";
 
@@ -9,6 +9,7 @@ type UserInfoType ={
     createGroup: (createGroupData:CreateGroupInterface) => Promise<boolean>
     retreiveGroups: () => Promise<Groups[] |undefined>
     retreiveGroupById: (groupId: string | number) => Promise<Groups | undefined>
+    retreiveGroupByCode: (groupCode: string | number) => Promise<Groups | undefined>
     joinGroup: (groupCode: string) => Promise<{ success: boolean, message: string }>
     removeGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
     promoteGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
@@ -105,6 +106,21 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
     }
     
+    const retreiveGroupByCode = async (groupCode: string | number): Promise<Groups | undefined> => {
+        try {
+            const {data, status} = await fetchGroupDetailsByIdAPI(groupCode);
+            if (status === 200) {
+                return data;
+            } else {
+                console.log('group details by code error');
+                return undefined;
+            }
+        } catch (error) {
+            console.error('Error fetching group by code:', error);
+            return undefined;
+        }
+    }
+    
     const joinGroup = async (groupCode: string): Promise<{ success: boolean, message: string }> => {
         try {
             const { data, status } = await joinGroupAPI(groupCode);
@@ -175,7 +191,7 @@ export const UserInfoProvider = ({children}:Props) =>{
 
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,user,userId,removeGroupMember,promoteGroupMember,demoteGroupMember,retreiveGroupById}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,user,userId,removeGroupMember,promoteGroupMember,demoteGroupMember,retreiveGroupById,retreiveGroupByCode}}>
             {children}
         </UserInfoContext.Provider>
     )
