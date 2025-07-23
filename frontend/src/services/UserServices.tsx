@@ -219,6 +219,44 @@ export const getResourceStatusAPI = async (resourceId: number) => {
     }
 }
 
+// Group Resources APIs  
+export const getGroupResourcesAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.get(`/group/${groupCode}/resources`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const addGroupResourcesAPI = async (groupCode: string, files: File[], topicId?: number, subTopicId?: number) => {
+    try {
+        const formData = new FormData();
+        
+        // Append files
+        files.forEach(file => {
+            formData.append('resources', file);
+        });
+        
+        // Append topic and subtopic IDs if provided
+        if (topicId) {
+            formData.append('topicId', topicId.toString());
+        }
+        if (subTopicId) {
+            formData.append('subTopicId', subTopicId.toString());
+        }
+        
+        const response = await apiClient.post(`/group/${groupCode}/resources/add`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
 // Group Admin APIs
 export const removeGroupMemberAPI = async (groupCode: string, userId: number) => {
     try {

@@ -69,6 +69,7 @@ export interface Resource {
   filePath: string;
   fileType?: string;
   file?: File;
+  fileName?: string; // Added for backend compatibility
   linkedTo?: {
     topicId: number | null;
     subTopicId: number | null;
@@ -76,6 +77,8 @@ export interface Resource {
   likesCount?: number;
   dislikesCount?: number;
   userReaction?: 'like' | 'dislike' | null;
+  created_at?: string; // Added for timestamp
+  uploadedAt?: string; // Added for upload timestamp
 }
 
 // *** CRITICAL CHANGE HERE: ALIGN CREATEGROUPINTERFACE WITH GROUPS FOR SYLLABUS STRUCTURE ***
