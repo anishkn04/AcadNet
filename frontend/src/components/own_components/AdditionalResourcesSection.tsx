@@ -113,7 +113,7 @@ const handleLinkedToChange = (index: number, value: string) => {
           <button
             type="button"
             onClick={() => document.getElementById('pdf-upload')?.click()}
-            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 w-full"
+            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 w-full"
           >
             Upload PDF
           </button>
@@ -133,7 +133,7 @@ const handleLinkedToChange = (index: number, value: string) => {
           <button
             type="button"
             onClick={() => document.getElementById('video-upload')?.click()}
-            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 w-full"
+            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-pink-700 bg-pink-100 hover:bg-pink-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition duration-200 w-full"
           >
             Upload Video
           </button>
@@ -153,7 +153,7 @@ const handleLinkedToChange = (index: number, value: string) => {
           <button
             type="button"
             onClick={() => document.getElementById('image-upload')?.click()}
-            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 w-full"
+            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-200 w-full"
           >
             Upload Image
           </button>
@@ -172,7 +172,7 @@ const handleLinkedToChange = (index: number, value: string) => {
           <button
             type="button"
             onClick={() => document.getElementById('other-upload')?.click()}
-            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 w-full"
+            className="flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200 w-full"
           >
             Upload Other Files
           </button>

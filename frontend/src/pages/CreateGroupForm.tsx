@@ -44,7 +44,11 @@ const CreateGroupForm: React.FC = () => {
     }
     try {
       const result = await createGroup(data);
-      console.log(data)
+      console.log('CreateGroupForm Data:', data);
+      console.log('Additional Resources with linking:', data.additionalResources?.map(res => ({
+        fileName: res.filePath,
+        linkedTo: res.linkedTo
+      })));
       if (result === true) {
         toast.success("Study group created successfully!");
         navigate('/join', { replace: true });
