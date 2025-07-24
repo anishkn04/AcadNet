@@ -71,6 +71,10 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(cookieParser());
 app.use(express.json());
+
+// Serve static files from resources directory
+app.use('/resources', express.static(path.join(__dirname, '../resources')));
+
 app.use(logger);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/data", dataRouter);
