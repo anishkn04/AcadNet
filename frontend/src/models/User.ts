@@ -50,13 +50,15 @@ export interface UserProfileData {
 export interface subTopics{ 
   id:string
   title:string,
-  content?:string
+  content?:string,
+  created_at?:string
 }
 export interface topics{
   id:string
   title:string,
   description?:string,
   subTopics:subTopics[]; // Property name should be 'SubTopics' (capital S, capital T)
+  created_at?:string
 }
 // export interface Topics{ 
 //   id:string

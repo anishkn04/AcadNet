@@ -168,28 +168,46 @@ const Overview = () => {
                   </tr>
                 </thead>
                 <tbody className='border-2'>
-                  {group.syllabus.topics.map((topic: any) => (
-                    <tr key={topic.id} className="border-b hover:bg-blue-50">
-                      <td className="px-4 py-2 font-medium text-gray-900 align-top">{topic.title}</td>
-                      <td className="px-4 py-2 text-gray-600 align-top">{topic.description || '-'}</td>
-                      <td className="px-4 py-2 align-top">
-                        {topic.subTopics && topic.subTopics.length > 0 ? (
-                          <ul className="list-disc ml-4">
-                            {topic.subTopics.map((subtopic: any) => (
-                              <li key={subtopic.id} className="mb-1">
-                                <span className="font-semibold text-blue-700">{subtopic.title}</span>
-                                {subtopic.content && (
-                                  <span className="text-gray-500 ml-1">({subtopic.content})</span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    // Sort topics by created_at to maintain the original order from creation
+                    const sortedTopics = [...group.syllabus.topics].sort((a: any, b: any) => {
+                      const dateA = new Date(a.created_at || 0);
+                      const dateB = new Date(b.created_at || 0);
+                      return dateA.getTime() - dateB.getTime();
+                    });
+                    
+                    return sortedTopics.map((topic: any) => (
+                      <tr key={topic.id} className="border-b hover:bg-blue-50">
+                        <td className="px-4 py-2 font-medium text-gray-900 align-top">{topic.title}</td>
+                        <td className="px-4 py-2 text-gray-600 align-top">{topic.description || '-'}</td>
+                        <td className="px-4 py-2 align-top">
+                          {topic.subTopics && topic.subTopics.length > 0 ? (
+                            <ul className="list-disc ml-4">
+                              {(() => {
+                                // Sort subtopics by created_at to maintain the original order from creation
+                                const sortedSubTopics = [...topic.subTopics].sort((a: any, b: any) => {
+                                  const dateA = new Date(a.created_at || 0);
+                                  const dateB = new Date(b.created_at || 0);
+                                  return dateA.getTime() - dateB.getTime();
+                                });
+                                
+                                return sortedSubTopics.map((subtopic: any) => (
+                                  <li key={subtopic.id} className="mb-1">
+                                    <span className="font-semibold text-blue-700">{subtopic.title}</span>
+                                    {subtopic.content && (
+                                      <span className="text-gray-500 ml-1">({subtopic.content})</span>
+                                    )}
+                                  </li>
+                                ));
+                              })()}
+                            </ul>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </table>
             </div>
