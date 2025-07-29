@@ -828,7 +828,13 @@ export const addAdditionalResources = async (groupCode, userId, files, topicId =
     const createdResources = [];
 
     for (const file of files) {
-      const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.gif'];
+      const allowedTypes = [
+        '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+        '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg',
+        '.mp4', '.avi', '.mov', '.wmv', '.mkv', '.webm',
+        '.mp3', '.wav', '.aac', '.ogg', '.flac',
+        '.txt'
+      ];
       const fileExtension = path.extname(file.originalname).toLowerCase();
       
       if (!allowedTypes.includes(fileExtension)) {
