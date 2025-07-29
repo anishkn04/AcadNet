@@ -114,14 +114,14 @@ const Guide = () => {
                   Need More Help?
                 </h3>
                 <p className="text-sm font-normal leading-relaxed mb-4">
-                  Can't find what you're looking for? <br /> Our support team is
-                  here to assist you.
+                  See Our GitHub Documentation <br /> We have properly
+                  documented Acadnet there.
                 </p>
                 <a
                   className="inline-block bg-white text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors text-sm"
                   href="#"
                 >
-                  Contact Support
+                  Link To Documentation
                 </a>
               </div>
             </div>

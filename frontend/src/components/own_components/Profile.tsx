@@ -4,7 +4,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/userContext";
@@ -20,18 +19,21 @@ export default function Profile() {
   if (!user) {
     return (
       <Avatar className="cursor-pointer w-10 h-10">
-        <AvatarFallback className="bg-gray-200 animate-pulse">...</AvatarFallback> {/* Or a simple login button */}
+        <AvatarFallback className="bg-gray-200 animate-pulse">
+          ...
+        </AvatarFallback>{" "}
+        {/* Or a simple login button */}
       </Avatar>
     );
   }
 
   // Now, 'user' is guaranteed to be defined if we reach this point
   // Generate avatar initials intelligently
-  let header = '';
-  if (user.toLowerCase().startsWith('user')) {
+  let header = "";
+  if (user.toLowerCase().startsWith("user")) {
     // For usernames like "user1", "user123", use 'U' + number
-    const numberPart = user.replace(/^user/i, '');
-    header = numberPart ? `U${numberPart.slice(0, 1)}` : 'UN';
+    const numberPart = user.replace(/^user/i, "");
+    header = numberPart ? `U${numberPart.slice(0, 1)}` : "UN";
   } else {
     // For normal usernames, use first two characters
     header = user.slice(0, 2).toUpperCase();
@@ -45,18 +47,28 @@ export default function Profile() {
           <AvatarFallback className="bg-blue-300/50">{header}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 mt-5 caret-transparent" align="center">
-        <DropdownMenuLabel className="font-medium text-lg">{user}</DropdownMenuLabel>
+      <DropdownMenuContent
+        className="w-56 mt-5 caret-transparent"
+        align="center"
+      >
+        <DropdownMenuLabel className="font-medium text-lg">
+          {user}
+        </DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className="cursor-pointer">
-            <Link to="/user">Profile</Link>
+            <Link to="/user">My Profile</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link to="/user/mygroup">My Group</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link to="/user/settings">Settings</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">Support</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="cursor-pointer">Log out</DropdownMenuItem>
+
+        <DropdownMenuItem onClick={logout} className="cursor-pointer">
+          Log out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
