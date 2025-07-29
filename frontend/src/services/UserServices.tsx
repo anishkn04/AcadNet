@@ -106,30 +106,50 @@ export const fetchGroupDetailsByIdAPI = async (groupCode: string | number) => {
         // Extract data from the nested message structure
         const backendData = response.data.message || response.data;
         
+      
+        
         // Map backend response to frontend expected structure
         const mappedData: Groups = {
             ...backendData,
             // Map additionalResources to AdditionalResources (capitalize first letter)
-            AdditionalResources: backendData.additionalResources || [],
-            // Map memberships to members
-            members: (backendData.memberships || []).map((membership: any) => ({
+            AdditionalResources: (backendData.AdditionalResources || backendData.additionalResources || []).map((resource: any) => ({
+                id: resource.id,
+                filePath: resource.filePath,
+                fileType: resource.fileType,
+                likesCount: resource.likesCount || 0,
+                dislikesCount: resource.dislikesCount || 0,
+                created_at: resource.created_at,
+                fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File',
+                linkedTo: {
+                    topicId: resource.Topic?.id || resource.topic?.id || null,
+                    subTopicId: resource.SubTopic?.id || resource.subTopic?.id || null
+                }
+            })),
+            // Map memberships to members - handle both Memberships and memberships
+            members: (backendData.memberships || backendData.Memberships || []).map((membership: any) => ({
                 id: membership.id,
                 userId: membership.userId || membership.user_id,
                 studyGroupId: membership.studyGroupId || membership.study_group_id,
                 isAnonymous: membership.isAnonymous || false,
                 created_at: membership.created_at,
                 updated_at: membership.updated_at,
-                UserModel: membership.UserModel ? {
-                    user_id: membership.UserModel.user_id,
-                    username: membership.UserModel.username,
-                    fullName: membership.UserModel.fullName
+                // Handle both UserModel and userModel (backend is returning userModel with lowercase 'u')
+                UserModel: (membership.userModel || membership.UserModel) ? {
+                    user_id: (membership.userModel || membership.UserModel).user_id,
+                    username: (membership.userModel || membership.UserModel).username,
+                    fullName: (membership.userModel || membership.UserModel).fullName
                 } : undefined
             })),
-            // Map userModel to creator
-            creator: backendData.userModel ? {
+            // Map userModel to creator - handle both UserModel and userModel
+            creator: (backendData.userModel || backendData.UserModel) ? {
                 user_id: backendData.creatorId,
-                username: backendData.userModel.username
+                username: (backendData.userModel || backendData.UserModel).username
             } : undefined,
+            // Map Syllabus to syllabus - handle both cases
+            syllabus: (backendData.syllabus || backendData.Syllabus) ? {
+                id: (backendData.syllabus || backendData.Syllabus).id,
+                topics: (backendData.syllabus || backendData.Syllabus).topics || (backendData.syllabus || backendData.Syllabus).Topics || []
+            } : { topics: [] }
         };
         
         return { data: mappedData, status: response.status };
@@ -158,16 +178,17 @@ export const fetchGroupDetailsByIdDirectAPI = async (groupId: string | number) =
                 isAnonymous: membership.isAnonymous || false,
                 created_at: membership.created_at,
                 updated_at: membership.updated_at,
-                UserModel: membership.UserModel ? {
-                    user_id: membership.UserModel.user_id,
-                    username: membership.UserModel.username,
-                    fullName: membership.UserModel.fullName
+                // Handle both UserModel and userModel (backend is returning userModel with lowercase 'u')
+                UserModel: (membership.UserModel || membership.userModel) ? {
+                    user_id: (membership.UserModel || membership.userModel).user_id,
+                    username: (membership.UserModel || membership.userModel).username,
+                    fullName: (membership.UserModel || membership.userModel).fullName
                 } : undefined
             })),
-            // Map userModel to creator
-            creator: backendData.UserModel ? {
+            // Map userModel to creator - handle both UserModel and userModel
+            creator: (backendData.UserModel || backendData.userModel) ? {
                 user_id: backendData.creatorId,
-                username: backendData.UserModel.username
+                username: (backendData.UserModel || backendData.userModel).username
             } : undefined,
             // Map Syllabus to syllabus
             syllabus: backendData.Syllabus ? {
@@ -185,6 +206,15 @@ export const fetchGroupDetailsByIdDirectAPI = async (groupId: string | number) =
 export const joinGroupAPI = async (groupCode: string) => {
     try {
         const response = await apiClient.post(`/group/join/${groupCode}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const leaveGroupAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.post(`/group/leave/${groupCode}`);
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;
