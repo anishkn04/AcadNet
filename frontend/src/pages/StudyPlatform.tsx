@@ -1,15 +1,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { fetchGroupDetailsByIdAPI } from '@/services/UserServices'
 import type { Groups } from '@/models/User'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 import Forum from '@/components/own_components/Forum'
 import ResourcesSection from '@/components/own_components/ResourcesSection'
+import { useData } from '@/hooks/userInfoContext'
 
 const StudyPlatform = () => {
     const [groupData, setGroupData] = useState<Groups | null>(null)
+    const [isLeaving, setIsLeaving] = useState(false)
     const location = useLocation()
+    const navigate = useNavigate()
+    const { leaveGroup, userId } = useData()
 
     // Get groupCode from URL
     const params = new URLSearchParams(location.search)
@@ -20,7 +26,6 @@ const StudyPlatform = () => {
             if (groupCode) {
                 const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
                 if(status === 200){
-                    console.log('groupdata',data)
                     setGroupData(data)
                 }
             } else {
@@ -30,6 +35,31 @@ const StudyPlatform = () => {
         }
         fetchData()
     }, [groupCode])
+
+    // Handler for leaving the group
+    const handleLeaveGroup = async () => {
+        if (!groupCode) return;
+        
+        const confirmLeave = window.confirm('Are you sure you want to leave this group? You will lose access to all resources and discussions.');
+        if (!confirmLeave) return;
+
+        setIsLeaving(true);
+        try {
+            const result = await leaveGroup(groupCode);
+            if (result.success) {
+                alert(`Successfully left the group!`);
+                navigate('/join', { replace: true });
+            } else {
+                alert(`Failed to leave group: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Leave group error:', error);
+            alert('An error occurred while leaving the group. Please try again.');
+        } finally {
+            setIsLeaving(false);
+        }
+    };
+
     if (groupData === null) {
         return (
             <div className='flex justify-center items-center h-screen'>
@@ -55,50 +85,82 @@ const StudyPlatform = () => {
                             <CardTitle className='font-bold text-2xl'>Syllabus</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {groupData.syllabus?.topics && groupData.syllabus.topics.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full border border-gray-200 bg-white rounded-lg">
-                                        <thead className="bg-gray-100">
-                                            <tr>
-                                                <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Topic</th>
-                                                <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Description</th>
-                                                <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Subtopics</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className='border-2'>
-                                            {groupData.syllabus.topics.map((topic) => (
-                                                <tr key={topic.id} className="border-b hover:bg-blue-50">
-                                                    <td className="px-4 py-2 font-medium text-gray-900 align-top">{topic.title}</td>
-                                                    <td className="px-4 py-2 text-gray-600 align-top">{topic.description || '-'}</td>
-                                                    <td className="px-4 py-2 align-top">
-                                                        {topic.subTopics && topic.subTopics.length > 0 ? (
-                                                            <ul className="list-disc ml-4">
-                                                                {topic.subTopics.map((subtopic) => (
-                                                                    <li key={subtopic.id} className="mb-1">
-                                                                        <span className="font-semibold text-blue-700">{subtopic.title}</span>
-                                                                        {subtopic.content && (
-                                                                            <span className="text-gray-500 ml-1">({subtopic.content})</span>
-                                                                        )}
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        ) : (
-                                                            <span className="text-gray-400">-</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <p>Syllabus not available.</p>
-                            )}
+                            {(() => {
+                                if (groupData.syllabus?.topics && Array.isArray(groupData.syllabus.topics) && groupData.syllabus.topics.length > 0) {
+                                    // Sort topics by created_at to maintain the original order from creation
+                                    const sortedTopics = [...groupData.syllabus.topics].sort((a, b) => {
+                                        const dateA = new Date(a.created_at || 0);
+                                        const dateB = new Date(b.created_at || 0);
+                                        return dateA.getTime() - dateB.getTime();
+                                    });
+                                    
+                                    return (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full border border-gray-200 bg-white rounded-lg">
+                                                <thead className="bg-gray-100">
+                                                    <tr>
+                                                        <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Topic</th>
+                                                        <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Description</th>
+                                                        <th className="px-4 py-2 text-left font-semibold text-gray-700 border-b">Subtopics</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className='border-2'>
+                                                    {sortedTopics.map((topic) => (
+                                                        <tr key={topic.id} className="border-b hover:bg-blue-50">
+                                                            <td className="px-4 py-2 font-medium text-gray-900 align-top">{topic.title}</td>
+                                                            <td className="px-4 py-2 text-gray-600 align-top">{topic.description || '-'}</td>
+                                                            <td className="px-4 py-2 align-top">
+                                                                {topic.subTopics && Array.isArray(topic.subTopics) && topic.subTopics.length > 0 ? (
+                                                                    <ul className="list-disc ml-4">
+                                                                        {(() => {
+                                                                            // Sort subtopics by created_at to maintain the original order from creation
+                                                                            const sortedSubTopics = [...topic.subTopics].sort((a, b) => {
+                                                                                const dateA = new Date(a.created_at || 0);
+                                                                                const dateB = new Date(b.created_at || 0);
+                                                                                return dateA.getTime() - dateB.getTime();
+                                                                            });
+                                                                            
+                                                                            return sortedSubTopics.map((subtopic) => (
+                                                                                <li key={subtopic.id} className="mb-1">
+                                                                                    <span className="font-semibold text-blue-700">{subtopic.title}</span>
+                                                                                    {subtopic.content && (
+                                                                                        <span className="text-gray-500 ml-1">({subtopic.content})</span>
+                                                                                    )}
+                                                                                </li>
+                                                                            ));
+                                                                        })()}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <span className="text-gray-400">-</span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                } else {
+                                    return <p>Syllabus not available. (Debug: syllabus={JSON.stringify(groupData.syllabus)})</p>;
+                                }
+                            })()}
                         </CardContent>
                     </Card>
                     <Card className='shadow-lg'>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className='font-bold text-2xl'>Members</CardTitle>
+                            {/* Show Leave Group button for members (not creators) */}
+                            {groupData.creatorId !== userId && (
+                                <Button 
+                                    variant="destructive" 
+                                    size="sm"
+                                    onClick={handleLeaveGroup}
+                                    disabled={isLeaving}
+                                    className="ml-auto"
+                                >
+                                    {isLeaving ? 'Leaving...' : 'Leave Group'}
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             {groupData.members && groupData.members.length > 0 ? (
@@ -108,46 +170,56 @@ const StudyPlatform = () => {
                                         const memberInfo = member.UserModel;
                                         const isCreator = member.userId === groupData.creatorId;
                                         
-                                        // Generate avatar initials intelligently
-                                        let avatarInitials = '';
-                                        if (memberInfo?.fullName) {
-                                            // If full name exists, use first letter of first two words
-                                            const nameParts = memberInfo.fullName.trim().split(' ');
-                                            avatarInitials = nameParts.length >= 2 
-                                                ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
-                                                : nameParts[0].slice(0, 2).toUpperCase();
-                                        } else if (memberInfo?.username) {
-                                            // If only username, avoid "User" pattern by using first and last chars or first 2
-                                            const username = memberInfo.username;
-                                            if (username.toLowerCase().startsWith('user')) {
-                                                // For usernames like "user1", "user123", use 'U' + number
-                                                const numberPart = username.replace(/^user/i, '');
-                                                avatarInitials = numberPart ? `U${numberPart.slice(0, 1)}` : 'UN';
+                                        // Get the actual username or fullName from the UserModel
+                                        const actualUsername = memberInfo?.username;
+                                        const actualFullName = memberInfo?.fullName;
+                                        
+                                        // Create initials and display name
+                                        let avatarInitials;
+                                        let displayName;
+                                        
+                                        if (actualUsername) {
+                                            // Use actual username for both initials and display
+                                            avatarInitials = actualUsername.length >= 2 ? actualUsername.slice(0, 2).toUpperCase() : actualUsername.toUpperCase();
+                                            displayName = actualUsername;
+                                        } else if (actualFullName) {
+                                            // If no username but has fullName, use first letters of first two words
+                                            const nameParts = actualFullName.trim().split(' ');
+                                            if (nameParts.length >= 2) {
+                                                avatarInitials = `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
                                             } else {
-                                                // For normal usernames, use first two characters
-                                                avatarInitials = username.slice(0, 2).toUpperCase();
+                                                avatarInitials = actualFullName.slice(0, 2).toUpperCase();
                                             }
+                                            displayName = actualFullName;
                                         } else {
-                                            // Fallback
-                                            avatarInitials = `U${member.userId}`.slice(0, 2);
+                                            // Fallback: use U + user ID number
+                                            avatarInitials = `U${member.userId}`;
+                                            displayName = `User${member.userId}`;
                                         }
                                         
                                         return (
-                                            <div key={member.id} className="relative">
-                                                <Avatar className="w-12 h-12">
-                                                    <AvatarImage src="" />
-                                                    <AvatarFallback className="bg-blue-500 text-white font-semibold">
-                                                        {avatarInitials}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                {isCreator && (
-                                                    <div className="absolute -top-1 -right-1">
-                                                        <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
-                                                            ★
-                                                        </span>
+                                            <Tooltip key={member.id}>
+                                                <TooltipTrigger asChild>
+                                                    <div className="relative cursor-pointer">
+                                                        <Avatar className="w-12 h-12">
+                                                            <AvatarImage src="" />
+                                                            <AvatarFallback className="bg-blue-500 text-white font-semibold">
+                                                                {avatarInitials}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        {isCreator && (
+                                                            <div className="absolute -top-1 -right-1">
+                                                                <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                                                                    ★
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{displayName}{isCreator ? ' (Creator)' : ''}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         );
                                     })}
                                 </div>

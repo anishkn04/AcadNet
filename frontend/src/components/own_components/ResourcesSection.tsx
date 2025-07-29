@@ -48,6 +48,15 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   const [filterTopic, setFilterTopic] = useState<string>('all');
   const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({});
 
+  // Helper function to sort resources by creation date (newest first)
+  const sortResourcesByDate = (resources: Resource[]) => {
+    return [...resources].sort((a, b) => {
+      const dateA = new Date(a.created_at || 0);
+      const dateB = new Date(b.created_at || 0);
+      return dateB.getTime() - dateA.getTime(); // Newest first
+    });
+  };
+
   // Fetch resources
   const fetchResources = async () => {
     if (!groupCode) return;
@@ -73,8 +82,11 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           // For backward compatibility
           fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File'
         }));
-        setResources(mappedResources);
-        setFilteredResources(mappedResources);
+        
+        // Sort resources to ensure consistent ordering
+        const sortedResources = sortResourcesByDate(mappedResources);
+        setResources(sortedResources);
+        setFilteredResources(sortedResources);
       }
     } catch (error) {
       console.error('Failed to fetch resources:', error);
@@ -112,7 +124,9 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
       );
     }
 
-    setFilteredResources(filtered);
+    // Apply consistent sorting to filtered results
+    const sortedFiltered = sortResourcesByDate(filtered);
+    setFilteredResources(sortedFiltered);
   }, [resources, searchTerm, filterFileType, filterTopic]);
 
   // Handle status updates from like/dislike buttons
@@ -217,12 +231,15 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         ...resource,
         fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File',
         linkedTo: resource.linkedTo || {
-          topicId: null,
-          subTopicId: null
+          topicId: (resource as any).topicId || null,
+          subTopicId: (resource as any).subTopicId || null
         }
       }));
-      setResources(mappedInitialResources);
-      setFilteredResources(mappedInitialResources);
+      
+      // Sort initial resources to ensure consistent ordering
+      const sortedInitialResources = sortResourcesByDate(mappedInitialResources);
+      setResources(sortedInitialResources);
+      setFilteredResources(sortedInitialResources);
     }
   }, [groupCode, initialResources.length]);
 
