@@ -1,4 +1,4 @@
-import { User, Home, Bell, Settings, Info,Users } from "lucide-react";
+import { User, Home, Bell, Settings, Info, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -31,28 +31,23 @@ const items = [
     icon: Users,
   },
   {
-    title: "Support",
-    //url: "#",
-    icon: Info,
-  },
-  {
     title: "Settings",
-    url: "#",
+    url: "settings",
     icon: Settings,
   },
 ];
 
 export function AppSidebar() {
-  const {user} = useData()
+  const { user } = useData();
   return (
-    <Sidebar  >
-      <SidebarContent >
-        <SidebarGroup >
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
           <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
             <p>{user}</p>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu >
+            <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="pl-14 py-5">

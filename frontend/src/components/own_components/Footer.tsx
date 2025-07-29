@@ -38,7 +38,7 @@ export const Footer: React.FC = () => {
               <li>
                 <Link
                   className="hover:text-[#1993e5] transition-colors"
-                  to="/about"
+                  to="/privacy"
                 >
                   About
                 </Link>
@@ -49,14 +49,20 @@ export const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold text-white mb-3">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a className="hover:text-[#1993e5] transition-colors" href="#">
+                <Link
+                  className="hover:text-[#1993e5] transition-colors"
+                  to="terms"
+                >
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="hover:text-[#1993e5] transition-colors" href="#">
+                <Link
+                  className="hover:text-[#1993e5] transition-colors"
+                  to="privacy"
+                >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

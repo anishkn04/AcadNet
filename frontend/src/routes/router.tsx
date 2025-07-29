@@ -7,6 +7,8 @@ import CreateGroup from "../pages/CreateGroup";
 import CreateGroupForm from "@/pages/CreateGroupForm";
 import About from "@/pages/About";
 import Guide from "@/pages/Guide";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -17,6 +19,7 @@ import StudyPlatform from "@/pages/StudyPlatform";
 import MyGroup from "@/pages/MyGroup";
 import Overview from "@/pages/Overview";
 import GroupAdmin from "@/pages/GroupAdmin";
+import Settings from "@/pages/Settings";
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +51,14 @@ export const router = createBrowserRouter([
       {
         path: "guide",
         element: <Guide />,
+      },
+      {
+        path: "terms",
+        element: <Terms />,
+      },
+      {
+        path: "privacy",
+        element: <Privacy />,
       },
       {
         path: "group",
@@ -83,6 +94,10 @@ export const router = createBrowserRouter([
       {
         path: "groupadmin",
         element: <GroupAdmin />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
       },
     ],
   },
