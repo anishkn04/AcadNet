@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '../components/ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
+import ErrorModal from '../components/ui/error-modal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import SuccessModal from '@/components/ui/success-modal';
 import { fetchOverviewAPI } from '@/services/UserServices';
 import { useData } from '@/hooks/userInfoContext';
 
@@ -15,6 +17,11 @@ const Overview = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [joinAsAnonymous, setJoinAsAnonymous] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [successGroupCode, setSuccessGroupCode] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { userId, joinGroup } = useData();
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
@@ -59,19 +66,26 @@ const Overview = () => {
       // Use the groupCode from the URL since the overview API doesn't return groupCode
       const result = await joinGroup(groupCode, joinAsAnonymous); // Add joinAsAnonymous parameter
       if (result.success) {
-        alert(`Successfully joined "${selectedGroup.groupCode}"${joinAsAnonymous ? ' as anonymous' : ''}!`);
+        // Store group code for navigation after modal closes
+        setSuccessGroupCode(groupCode);
+        
+        // Close the join dialog first
         setShowJoinDialog(false);
         setSelectedGroup(null);
         setJoinAsAnonymous(false); // Reset the checkbox
         
-        // Optionally redirect to the group
-        navigate(`/group?code=${groupCode}`); // Use groupCode from URL
+        // Show success modal with custom message
+        const message = `Successfully joined the group${joinAsAnonymous ? ' as anonymous' : ''}!`;
+        setSuccessMessage(message);
+        setShowSuccessModal(true);
       } else {
-        alert(`Failed to join group: ${result.message}`);
+        setErrorMessage(`Failed to join group: ${result.message}`);
+        setShowErrorModal(true);
       }
     } catch (error) {
       console.error('Join group error:', error);
-      alert('An error occurred while joining the group. Please try again.');
+      setErrorMessage('An error occurred while joining the group. Please try again.');
+      setShowErrorModal(true);
     } finally {
       setIsJoining(false);
     }
@@ -229,7 +243,7 @@ const Overview = () => {
       {showJoinButton && (
         <div className="flex justify-end">
           <Button 
-            onClick={() => handleJoinGroupClick(groupCode)}
+            onClick={() => handleJoinGroupClick(group)}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-3 text-lg font-semibold"
             size="lg"
           >
@@ -246,13 +260,13 @@ const Overview = () => {
           <DialogHeader>
             <DialogTitle>Join Study Group</DialogTitle>
             <DialogDescription>
-              Are you sure you want to join "{selectedGroup?.name}"?
+              Are you sure you want to join "{selectedGroup?.name || selectedGroup?.groupName || 'this group'}"?
             </DialogDescription>
           </DialogHeader>
           {selectedGroup && (
             <div className="py-4">
               <div className="text-sm text-gray-600 mb-2">
-                <strong>Group:</strong> {selectedGroup.name}
+                <strong>Group:</strong> {selectedGroup.name || selectedGroup.groupName || 'Group Name'}
               </div>
               {selectedGroup.description && (
                 <div className="text-sm text-gray-600 mb-2">
@@ -299,6 +313,28 @@ const Overview = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message={successMessage}
+        onClose={() => setShowSuccessModal(false)}
+        autoCloseDelay={2500} // 2.5 seconds
+        onAutoClose={() => {
+          // Navigate to the group after the modal closes
+          if (successGroupCode) {
+            navigate(`/group?code=${successGroupCode}`);
+            setSuccessGroupCode(''); // Clear the stored code
+          }
+        }}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </div>
   );
 };
