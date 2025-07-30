@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import groupRouter from "./routes/grouprouter.js";
 import forumRouter from "./routes/forumrouter.js";
+import userReportRouter from "./routes/userReportRouter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +81,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/data", dataRouter);
 app.use("/api/v1/group",groupRouter)
 app.use("/api/v1/forum", forumRouter);
+app.use("/api/v1/reports", userReportRouter);
 
 app.use(passport.initialize());
 

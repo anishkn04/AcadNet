@@ -12,6 +12,7 @@ import Forum from "./forum.model.js";
 import Thread from "./thread.model.js";
 import Reply from "./reply.model.js";
 import ReplyLike from "./replyLike.model.js";
+import UserReport from "./userReport.model.js";
 
 
 UserModel.hasMany(StudyGroup, { foreignKey: "creatorId" });
@@ -102,6 +103,19 @@ ReplyLike.belongsTo(UserModel, { foreignKey: "userId" });
 Reply.hasMany(ReplyLike, { foreignKey: "replyId" });
 ReplyLike.belongsTo(Reply, { foreignKey: "replyId" });
 
+// User Report Associations
+UserModel.hasMany(UserReport, { foreignKey: "reporterId", as: "reportsMade" });
+UserReport.belongsTo(UserModel, { foreignKey: "reporterId", as: "reporter" });
+
+UserModel.hasMany(UserReport, { foreignKey: "reportedUserId", as: "reportsReceived" });
+UserReport.belongsTo(UserModel, { foreignKey: "reportedUserId", as: "reportedUser" });
+
+UserModel.hasMany(UserReport, { foreignKey: "reviewedBy", as: "reportsReviewed" });
+UserReport.belongsTo(UserModel, { foreignKey: "reviewedBy", as: "reviewer" });
+
+StudyGroup.hasMany(UserReport, { foreignKey: "studyGroupId" });
+UserReport.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
+
 export {
   UserModel,
   StudyGroup,
@@ -116,5 +130,6 @@ export {
   Forum,
   Thread,
   Reply,
-  ReplyLike
+  ReplyLike,
+  UserReport
 };

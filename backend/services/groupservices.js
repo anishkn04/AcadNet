@@ -1032,5 +1032,156 @@ export const addAdditionalResources = async (groupCode, userId, files, topicId =
   }
 };
 
+// Report a user within a group
+export const reportUserInGroup = async (reporterId, reportedUserId, groupCode, reportData) => {
+  try {
+    // Find the group by group code
+    const group = await StudyGroup.findOne({ 
+      where: { groupCode },
+      include: [
+        {
+          model: Membership,
+          where: { userId: reporterId },
+          required: true
+        }
+      ]
+    });
+
+    if (!group) {
+      throwWithCode("Group not found or you are not a member of this group.", 404);
+    }
+
+    // Check if reported user is a member of this group
+    const reportedUserMembership = await Membership.findOne({
+      where: { 
+        userId: reportedUserId, 
+        studyGroupId: group.id 
+      }
+    });
+
+    if (!reportedUserMembership) {
+      throwWithCode("Cannot report a user who is not a member of this group.", 400);
+    }
+
+    // Prevent self-reporting
+    if (reporterId === reportedUserId) {
+      throwWithCode("You cannot report yourself.", 400);
+    }
+
+    // Import UserReport model here to avoid circular dependency
+    const { UserReport } = await import("../models/index.model.js");
+
+    // Check if user has already reported this user in this group
+    const existingReport = await UserReport.findOne({
+      where: {
+        reporterId,
+        reportedUserId,
+        studyGroupId: group.id
+      }
+    });
+
+    if (existingReport) {
+      throwWithCode("You have already reported this user in this group.", 409);
+    }
+
+    // Create the report
+    const userReport = await UserReport.create({
+      reporterId,
+      reportedUserId,
+      studyGroupId: group.id,
+      reason: reportData.reason,
+      description: reportData.description || null
+    });
+
+    // Fetch the created report with user details
+    const createdReport = await UserReport.findByPk(userReport.id, {
+      include: [
+        {
+          model: UserModel,
+          as: "reporter",
+          attributes: ['user_id', 'username', 'fullName']
+        },
+        {
+          model: UserModel,
+          as: "reportedUser",
+          attributes: ['user_id', 'username', 'fullName']
+        },
+        {
+          model: StudyGroup,
+          attributes: ['id', 'name', 'groupCode']
+        }
+      ]
+    });
+
+    return createdReport;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get reports for a specific group (for group admins)
+export const getGroupReports = async (userId, groupCode, status = null) => {
+  try {
+    // Verify user is admin of the group
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      include: [
+        {
+          model: Membership,
+          where: { 
+            userId,
+            role: 'admin' 
+          },
+          required: true
+        }
+      ]
+    });
+
+    if (!group) {
+      throwWithCode("Group not found or you are not an admin of this group.", 403);
+    }
+
+    // Import UserReport model here to avoid circular dependency
+    const { UserReport } = await import("../models/index.model.js");
+
+    // Build where condition for reports
+    const whereCondition = { studyGroupId: group.id };
+    if (status) {
+      whereCondition.status = status;
+    }
+
+    const reports = await UserReport.findAll({
+      where: whereCondition,
+      include: [
+        {
+          model: UserModel,
+          as: "reporter",
+          attributes: ['user_id', 'username', 'fullName']
+        },
+        {
+          model: UserModel,
+          as: "reportedUser",
+          attributes: ['user_id', 'username', 'fullName']
+        },
+        {
+          model: UserModel,
+          as: "reviewer",
+          attributes: ['user_id', 'username', 'fullName'],
+          required: false
+        },
+        {
+          model: StudyGroup,
+          attributes: ['id', 'name', 'groupCode']
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    return reports;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 
