@@ -13,6 +13,55 @@ import fs from "fs";
 import path from "path";
 import Membership from "../models/membership.model.js";
 
+// Helper function to check if user profile is complete
+export const checkUserProfileCompleteness = async (userId) => {
+  const user = await UserModel.findByPk(userId, {
+    attributes: ['user_id', 'fullName', 'phone', 'education', 'age', 'nationality', 'address']
+  });
+
+  if (!user) {
+    throwWithCode("User not found.", 404);
+  }
+
+  const missingFields = [];
+
+  // Check required fields
+  if (!user.fullName || user.fullName.trim() === '') {
+    missingFields.push('fullName');
+  }
+  if (!user.phone || user.phone.trim() === '') {
+    missingFields.push('phone');
+  }
+  if (!user.age || user.age <= 0) {
+    missingFields.push('age');
+  }
+  if (!user.nationality || user.nationality.trim() === '') {
+    missingFields.push('nationality');
+  }
+  
+  // Check if education object has meaningful data
+  if (!user.education || 
+      Object.keys(user.education).length === 0 || 
+      !user.education.institution || 
+      user.education.institution.trim() === '') {
+    missingFields.push('education');
+  }
+  
+  // Check if address object has meaningful data
+  if (!user.address || 
+      Object.keys(user.address).length === 0 || 
+      !user.address.street || 
+      user.address.street.trim() === '') {
+    missingFields.push('address');
+  }
+
+  return {
+    isComplete: missingFields.length === 0,
+    missingFields,
+    user
+  };
+};
+
 export const getAllGroups= async (req)=>{
     try{
         const userId = req.id; // Get user ID from auth middleware
@@ -94,9 +143,6 @@ export const getAllGroups= async (req)=>{
 
         // Filter groups based on privacy and membership
         const filteredGroups = groups.filter(group => {
-            console.log(`Checking group: ${group.name} (${group.id}), isPrivate: ${group.isPrivate}`);
-            console.log(`User group IDs:`, userGroupIds);
-            
             // Show all public groups
             if (!group.isPrivate) {
                 return true;
@@ -104,7 +150,6 @@ export const getAllGroups= async (req)=>{
             
             // For private groups, check if user is a member by checking group ID
             const isMember = userGroupIds.includes(group.id);
-            console.log(`User ${userId} is member of group ${group.name}:`, isMember);
             return isMember;
         });
 
@@ -125,9 +170,16 @@ export const createStudyGroupWithSyllabus = async (
   const createdResourcesForCleanup = [];
 
   try {
+    // Check if user profile is complete before allowing group creation
+    const profileCheck = await checkUserProfileCompleteness(creatorId);
+    if (!profileCheck.isComplete) {
+      throwWithCode(
+        `Please complete your profile before creating a study group. Missing fields: ${profileCheck.missingFields.join(', ')}`, 
+        400
+      );
+    }
 
     transaction = await sequelize.transaction();
-
 
     const creator = await UserModel.findByPk(creatorId, { transaction });
     if (!creator) {
