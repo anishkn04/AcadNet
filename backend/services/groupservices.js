@@ -373,7 +373,19 @@ export const getGroupDetailsByCode = async (groupCode) => {
       },
       {
         model: AdditionalResource,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at'],
+        include: [
+          {
+            model: Topic,
+            attributes: ['id', 'title'],
+            required: false
+          },
+          {
+            model: SubTopic,
+            attributes: ['id', 'title'],
+            required: false
+          }
+        ]
       },
       {
         model: Syllabus,

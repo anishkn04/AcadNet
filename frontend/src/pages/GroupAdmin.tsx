@@ -50,23 +50,6 @@ const GroupAdmin = () => {
 
   const handleEdit = () => setEditMode(true);
   const handleSave = async () => {
-    // TODO: Implement save logic when backend endpoint is available
-    // try {
-    //   if (group?.id) {
-    //     const result = await updateGroupAPI(String(group.id), {
-    //       name: groupName,
-    //       description: groupDescription
-    //     });
-    //     if (result.status === 200) {
-    //       alert('Group updated successfully!');
-    //       setEditMode(false);
-    //     }
-    //   }
-    // } catch (error) {
-    //   alert('Failed to update group');
-    // }
-    
-    // For now, just exit edit mode
     setEditMode(false);
     alert('Group settings updated! (Note: Backend update endpoint not implemented yet)');
   };
@@ -146,10 +129,18 @@ const GroupAdmin = () => {
     }
   };
 
-  const filteredMembers = members.filter(member => 
-    member.UserModel?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.UserModel?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMembers = members.filter(member => {
+    if (!searchTerm.trim()) return true; // Show all members if search term is empty
+    
+    const username = member.UserModel?.username?.toLowerCase() || '';
+    const fullName = member.UserModel?.fullName?.toLowerCase() || '';
+    const userId = member.userId?.toString() || '';
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    return username.includes(searchLower) || 
+           fullName.includes(searchLower) || 
+           userId.includes(searchLower);
+  });
 
   const filteredResources = group?.AdditionalResources?.filter(resource => {
     const resourceName = resource.filePath?.split('/').pop() || '';
@@ -182,7 +173,6 @@ const GroupAdmin = () => {
             <div className="space-y-8">
               {/* Group Settings Section */}
               <section>
-                <h2 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight pb-4">Settings</h2>
                 <div className="space-y-6 max-w-xl">
                   <div>
                     <label className="block text-slate-700 text-sm font-medium leading-normal pb-1.5" htmlFor="groupName">Group Name</label>
@@ -237,10 +227,11 @@ const GroupAdmin = () => {
                     </div>
                     <input
                       className="form-input block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm"
-                      placeholder="Search members"
+                      placeholder="Search by name, username, or user ID..."
                       type="search"
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
+                      autoComplete="off"
                     />
                   </div>
                 </div>
