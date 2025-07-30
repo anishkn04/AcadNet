@@ -43,6 +43,10 @@ AdditionalResource.belongsTo(StudyGroup, { foreignKey: "studyGroupId" });
 AdditionalResource.belongsTo(Topic, { foreignKey: "topicId" });
 AdditionalResource.belongsTo(SubTopic, { foreignKey: "subTopicId" });
 
+// User-AdditionalResource (uploadedBy)
+UserModel.hasMany(AdditionalResource, { foreignKey: "uploadedBy", as: "uploadedResources" });
+AdditionalResource.belongsTo(UserModel, { foreignKey: "uploadedBy", as: "uploader" });
+
 // User-OTP
 UserModel.hasMany(OTP, { foreignKey: "user_id" });
 OTP.belongsTo(UserModel, { foreignKey: "user_id" });

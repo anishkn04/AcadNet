@@ -51,6 +51,19 @@ const AdditionalResource = sequelize.define(
     type: DataTypes.INTEGER,
     defaultValue: 0,
     allowNull: false
+  },
+  uploadedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: "users",
+      key: "user_id"
+    }
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+    defaultValue: 'pending',
+    allowNull: false
   }
  },
  {

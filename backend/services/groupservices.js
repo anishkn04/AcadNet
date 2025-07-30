@@ -40,7 +40,8 @@ export const getAllGroups= async (req)=>{
         },
         {
           model: AdditionalResource,
-          attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at'],
+          where: { status: 'approved' },
+          attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
           required: false,
         }
       ]
@@ -132,12 +133,13 @@ export const createStudyGroupWithSyllabus = async (
     );
 
 
-    // Add creator as a member of the group
+    // Add creator as a member of the group with admin role
     await Membership.create(
       {
         userId: creatorId,
         studyGroupId: newGroup.id,
         isAnonymous: false,
+        role: 'admin',
       },
       { transaction }
     );
@@ -171,6 +173,8 @@ export const createStudyGroupWithSyllabus = async (
             studyGroupId: newGroup.id,
             filePath: newFilePath,
             fileType: fileType,
+            uploadedBy: creatorId,
+            status: 'approved' // Creator's resources are auto-approved
           },
           { transaction }
         );
@@ -260,7 +264,9 @@ export const getGroupOverviewList = async () => {
     include: [
       {
         model: AdditionalResource,
+        where: { status: 'approved' },
         attributes: ['fileType'],
+        required: false,
       },
       {
         model: Membership,
@@ -303,6 +309,7 @@ export const getGroupOverviewByCode = async (groupCode) => {
     include: [
       {
         model: AdditionalResource,
+        where: { status: 'approved' },
         attributes: ['id', 'fileType', 'created_at'],
         required: false, // LEFT JOIN to include groups even without resources
       },
@@ -373,7 +380,9 @@ export const getGroupDetailsByCode = async (groupCode) => {
       },
       {
         model: AdditionalResource,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at'],
+        where: { status: 'approved' },
+        required: false,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
         include: [
           {
             model: Topic,
@@ -416,7 +425,9 @@ export const getGroupDetailsById = async (groupId) => {
       },
       {
         model: AdditionalResource,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+        where: { status: 'approved' },
+        required: false,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status']
       },
       {
         model: Syllabus,
@@ -702,7 +713,9 @@ export const getGroupAdditionalResources = async (groupCode) => {
       include: [
         {
           model: AdditionalResource,
-          attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'created_at'],
+          where: { status: 'approved' },
+          required: false,
+          attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'created_at', 'uploadedBy', 'status'],
           include: [
             {
               model: Topic,
@@ -846,7 +859,9 @@ export const addAdditionalResources = async (groupCode, userId, files, topicId =
         filePath: file.path,
         fileType: file.mimetype,
         topicId: topicId || null,
-        subTopicId: subTopicId || null
+        subTopicId: subTopicId || null,
+        uploadedBy: userId,
+        status: 'pending' // New uploads need approval
       };
 
       const newResource = await AdditionalResource.create(resourceData, { transaction });
