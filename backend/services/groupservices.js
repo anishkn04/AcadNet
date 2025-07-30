@@ -32,26 +32,26 @@ export const checkUserProfileCompleteness = async (userId) => {
   if (!user.phone || user.phone.trim() === '') {
     missingFields.push('phone');
   }
-  if (!user.age || user.age <= 0) {
-    missingFields.push('age');
-  }
-  if (!user.nationality || user.nationality.trim() === '') {
-    missingFields.push('nationality');
-  }
+  // if (!user.age || user.age <= 0) {
+  //   missingFields.push('age');
+  // }
+  // if (!user.nationality || user.nationality.trim() === '') {
+  //   missingFields.push('nationality');
+  // }
   
   // Check if education object has meaningful data
   if (!user.education || 
       Object.keys(user.education).length === 0 || 
-      !user.education.institution || 
-      user.education.institution.trim() === '') {
+      !user.education.college || 
+      user.education.college.trim() === '') {
     missingFields.push('education');
   }
   
   // Check if address object has meaningful data
   if (!user.address || 
       Object.keys(user.address).length === 0 || 
-      !user.address.street || 
-      user.address.street.trim() === '') {
+      !user.address.municipality || 
+      user.address.municipality.trim() === '') {
     missingFields.push('address');
   }
 
