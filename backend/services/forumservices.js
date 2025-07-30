@@ -166,8 +166,7 @@ export const getThreadDetails = async (threadId, userId = null) => {
         }
       ],
       order: [
-        [Reply, 'created_at', 'ASC'],
-        [Reply, Reply, 'created_at', 'ASC']
+        [Reply, 'created_at', 'ASC']
       ]
     });
 
@@ -198,14 +197,7 @@ export const createReply = async (threadId, userId, replyData) => {
           model: Forum,
           include: [
             {
-              model: StudyGroup,
-              include: [
-                {
-                  model: Membership,
-                  where: { userId },
-                  required: true
-                }
-              ]
+              model: StudyGroup
             }
           ]
         }
@@ -221,7 +213,16 @@ export const createReply = async (threadId, userId, replyData) => {
       throwWithCode("Cannot reply to a locked thread.", 403);
     }
 
-    if (!thread.forum.study_group.memberships.length) {
+    // Check if user is a member of the group
+    const membership = await Membership.findOne({
+      where: { 
+        userId, 
+        studyGroupId: thread.forum.studyGroup.id 
+      },
+      transaction
+    });
+
+    if (!membership) {
       throwWithCode("You are not a member of this group.", 403);
     }
 
@@ -249,8 +250,12 @@ export const createReply = async (threadId, userId, replyData) => {
     }, { transaction });
 
     // Update thread reply count and last reply info
+    await Thread.increment('replyCount', { 
+      where: { id: threadId }, 
+      transaction 
+    });
+    
     await Thread.update({
-      replyCount: sequelize.literal('reply_count + 1'),
       lastReplyAt: new Date(),
       lastReplyBy: userId
     }, {
