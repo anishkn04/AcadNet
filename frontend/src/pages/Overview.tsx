@@ -75,7 +75,7 @@ const Overview = () => {
         setJoinAsAnonymous(false); // Reset the checkbox
         
         // Show success modal with custom message
-        const message = `Successfully joined the group${joinAsAnonymous ? ' as anonymous' : ''}!`;
+        const message = `Successfully joined the ${selectedGroup.name}${joinAsAnonymous ? ' as anonymous' : ''}!`;
         setSuccessMessage(message);
         setShowSuccessModal(true);
       } else {
@@ -241,7 +241,12 @@ const Overview = () => {
         </CardContent>
       </Card>
       {showJoinButton && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button
+           onClick={() => navigate('/join',{replace:true})}
+           className="bg-red-600 hover:bg-red-700 text-white shadow-lg px-6 py-3 text-lg font-semibold"
+           size="lg"
+          >Cancel</Button>
           <Button 
             onClick={() => handleJoinGroupClick(group)}
             className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-6 py-3 text-lg font-semibold"

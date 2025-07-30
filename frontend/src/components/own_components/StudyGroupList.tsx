@@ -168,7 +168,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
 
       {/* Join Group Confirmation Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent onClose={handleCancelJoin}>
+        <DialogContent >
           <DialogHeader>
             <DialogTitle>Join Study Group</DialogTitle>
             <DialogDescription>

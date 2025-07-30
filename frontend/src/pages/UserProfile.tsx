@@ -52,6 +52,7 @@ const UserProfile = () => {
             try {
                 const data = await getInfo();
                 if (data) {
+                    console.log("user Data: ",data)
                     setUserInformation(data);
                     reset(data);
                 }
