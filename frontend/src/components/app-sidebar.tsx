@@ -1,4 +1,4 @@
-import { User, Home, Bell, Settings, Info, Users } from "lucide-react";
+import { User, Home, Settings, Users } from "lucide-react";
 
 import {
   Sidebar,
@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
 
 // Menu items.
@@ -22,25 +22,45 @@ const items = [
   },
   {
     title: "My Profile",
-    url: "",
+    url: "/user",
     icon: User,
   },
   {
     title: "My Group",
-    url: "mygroup",
+    url: "/user/mygroup",
     icon: Users,
   },
   {
     title: "Settings",
-    url: "settings",
+    url: "/user/settings",
     icon: Settings,
   },
 ];
 
 export function AppSidebar() {
   const { user } = useData();
+  const location = useLocation();
+
+  const isActive = (url: string) => {
+    if (url === "/") {
+      return location.pathname === "/";
+    }
+    if (url === "/user") {
+      return location.pathname === "/user";
+    }
+    if (url === "/user/mygroup") {
+      return (
+        location.pathname === "/user/mygroup" ||
+        location.pathname === "/user/groupadmin"
+      );
+    }
+    if (url === "/user/settings") {
+      return location.pathname === "/user/settings";
+    }
+    return location.pathname === url || location.pathname.startsWith(url + "/");
+  };
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
@@ -50,7 +70,12 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="pl-14 py-5">
+                  <SidebarMenuButton
+                    asChild
+                    className="pl-14 py-5 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-700"
+                    isActive={isActive(item.url)}
+                    tooltip={item.title}
+                  >
                     <Link to={item.url ?? "#"}>
                       <item.icon />
                       <span>{item.title}</span>
