@@ -1,15 +1,31 @@
 import React, { useState } from "react";
 import { AcademicCapIcon, XIcon, MenuIcon } from "./Icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/userContext";
 import Profile from "./Profile";
 
 export const Header: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
+  };
+
+  const getLinkClassName = (path: string) => {
+    return isActive(path)
+      ? "text-[#1993e5] text-sm font-medium leading-normal transition-colors"
+      : "text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors";
   };
 
   return (
@@ -28,28 +44,16 @@ export const Header: React.FC = () => {
         </div>
 
         <nav className="hidden lg:flex items-center gap-8">
-          <Link
-            className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-            to="/"
-          >
+          <Link className={getLinkClassName("/")} to="/">
             Home
           </Link>
-          <Link
-            to={"/join"}
-            className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-          >
+          <Link to={"/join"} className={getLinkClassName("/join")}>
             Groups
           </Link>
-          <Link
-            className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-            to="/guide"
-          >
+          <Link className={getLinkClassName("/guide")} to="/guide">
             User Guide
           </Link>
-          <Link
-            className="text-slate-700 hover:text-[#1993e5] text-sm font-medium leading-normal transition-colors"
-            to="/about"
-          >
+          <Link className={getLinkClassName("/about")} to="/about">
             About
           </Link>
         </nav>
@@ -94,7 +98,11 @@ export const Header: React.FC = () => {
               onClick={() => {
                 setMobileMenuOpen(false);
               }}
-              className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+              className={
+                isActive("/")
+                  ? "text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                  : "text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+              }
               to="/"
             >
               Home
@@ -105,23 +113,42 @@ export const Header: React.FC = () => {
                 onClick={() => {
                   setMobileMenuOpen(false);
                 }}
+                className={
+                  isActive("/join")
+                    ? "text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                    : "text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                }
                 to={"/join"}
               >
-                Study Group
+                Groups
               </Link>
             </div>
-            <a
-              className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
-              href="#"
+            <Link
+              onClick={() => {
+                setMobileMenuOpen(false);
+              }}
+              className={
+                isActive("/guide")
+                  ? "text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                  : "text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+              }
+              to="/guide"
             >
-              Resources
-            </a>
-            <a
-              className="text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
-              href="#"
+              User Guide
+            </Link>
+            <Link
+              onClick={() => {
+                setMobileMenuOpen(false);
+              }}
+              className={
+                isActive("/about")
+                  ? "text-[#1993e5] text-sm font-medium py-2 transition-colors"
+                  : "text-slate-700 hover:text-[#1993e5] text-sm font-medium py-2 transition-colors"
+              }
+              to="/about"
             >
               About
-            </a>
+            </Link>
             <div className="flex space-x-3 pt-2">
               {!isAuthenticated && (
                 <>

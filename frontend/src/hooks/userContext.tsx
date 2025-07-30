@@ -12,15 +12,19 @@ import {
   refresTokenAPI,
 } from "@/services/AuthServices";
 import { toast } from "react-toastify";
-import axios from 'axios';
+import axios from "axios";
 
 type UserContextType = {
-  isAuthenticated:boolean;
-  registerUser: (email: string, username: string, password: string) => Promise<boolean>;
+  isAuthenticated: boolean;
+  registerUser: (
+    email: string,
+    username: string,
+    password: string
+  ) => Promise<boolean>;
   loginUser: (email: string, password: string) => Promise<boolean>;
-  logout: () => void; 
+  logout: () => void;
   isLoading: boolean;
-  isVerified:boolean;
+  isVerified: boolean;
   forgotPassword: (email: string) => Promise<boolean>;
   resetPasswordWithOTP: (otp: string, newPassword: string) => Promise<boolean>;
   sendSignupOtp: () => Promise<boolean>;
@@ -37,12 +41,9 @@ const TOKEN_REFRESH_INTERVAL = 10 * 60 * 1000;
 export const UserProvider = ({ children }: Props) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isVerified,setIsVerified] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
   const sessionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-   
-
 
   const startSessionMonitoring = () => {
     stopSessionMonitoring();
@@ -52,7 +53,7 @@ export const UserProvider = ({ children }: Props) => {
         const { data, status } = await checkSessionAPI();
         if (status === 200 && data.success === true) {
           if (!isAuthenticated) setIsAuthenticated(true);
-          console.log('session is running');
+          console.log("session is running");
         } else {
           if (isAuthenticated) setIsAuthenticated(false);
           stopSessionMonitoring();
@@ -70,12 +71,14 @@ export const UserProvider = ({ children }: Props) => {
         if (status === 200 && data.success === true) {
           setIsAuthenticated(true);
           const sessionRes = await checkSessionAPI();
-          if (!(sessionRes.status === 200 && sessionRes.data.success === true)) {
+          if (
+            !(sessionRes.status === 200 && sessionRes.data.success === true)
+          ) {
             setIsAuthenticated(false);
           }
         } else {
           setIsAuthenticated(false);
-          console.log('couldnt refresh the session');
+          console.log("couldnt refresh the session");
         }
       } catch (err) {
         console.error("Refresh failed:", err);
@@ -96,42 +99,51 @@ export const UserProvider = ({ children }: Props) => {
     }
   };
 
-  useEffect(()=>{})
+  useEffect(() => {});
 
-useEffect(() => {
-  let mounted = true;
-  const verifyUserSession = async () => {
-    setIsLoading(true);
-    try {
-      const { data, status } = await checkSessionAPI();
-      if (status === 200 && data.success === true) {
-        if (mounted) setIsAuthenticated(true);
-        startSessionMonitoring();
-      } else {
+  useEffect(() => {
+    let mounted = true;
+    const verifyUserSession = async () => {
+      setIsLoading(true);
+      try {
+        const { data, status } = await checkSessionAPI();
+        if (status === 200 && data.success === true) {
+          if (mounted) setIsAuthenticated(true);
+          startSessionMonitoring();
+        } else {
+          if (mounted) setIsAuthenticated(false);
+        }
+      } catch (error) {
         if (mounted) setIsAuthenticated(false);
+        console.log("Session check failed:", error);
+      } finally {
+        if (mounted) setIsLoading(false);
       }
-    } catch (error) {
-      if (mounted) setIsAuthenticated(false);
-      console.log("Session check failed:", error);
-    } finally {
-      if (mounted) setIsLoading(false);
-    }
-  };
-  verifyUserSession();
+    };
+    verifyUserSession();
 
-  return () => {
-    mounted = false;
-    stopSessionMonitoring();
-  };
-}, []);
+    return () => {
+      mounted = false;
+      stopSessionMonitoring();
+    };
+  }, []);
 
-  const registerUser = async (email: string, username: string, password: string): Promise<boolean> => {
+  const registerUser = async (
+    email: string,
+    username: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       await registerAPI(email, username, password);
       return true;
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
-          toast.info(e.response.data.message);
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
+        toast.info(e.response.data.message);
       } else {
         console.log("Registration failed.");
       }
@@ -139,33 +151,48 @@ useEffect(() => {
     }
   };
 
-  const loginUser = async (email: string, password: string): Promise<boolean> => {
+  const loginUser = async (
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       const { data, status } = await loginAPI(email, password);
       if (status === 200 && data.success === true) {
-          setIsAuthenticated(true);
-          startSessionMonitoring();
-          return true;
-      }else {
+        setIsAuthenticated(true);
+        startSessionMonitoring();
+        return true;
+      } else {
         setIsAuthenticated(false);
         return false;
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
-        if (e.response.status === 409 && e.response.data.message === "Please Login via GitHub") {
-          toast.error("You registered with GitHub. Please log in using GitHub.");
-          return false
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
+        if (
+          e.response.status === 409 &&
+          e.response.data.message === "Please Login via GitHub"
+        ) {
+          toast.error(
+            "You registered with GitHub. Please log in using GitHub."
+          );
+          return false;
         } else if (e.response.status === 401) {
           toast.error("Invalid email or password. Please try again.");
-        } else if(e.response.data.message === "Redirecting to /otp-auth"){
+        } else if (e.response.data.message === "Redirecting to /otp-auth") {
           setIsVerified(true);
-        }else{
-          setIsVerified(false)
+        } else {
+          setIsVerified(false);
         }
       } else {
-        toast.error("Login failed. Could not connect to the server or an unknown error occurred.");
+        toast.error(
+          "Login failed. Could not connect to the server or an unknown error occurred."
+        );
       }
-      setIsAuthenticated(false)
+      setIsAuthenticated(false);
       return false;
     }
   };
@@ -173,7 +200,7 @@ useEffect(() => {
   const logout = async () => {
     try {
       await logoutAPI();
-    } catch{
+    } catch {
       toast.error("Logout failed. Please try again.");
     } finally {
       setIsAuthenticated(false);
@@ -185,39 +212,65 @@ useEffect(() => {
     try {
       const { data, status } = await forgotPasswordAPI(email);
       if (status === 200 && data.success === true) {
-        toast.success(data.message || "Password reset OTP has been sent to your email!");
+        toast.success(
+          data.message || "Password reset OTP has been sent to your email!"
+        );
         return true;
       } else {
-        toast.error(data.message || "Failed to send OTP. Please check the email address.");
+        toast.error(
+          data.message || "Failed to send OTP. Please check the email address."
+        );
         return false;
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
         toast.error(e.response.data.message);
       } else {
-        toast.error("Could not connect to the server or an unknown error occurred.");
+        toast.error(
+          "Could not connect to the server or an unknown error occurred."
+        );
       }
     }
     return false;
   };
 
-  const resetPasswordWithOTP = async (otp: string, newPassword: string): Promise<boolean> => {
+  const resetPasswordWithOTP = async (
+    otp: string,
+    newPassword: string
+  ): Promise<boolean> => {
     try {
-      const { data, status } = await verifyOTPAndResetPasswordAPI(otp, newPassword);
+      const { data, status } = await verifyOTPAndResetPasswordAPI(
+        otp,
+        newPassword
+      );
       if (status === 200 && data.success === true) {
-        toast.success(data.message || "Your password has been reset successfully!");
+        toast.success(
+          data.message || "Your password has been reset successfully!"
+        );
         return true;
       } else {
         toast.error(data.message || "Password reset failed. Please try again.");
         return false;
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
         toast.error(e.response.data.message);
       } else if (e instanceof Error) {
         toast.error(e.message);
       } else {
-        toast.error("Could not connect to the server or an unknown error occurred during password reset.");
+        toast.error(
+          "Could not connect to the server or an unknown error occurred during password reset."
+        );
       }
     }
     return false;
@@ -232,14 +285,16 @@ useEffect(() => {
         return false;
       }
     } catch (error) {
-    let errorMessage = "Network Error. Please check your internet connection.";
+      let errorMessage =
+        "Network Error. Please check your internet connection.";
       if (axios.isAxiosError(error) && error.response) {
         errorMessage = error.response.data.message || error.message;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
       throw new Error(errorMessage);
-  }}
+    }
+  };
 
   const verifySignupOtp = async (otp: string): Promise<boolean> => {
     try {
@@ -252,17 +307,37 @@ useEffect(() => {
         return false;
       }
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response && e.response.data && e.response.data.message) {
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
         toast.error(e.response.data.message);
       } else {
-        toast.error("Could not connect to the server or an unknown error occurred during OTP verification.");
+        toast.error(
+          "Could not connect to the server or an unknown error occurred during OTP verification."
+        );
       }
     }
     return false;
   };
-  
+
   return (
-    <UserContext.Provider value={{ loginUser, logout,isAuthenticated, registerUser, isLoading,isVerified, forgotPassword, resetPasswordWithOTP, sendSignupOtp, verifySignupOtp }}>
+    <UserContext.Provider
+      value={{
+        loginUser,
+        logout,
+        isAuthenticated,
+        registerUser,
+        isLoading,
+        isVerified,
+        forgotPassword,
+        resetPasswordWithOTP,
+        sendSignupOtp,
+        verifySignupOtp,
+      }}
+    >
       {!isLoading && children}
     </UserContext.Provider>
   );
