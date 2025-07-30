@@ -29,6 +29,11 @@ const Membership = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    role: {
+      type: DataTypes.ENUM('admin', 'member'),
+      defaultValue: 'member',
+      allowNull: false,
+    },
   },
   {
     tableName: "memberships",
