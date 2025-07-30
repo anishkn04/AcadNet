@@ -3,6 +3,7 @@ import throwWithCode from "../utils/errorthrow.js";
 import AdditionalResource from "../models/additionalResources.model.js";
 import ResourceLike from "../models/resourceLike.model.js";
 import sequelize from "../config/database.js";
+import { Op } from "sequelize";
 import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
 import Topic from "../models/topics.model.js";
@@ -14,42 +15,104 @@ import Membership from "../models/membership.model.js";
 
 export const getAllGroups= async (req)=>{
     try{
-        const publicGroups = await StudyGroup.findAll({
-      where: {
-        isPrivate: false
-      },
-      include: [
-        {
-          model: Membership,
-          attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'created_at', 'updated_at'],
-          required: false, // LEFT JOIN to include groups even without members
-        },
-        {
-          model: UserModel,
-          attributes: ['username', 'fullName'],
-          required: false,
-        },
-        {
-          model: Syllabus,
-          include: [{ 
-            model: Topic, 
-            include: [SubTopic],
-            required: false 
-          }],
-          required: false,
-        },
-        {
-          model: AdditionalResource,
-          where: { status: 'approved' },
-          attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
-          required: false,
+        const userId = req.id; // Get user ID from auth middleware
+        
+        if (!userId) {
+            // If no user ID, only show public groups
+            const publicGroups = await StudyGroup.findAll({
+                where: { isPrivate: false },
+                include: [
+                    {
+                        model: Membership,
+                        attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'role', 'created_at', 'updated_at'],
+                        required: false,
+                    },
+                    {
+                        model: UserModel,
+                        attributes: ['username', 'fullName'],
+                        required: false,
+                    },
+                    {
+                        model: Syllabus,
+                        include: [{ 
+                            model: Topic, 
+                            include: [SubTopic],
+                            required: false 
+                        }],
+                        required: false,
+                    },
+                    {
+                        model: AdditionalResource,
+                        where: { status: 'approved' },
+                        attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
+                        required: false,
+                    }
+                ]
+            });
+            return publicGroups;
         }
-      ]
-    });
-    return publicGroups
+
+        // Get user's group memberships first
+        const userMemberships = await Membership.findAll({
+            where: { userId },
+            attributes: ['studyGroupId']
+        });
+        const userGroupIds = userMemberships.map(membership => membership.studyGroupId);
+        
+        // Get all groups where:
+        // 1. Group is public, OR
+        // 2. Group is private AND user is a member
+        const groups = await StudyGroup.findAll({
+            include: [
+                {
+                    model: Membership,
+                    attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'role', 'created_at', 'updated_at'],
+                    required: false,
+                },
+                {
+                    model: UserModel,
+                    attributes: ['username', 'fullName'],
+                    required: false,
+                },
+                {
+                    model: Syllabus,
+                    include: [{ 
+                        model: Topic, 
+                        include: [SubTopic],
+                        required: false 
+                    }],
+                    required: false,
+                },
+                {
+                    model: AdditionalResource,
+                    where: { status: 'approved' },
+                    attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
+                    required: false,
+                }
+            ]
+        });
+
+        // Filter groups based on privacy and membership
+        const filteredGroups = groups.filter(group => {
+            console.log(`Checking group: ${group.name} (${group.id}), isPrivate: ${group.isPrivate}`);
+            console.log(`User group IDs:`, userGroupIds);
+            
+            // Show all public groups
+            if (!group.isPrivate) {
+                return true;
+            }
+            
+            // For private groups, check if user is a member by checking group ID
+            const isMember = userGroupIds.includes(group.id);
+            console.log(`User ${userId} is member of group ${group.name}:`, isMember);
+            return isMember;
+        });
+
+        return filteredGroups;
       }catch(error){
-    throwWithCode("Can't Get Response",400)
-}
+        console.error("Error in getAllGroups:", error);
+        throwWithCode("Can't Get Response", 400);
+      }
 }
 
 export const createStudyGroupWithSyllabus = async (

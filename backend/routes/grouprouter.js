@@ -8,7 +8,7 @@ import addUser from '../middlewares/addUsertoReq.js';
 
 const router = express.Router()
 
-router.get("/groups",authMiddleware,csrfMiddleware,getGroups)
+router.get("/groups",authMiddleware,csrfMiddleware,addUser,getGroups)
 
 router.post(
  "/create",
