@@ -21,6 +21,50 @@ const StudyPlatform = () => {
     const params = new URLSearchParams(location.search)
     const groupCode = params.get('code')
 
+    // Helper function to determine member display based on visibility rules
+    const getMemberDisplayInfo = (member: any, currentUserId: number, isCurrentUserCreator: boolean) => {
+        const memberInfo = member.UserModel;
+        const isAnonymous = member.isAnonymous;
+        const isCurrentUser = member.userId === currentUserId;
+        
+        // Get actual member details
+        const actualUsername = memberInfo?.username;
+        const actualFullName = memberInfo?.fullName;
+        
+        let avatarInitials;
+        let displayName;
+        
+        // Visibility rules:
+        // 1. Creator can see everyone's real names
+        // 2. Anonymous users can see their own real name
+        // 3. Everyone else sees anonymous users as "Anonymous"
+        
+        if (isAnonymous && !isCurrentUserCreator && !isCurrentUser) {
+            // Show as Anonymous to non-creators and non-self
+            avatarInitials = "AN";
+            displayName = "Anonymous";
+        } else {
+            // Show real name (creator viewing anyone, or user viewing themselves, or non-anonymous member)
+            if (actualUsername) {
+                avatarInitials = actualUsername.length >= 2 ? actualUsername.slice(0, 2).toUpperCase() : actualUsername.toUpperCase();
+                displayName = actualUsername;
+            } else if (actualFullName) {
+                const nameParts = actualFullName.trim().split(' ');
+                if (nameParts.length >= 2) {
+                    avatarInitials = `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+                } else {
+                    avatarInitials = actualFullName.slice(0, 2).toUpperCase();
+                }
+                displayName = actualFullName;
+            } else {
+                avatarInitials = `U${member.userId}`;
+                displayName = `User${member.userId}`;
+            }
+        }
+        
+        return { avatarInitials, displayName };
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             if (groupCode) {
@@ -166,36 +210,15 @@ const StudyPlatform = () => {
                             {groupData.members && groupData.members.length > 0 ? (
                                 <div className="flex flex-wrap gap-3">
                                     {groupData.members.map((member) => {
-                                        // Get member info from UserModel if available
-                                        const memberInfo = member.UserModel;
                                         const isCreator = member.userId === groupData.creatorId;
+                                        const isCurrentUserCreator = Number(userId) === Number(groupData.creatorId);
                                         
-                                        // Get the actual username or fullName from the UserModel
-                                        const actualUsername = memberInfo?.username;
-                                        const actualFullName = memberInfo?.fullName;
-                                        
-                                        // Create initials and display name
-                                        let avatarInitials;
-                                        let displayName;
-                                        
-                                        if (actualUsername) {
-                                            // Use actual username for both initials and display
-                                            avatarInitials = actualUsername.length >= 2 ? actualUsername.slice(0, 2).toUpperCase() : actualUsername.toUpperCase();
-                                            displayName = actualUsername;
-                                        } else if (actualFullName) {
-                                            // If no username but has fullName, use first letters of first two words
-                                            const nameParts = actualFullName.trim().split(' ');
-                                            if (nameParts.length >= 2) {
-                                                avatarInitials = `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
-                                            } else {
-                                                avatarInitials = actualFullName.slice(0, 2).toUpperCase();
-                                            }
-                                            displayName = actualFullName;
-                                        } else {
-                                            // Fallback: use U + user ID number
-                                            avatarInitials = `U${member.userId}`;
-                                            displayName = `User${member.userId}`;
-                                        }
+                                        // Get display info based on visibility rules
+                                        const { avatarInitials, displayName } = getMemberDisplayInfo(
+                                            member, 
+                                            Number(userId), 
+                                            isCurrentUserCreator
+                                        );
                                         
                                         return (
                                             <Tooltip key={member.id}>
@@ -203,7 +226,7 @@ const StudyPlatform = () => {
                                                     <div className="relative cursor-pointer">
                                                         <Avatar className="w-12 h-12">
                                                             <AvatarImage src="" />
-                                                            <AvatarFallback className="bg-blue-500 text-white font-semibold">
+                                                            <AvatarFallback className={`text-white font-semibold ${member.isAnonymous && !isCurrentUserCreator && member.userId !== Number(userId) ? 'bg-gray-500' : 'bg-blue-500'}`}>
                                                                 {avatarInitials}
                                                             </AvatarFallback>
                                                         </Avatar>

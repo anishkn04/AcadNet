@@ -3,6 +3,7 @@ import { useData } from '@/hooks/userInfoContext';
 import type { Groups } from '@/models/User';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 
@@ -24,6 +25,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
   const [selectedGroup, setSelectedGroup] = useState<Groups | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [joinAsAnonymous, setJoinAsAnonymous] = useState(false);
   const { retreiveGroups, userId, joinGroup } = useData();
   const navigate = useNavigate();
 
@@ -73,11 +75,12 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
     
     setIsJoining(true);
     try {
-      const result = await joinGroup(selectedGroup.groupCode);
+      const result = await joinGroup(selectedGroup.groupCode, joinAsAnonymous);
       if (result.success) {
-        alert(`Successfully joined "${selectedGroup.name}"!`);
+        alert(`Successfully joined "${selectedGroup.name}"${joinAsAnonymous ? ' as anonymous' : ''}!`);
         setShowJoinDialog(false);
         setSelectedGroup(null);
+        setJoinAsAnonymous(false); // Reset the checkbox
         
         // Refresh the groups list to update UI
         setIsRefreshing(true);
@@ -104,6 +107,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
   const handleCancelJoin = () => {
     setShowJoinDialog(false);
     setSelectedGroup(null);
+    setJoinAsAnonymous(false); // Reset the checkbox
   };
 
   return (
@@ -167,9 +171,27 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
                   <strong>Description:</strong> {selectedGroup.description}
                 </div>
               )}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 mb-4">
                 <strong>Group Code:</strong> {selectedGroup.groupCode}
               </div>
+              
+              {/* Anonymous Join Checkbox */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="joinAsAnonymous"
+                  checked={joinAsAnonymous}
+                  onCheckedChange={setJoinAsAnonymous}
+                />
+                <label 
+                  htmlFor="joinAsAnonymous" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Join as anonymous
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                When joining as anonymous, your username will be displayed as "Anonymous" to other members in this group.
+              </p>
             </div>
           )}
           <DialogFooter>

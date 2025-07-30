@@ -203,9 +203,9 @@ export const fetchGroupDetailsByIdDirectAPI = async (groupId: string | number) =
     }
 }
 
-export const joinGroupAPI = async (groupCode: string) => {
+export const joinGroupAPI = async (groupCode: string, isAnonymous: boolean = false) => {
     try {
-        const response = await apiClient.post(`/group/join/${groupCode}`);
+        const response = await apiClient.post(`/group/join/${groupCode}`, { isAnonymous });
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;
