@@ -7,14 +7,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage, faEye, faReply, faLock, faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
-import { getGroupForumAPI, createThreadAPI, getThreadDetailsAPI, createReplyAPI, likeReplyAPI, dislikeReplyAPI } from '@/services/UserServices';
+import { getGroupForumAPI, createThreadAPI, getThreadDetailsAPI, createReplyAPI, likeReplyAPI, dislikeReplyAPI, fetchGroupDetailsByIdAPI } from '@/services/UserServices';
 import type { GroupForum, Thread } from '@/models/User';
+import { useData } from '@/hooks/userInfoContext';
 
 interface ForumProps {
   groupCode: string;
 }
 
 const Forum = ({ groupCode }: ForumProps) => {
+  const { userId } = useData();
   const [forumData, setForumData] = useState<GroupForum | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
@@ -32,6 +34,69 @@ const Forum = ({ groupCode }: ForumProps) => {
   const [quickMessage, setQuickMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [showThreadDialog, setShowThreadDialog] = useState<number | null>(null);
+  
+  // State to store group membership data for anonymous checking
+  const [groupMembers, setGroupMembers] = useState<any[]>([]);
+  const [groupCreatorId, setGroupCreatorId] = useState<number | null>(null);
+
+  // Helper function to check if current user is the group creator
+  const isCurrentUserCreator = (): boolean => {
+    return groupCreatorId !== null && Number(userId) === Number(groupCreatorId);
+  };
+
+  // Helper function to check if a user is anonymous in this group
+  const isUserAnonymous = (userId: number): boolean => {
+    const member = groupMembers.find(m => m.userId === userId);
+    return member ? member.isAnonymous : false;
+  };
+
+  // Helper function to get display name considering anonymity and visibility rules
+  const getDisplayName = (author: any): string => {
+    const authorId = author.user_id;
+    const isAnonymousUser = isUserAnonymous(authorId);
+    const isCreator = isCurrentUserCreator();
+    const isViewingSelf = Number(userId) === Number(authorId);
+    
+    // Visibility rules:
+    // 1. Creator can see everyone's real names
+    // 2. Anonymous users can see their own real name
+    // 3. Everyone else sees anonymous users as "Anonymous"
+    if (isAnonymousUser && !isCreator && !isViewingSelf) {
+      return "Anonymous";
+    }
+    
+    return author.fullName || author.username;
+  };
+
+  // Helper function to get avatar initials considering anonymity and visibility rules
+  const getAvatarInitials = (author: any): string => {
+    const authorId = author.user_id;
+    const isAnonymousUser = isUserAnonymous(authorId);
+    const isCreator = isCurrentUserCreator();
+    const isViewingSelf = Number(userId) === Number(authorId);
+    
+    // Visibility rules same as display name
+    if (isAnonymousUser && !isCreator && !isViewingSelf) {
+      return "AN";
+    }
+    
+    return getAuthorInitials(author.username, author.fullName);
+  };
+
+  // Helper function to get avatar background color considering anonymity and visibility rules
+  const getAvatarBackgroundColor = (author: any): string => {
+    const authorId = author.user_id;
+    const isAnonymousUser = isUserAnonymous(authorId);
+    const isCreator = isCurrentUserCreator();
+    const isViewingSelf = Number(userId) === Number(authorId);
+    
+    // Show gray background for anonymous users that appear as "Anonymous" to current user
+    if (isAnonymousUser && !isCreator && !isViewingSelf) {
+      return "bg-gray-500";
+    }
+    
+    return "bg-blue-500";
+  };
 
   // Early return if no groupCode is provided
   if (!groupCode) {
@@ -51,17 +116,33 @@ const Forum = ({ groupCode }: ForumProps) => {
   }
 
   useEffect(() => {
-    const fetchForum = async () => {
+    const fetchForumAndMembers = async () => {
       try {
         setLoading(true);
-        const { data, status } = await getGroupForumAPI(groupCode);
-        if (status === 200 && data.success) {
-          setForumData(data.message);
+        
+        // Fetch forum data
+        const forumPromise = getGroupForumAPI(groupCode);
+        
+        // Fetch group members data for anonymous checking
+        const membersPromise = fetchGroupDetailsByIdAPI(groupCode);
+        
+        const [forumResult, membersResult] = await Promise.all([forumPromise, membersPromise]);
+        
+        // Set forum data
+        if (forumResult.status === 200 && forumResult.data.success) {
+          setForumData(forumResult.data.message);
         } else {
           setForumData(null);
         }
+        
+        // Set members data
+        if (membersResult.status === 200) {
+          setGroupMembers(membersResult.data.members || []);
+          setGroupCreatorId(membersResult.data.creatorId || null);
+        }
+        
       } catch (error) {
-        console.error('Failed to fetch forum:', error);
+        console.error('Failed to fetch forum and members:', error);
         setForumData(null);
       } finally {
         setLoading(false);
@@ -69,7 +150,7 @@ const Forum = ({ groupCode }: ForumProps) => {
     };
 
     if (groupCode) {
-      fetchForum();
+      fetchForumAndMembers();
     }
   }, [groupCode]);
 
@@ -389,7 +470,7 @@ const Forum = ({ groupCode }: ForumProps) => {
           <CardHeader className="pb-4">
             <CardTitle className="text-lg sm:text-xl leading-tight">{selectedThread.title}</CardTitle>
             <CardDescription className="text-sm">
-              by {selectedThread.author.fullName || selectedThread.author.username} • {formatDate(selectedThread.created_at)}
+              by {getDisplayName(selectedThread.author)} • {formatDate(selectedThread.created_at)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -404,13 +485,13 @@ const Forum = ({ groupCode }: ForumProps) => {
                     <div key={reply.id} className="border rounded-lg p-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3">
                         <Avatar className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
-                          <AvatarFallback className="bg-gray-500 text-white font-semibold text-xs">
-                            {getAuthorInitials(reply.author.username, reply.author.fullName)}
+                          <AvatarFallback className={`text-white font-semibold text-xs ${getAvatarBackgroundColor(reply.author)}`}>
+                            {getAvatarInitials(reply.author)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-                            <span className="font-semibold text-sm sm:text-base">{reply.author.fullName || reply.author.username}</span>
+                            <span className="font-semibold text-sm sm:text-base">{getDisplayName(reply.author)}</span>
                             <span className="text-xs sm:text-sm text-gray-500">{formatDate(reply.created_at)}</span>
                             {reply.isEdited && (
                               <span className="text-xs text-gray-400">(edited)</span>
@@ -502,14 +583,14 @@ const Forum = ({ groupCode }: ForumProps) => {
                     {/* Message Bubble */}
                     <div className="flex items-start gap-3 hover:bg-gray-50 p-3 rounded-lg transition-colors">
                       <Avatar className="w-8 h-8 flex-shrink-0">
-                        <AvatarFallback className="bg-blue-500 text-white font-semibold text-sm">
-                          {getAuthorInitials(thread.author.username, thread.author.fullName)}
+                        <AvatarFallback className={`text-white font-semibold text-sm ${getAvatarBackgroundColor(thread.author)}`}>
+                          {getAvatarInitials(thread.author)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 mb-1">
                           <span className="font-semibold text-sm text-gray-900">
-                            {thread.author.fullName || thread.author.username}
+                            {getDisplayName(thread.author)}
                           </span>
                           <span className="text-xs text-gray-500">
                             {formatDate(thread.created_at)}
@@ -579,7 +660,7 @@ const Forum = ({ groupCode }: ForumProps) => {
                                   rows={2}
                                   value={replyContents[thread.id] || ''}
                                   onChange={(e) => handleReplyContentChange(thread.id, e.target.value)}
-                                  placeholder={`Reply to ${thread.author.fullName || thread.author.username}...`}
+                                  placeholder={`Reply to ${getDisplayName(thread.author)}...`}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                       e.preventDefault();

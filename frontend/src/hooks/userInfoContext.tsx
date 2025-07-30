@@ -10,7 +10,7 @@ type UserInfoType ={
     retreiveGroups: () => Promise<Groups[] |undefined>
     retreiveGroupById: (groupId: string | number) => Promise<Groups | undefined>
     retreiveGroupByCode: (groupCode: string | number) => Promise<Groups | undefined>
-    joinGroup: (groupCode: string) => Promise<{ success: boolean, message: string }>
+    joinGroup: (groupCode: string, isAnonymous?: boolean) => Promise<{ success: boolean, message: string }>
     leaveGroup: (groupCode: string) => Promise<{ success: boolean, message: string }>
     removeGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
     promoteGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
@@ -122,9 +122,9 @@ export const UserInfoProvider = ({children}:Props) =>{
         }
     }
     
-    const joinGroup = async (groupCode: string): Promise<{ success: boolean, message: string }> => {
+    const joinGroup = async (groupCode: string, isAnonymous: boolean = false): Promise<{ success: boolean, message: string }> => {
         try {
-            const { data, status } = await joinGroupAPI(groupCode);
+            const { data, status } = await joinGroupAPI(groupCode, isAnonymous);
             if (status === 200) {
                 return { success: true, message: data.message || 'Successfully joined the group!' };
             } else {

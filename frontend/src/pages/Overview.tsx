@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '../components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { fetchOverviewAPI } from '@/services/UserServices';
 import { useData } from '@/hooks/userInfoContext';
@@ -13,6 +14,7 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [joinAsAnonymous, setJoinAsAnonymous] = useState(false);
   const { userId, joinGroup } = useData();
   const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
@@ -55,11 +57,12 @@ const Overview = () => {
     setIsJoining(true);
     try {
       // Use the groupCode from the URL since the overview API doesn't return groupCode
-      const result = await joinGroup(groupCode); // Use groupCode from URL instead of selectedGroup.groupCode
+      const result = await joinGroup(groupCode, joinAsAnonymous); // Add joinAsAnonymous parameter
       if (result.success) {
-        alert(`Successfully joined "${selectedGroup.groupCode}"!`);
+        alert(`Successfully joined "${selectedGroup.groupCode}"${joinAsAnonymous ? ' as anonymous' : ''}!`);
         setShowJoinDialog(false);
         setSelectedGroup(null);
+        setJoinAsAnonymous(false); // Reset the checkbox
         
         // Optionally redirect to the group
         navigate(`/group?code=${groupCode}`); // Use groupCode from URL
@@ -72,6 +75,13 @@ const Overview = () => {
     } finally {
       setIsJoining(false);
     }
+  };
+
+  // Handler for canceling join
+  const handleCancelJoin = () => {
+    setShowJoinDialog(false);
+    setSelectedGroup(null);
+    setJoinAsAnonymous(false); // Reset the checkbox
   };
 
   
@@ -249,15 +259,33 @@ const Overview = () => {
                   <strong>Description:</strong> {selectedGroup.description}
                 </div>
               )}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 mb-4">
                 <strong>Group Code:</strong> {groupCode}
               </div>
+              
+              {/* Anonymous Join Checkbox */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="joinAsAnonymous"
+                  checked={joinAsAnonymous}
+                  onCheckedChange={setJoinAsAnonymous}
+                />
+                <label 
+                  htmlFor="joinAsAnonymous" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Join as anonymous
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                When joining as anonymous, your username will be displayed as "Anonymous" to other members in this group.
+              </p>
             </div>
           )}
           <DialogFooter>
             <Button 
               variant="outline" 
-              onClick={() => setShowJoinDialog(false)}
+              onClick={handleCancelJoin}
               disabled={isJoining}
             >
               Cancel

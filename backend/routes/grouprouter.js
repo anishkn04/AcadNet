@@ -27,10 +27,11 @@ router.post("/join/:groupCode", authMiddleware, csrfMiddleware, addUser, async (
   try {
     const userId = req.id;
     const groupCode = req.params.groupCode;
+    const isAnonymous = req.body.isAnonymous || false;
     if (!groupCode) {
       return res.status(400).json({ success: false, message: "Group code is required." });
     }
-    const result = await joinGroup(userId, groupCode);
+    const result = await joinGroup(userId, groupCode, isAnonymous);
     res.status(200).json({ success: true, message: "Joined group successfully.", data: result });
   } catch (err) {
     res.status(err.code || 500).json({ success: false, message: err.message || "Failed to join group." });
