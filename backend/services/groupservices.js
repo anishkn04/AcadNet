@@ -3,6 +3,7 @@ import throwWithCode from "../utils/errorthrow.js";
 import AdditionalResource from "../models/additionalResources.model.js";
 import ResourceLike from "../models/resourceLike.model.js";
 import sequelize from "../config/database.js";
+import { Op } from "sequelize";
 import UserModel from "../models/user.model.js";
 import Syllabus from "../models/syallabus.model.js";
 import Topic from "../models/topics.model.js";
@@ -12,43 +13,151 @@ import fs from "fs";
 import path from "path";
 import Membership from "../models/membership.model.js";
 
+// Helper function to check if user profile is complete
+export const checkUserProfileCompleteness = async (userId) => {
+  const user = await UserModel.findByPk(userId, {
+    attributes: ['user_id', 'fullName', 'phone', 'education', 'age', 'nationality', 'address']
+  });
+
+  if (!user) {
+    throwWithCode("User not found.", 404);
+  }
+
+  const missingFields = [];
+
+  // Check required fields
+  if (!user.fullName || user.fullName.trim() === '') {
+    missingFields.push('fullName');
+  }
+  if (!user.phone || user.phone.trim() === '') {
+    missingFields.push('phone');
+  }
+  if (!user.age || user.age <= 0) {
+    missingFields.push('age');
+  }
+  if (!user.nationality || user.nationality.trim() === '') {
+    missingFields.push('nationality');
+  }
+  
+  // Check if education object has meaningful data
+  if (!user.education || 
+      Object.keys(user.education).length === 0 || 
+      !user.education.institution || 
+      user.education.institution.trim() === '') {
+    missingFields.push('education');
+  }
+  
+  // Check if address object has meaningful data
+  if (!user.address || 
+      Object.keys(user.address).length === 0 || 
+      !user.address.street || 
+      user.address.street.trim() === '') {
+    missingFields.push('address');
+  }
+
+  return {
+    isComplete: missingFields.length === 0,
+    missingFields,
+    user
+  };
+};
+
 export const getAllGroups= async (req)=>{
     try{
-        const publicGroups = await StudyGroup.findAll({
-      where: {
-        isPrivate: false
-      },
-      include: [
-        {
-          model: Membership,
-          attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'created_at', 'updated_at'],
-          required: false, // LEFT JOIN to include groups even without members
-        },
-        {
-          model: UserModel,
-          attributes: ['username', 'fullName'],
-          required: false,
-        },
-        {
-          model: Syllabus,
-          include: [{ 
-            model: Topic, 
-            include: [SubTopic],
-            required: false 
-          }],
-          required: false,
-        },
-        {
-          model: AdditionalResource,
-          attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at'],
-          required: false,
+        const userId = req.id; // Get user ID from auth middleware
+        
+        if (!userId) {
+            // If no user ID, only show public groups
+            const publicGroups = await StudyGroup.findAll({
+                where: { isPrivate: false },
+                include: [
+                    {
+                        model: Membership,
+                        attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'role', 'created_at', 'updated_at'],
+                        required: false,
+                    },
+                    {
+                        model: UserModel,
+                        attributes: ['username', 'fullName'],
+                        required: false,
+                    },
+                    {
+                        model: Syllabus,
+                        include: [{ 
+                            model: Topic, 
+                            include: [SubTopic],
+                            required: false 
+                        }],
+                        required: false,
+                    },
+                    {
+                        model: AdditionalResource,
+                        where: { status: 'approved' },
+                        attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
+                        required: false,
+                    }
+                ]
+            });
+            return publicGroups;
         }
-      ]
-    });
-    return publicGroups
+
+        // Get user's group memberships first
+        const userMemberships = await Membership.findAll({
+            where: { userId },
+            attributes: ['studyGroupId']
+        });
+        const userGroupIds = userMemberships.map(membership => membership.studyGroupId);
+        
+        // Get all groups where:
+        // 1. Group is public, OR
+        // 2. Group is private AND user is a member
+        const groups = await StudyGroup.findAll({
+            include: [
+                {
+                    model: Membership,
+                    attributes: ['id', 'userId', 'studyGroupId', 'isAnonymous', 'role', 'created_at', 'updated_at'],
+                    required: false,
+                },
+                {
+                    model: UserModel,
+                    attributes: ['username', 'fullName'],
+                    required: false,
+                },
+                {
+                    model: Syllabus,
+                    include: [{ 
+                        model: Topic, 
+                        include: [SubTopic],
+                        required: false 
+                    }],
+                    required: false,
+                },
+                {
+                    model: AdditionalResource,
+                    where: { status: 'approved' },
+                    attributes: ['id', 'filePath', 'fileType', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
+                    required: false,
+                }
+            ]
+        });
+
+        // Filter groups based on privacy and membership
+        const filteredGroups = groups.filter(group => {
+            // Show all public groups
+            if (!group.isPrivate) {
+                return true;
+            }
+            
+            // For private groups, check if user is a member by checking group ID
+            const isMember = userGroupIds.includes(group.id);
+            return isMember;
+        });
+
+        return filteredGroups;
       }catch(error){
-    throwWithCode("Can't Get Response",400)
-}
+        console.error("Error in getAllGroups:", error);
+        throwWithCode("Can't Get Response", 400);
+      }
 }
 
 export const createStudyGroupWithSyllabus = async (
@@ -61,9 +170,16 @@ export const createStudyGroupWithSyllabus = async (
   const createdResourcesForCleanup = [];
 
   try {
+    // Check if user profile is complete before allowing group creation
+    const profileCheck = await checkUserProfileCompleteness(creatorId);
+    if (!profileCheck.isComplete) {
+      throwWithCode(
+        `Please complete your profile before creating a study group. Missing fields: ${profileCheck.missingFields.join(', ')}`, 
+        400
+      );
+    }
 
     transaction = await sequelize.transaction();
-
 
     const creator = await UserModel.findByPk(creatorId, { transaction });
     if (!creator) {
@@ -132,12 +248,13 @@ export const createStudyGroupWithSyllabus = async (
     );
 
 
-    // Add creator as a member of the group
+    // Add creator as a member of the group with admin role
     await Membership.create(
       {
         userId: creatorId,
         studyGroupId: newGroup.id,
         isAnonymous: false,
+        role: 'admin',
       },
       { transaction }
     );
@@ -171,6 +288,8 @@ export const createStudyGroupWithSyllabus = async (
             studyGroupId: newGroup.id,
             filePath: newFilePath,
             fileType: fileType,
+            uploadedBy: creatorId,
+            status: 'approved' // Creator's resources are auto-approved
           },
           { transaction }
         );
@@ -260,7 +379,9 @@ export const getGroupOverviewList = async () => {
     include: [
       {
         model: AdditionalResource,
+        where: { status: 'approved' },
         attributes: ['fileType'],
+        required: false,
       },
       {
         model: Membership,
@@ -303,6 +424,7 @@ export const getGroupOverviewByCode = async (groupCode) => {
     include: [
       {
         model: AdditionalResource,
+        where: { status: 'approved' },
         attributes: ['id', 'fileType', 'created_at'],
         required: false, // LEFT JOIN to include groups even without resources
       },
@@ -373,7 +495,9 @@ export const getGroupDetailsByCode = async (groupCode) => {
       },
       {
         model: AdditionalResource,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at'],
+        where: { status: 'approved' },
+        required: false,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
         include: [
           {
             model: Topic,
@@ -416,7 +540,9 @@ export const getGroupDetailsById = async (groupId) => {
       },
       {
         model: AdditionalResource,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at']
+        where: { status: 'approved' },
+        required: false,
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status']
       },
       {
         model: Syllabus,
@@ -702,7 +828,9 @@ export const getGroupAdditionalResources = async (groupCode) => {
       include: [
         {
           model: AdditionalResource,
-          attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'created_at'],
+          where: { status: 'approved' },
+          required: false,
+          attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'created_at', 'uploadedBy', 'status'],
           include: [
             {
               model: Topic,
@@ -846,7 +974,9 @@ export const addAdditionalResources = async (groupCode, userId, files, topicId =
         filePath: file.path,
         fileType: file.mimetype,
         topicId: topicId || null,
-        subTopicId: subTopicId || null
+        subTopicId: subTopicId || null,
+        uploadedBy: userId,
+        status: 'pending' // New uploads need approval
       };
 
       const newResource = await AdditionalResource.create(resourceData, { transaction });

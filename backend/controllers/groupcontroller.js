@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -21,6 +21,20 @@ export const createGroup = async (req, res) => {
  const creatorId = req.id;
  let { name, description, isPrivate, syllabus, additionalResources } = req.body;
  const files = req.files; 
+
+ // Check if user profile is complete before allowing group creation
+ try {
+   const profileCheck = await checkUserProfileCompleteness(creatorId);
+   if (!profileCheck.isComplete) {
+     return jsonRes(res, 400, false, {
+       message: "Please complete your profile before creating a study group.",
+       missingFields: profileCheck.missingFields,
+       requiredFields: ["fullName", "phone", "age", "nationality", "education", "address"]
+     });
+   }
+ } catch (profileError) {
+   return jsonRes(res, profileError.code || 500, false, profileError.message || "Error checking user profile.");
+ }
 
  if (typeof syllabus === 'string') {
   try {
