@@ -432,7 +432,7 @@ export const getGroupDetailsById = async (groupId) => {
 };
 
 // Service to join a group by group code
-export const joinGroup = async (userId, groupCode) => {
+export const joinGroup = async (userId, groupCode,anonymous) => {
   if (!userId || !groupCode) {
     throwWithCode("User ID and group code are required.", 400);
   }
@@ -452,7 +452,7 @@ export const joinGroup = async (userId, groupCode) => {
   const membership = await Membership.create({
     userId,
     studyGroupId: group.id,
-    isAnonymous: false,
+    isAnonymous:anonymous || false,
   });
   return membership;
 };

@@ -270,36 +270,16 @@ const GroupAdmin = () => {
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 Number(member.userId) === Number(group.creatorId) 
                                   ? 'bg-purple-100 text-purple-800' 
-                                  : member.isAnonymous 
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-green-100 text-green-800'
+                                  : 'bg-green-100 text-green-800'
                               }`}>
-                                {Number(member.userId) === Number(group.creatorId) ? 'Creator' : 
-                                 member.isAnonymous ? 'Admin' : 'Member'}
+                                {Number(member.userId) === Number(group.creatorId) ? 'Creator' : 'Member'}
+                                {member.isAnonymous && ' (Anonymous)'}
                               </span>
                             </td>
                             {isCreator && (
                               <td className="whitespace-nowrap px-4 py-3 text-sm">
                                 {Number(member.userId) !== Number(group.creatorId) && (
                                   <div className="flex gap-2">
-                                    {!member.isAnonymous ? (
-                                      <button
-                                        className="text-sky-600 hover:text-sky-800 font-medium"
-                                        onClick={() => handlePromoteMember(member.userId, member.UserModel?.username || 'Unknown')}
-                                        disabled={loading}
-                                      >
-                                        Promote
-                                      </button>
-                                    ) : (
-                                      <button
-                                        className="text-orange-600 hover:text-orange-800 font-medium"
-                                        onClick={() => handleDemoteMember(member.userId, member.UserModel?.username || 'Unknown')}
-                                        disabled={loading}
-                                      >
-                                        Demote
-                                      </button>
-                                    )}
-                                    <span className="text-slate-300">|</span>
                                     <button
                                       className="text-red-600 hover:text-red-800 font-medium"
                                       onClick={() => handleRemoveMember(member.userId, member.UserModel?.username || 'Unknown')}
