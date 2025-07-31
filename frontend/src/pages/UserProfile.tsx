@@ -148,13 +148,13 @@ const UserProfile = () => {
                                 {errors.age && <span className="text-red-500 text-sm">{errors.age.message}</span>}
                             </div>
                             <div className="w-full flex flex-col gap-2">
-                                <Label htmlFor="nationality">Nationality</Label>
+                                <Label htmlFor="nationality">Country</Label>
                                 <select
                                     id="nationality"
                                     {...register('nationality')}
                                     defaultValue={userInformation?.nationality || ""}
                                     disabled={!formVisible}
-                                    className="w-full border-1 mt-2 h-9 rounded-md px-2"
+                                    className="w-full border-1 h-9 rounded-md px-2"
                                 >
                                     <option value="" disabled>Select Nationality</option>
                                     {countryList.map((country: string) => (

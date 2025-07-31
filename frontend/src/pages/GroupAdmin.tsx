@@ -5,9 +5,12 @@ import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI } from '@
 import { toast } from 'react-toastify';
 import type { Groups, member } from '@/models/User';
 import ComplaintsSection from '@/components/own_components/ComplaintsSection';
+import VideoPlayerModal from '@/components/own_components/VideoPlayerModal';
+import FileViewerModal from '@/components/own_components/FileViewerModal';
+import ConfirmationModal from '@/components/ui/confirmation-modal';
 
 const GroupAdmin = () => {
-  const { retreiveGroupByCode, removeGroupMember, promoteGroupMember, demoteGroupMember, userId } = useData();
+  const { retreiveGroupByCode, removeGroupMember, userId } = useData();
   const [group, setGroup] = useState<Groups | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [groupName, setGroupName] = useState('');
@@ -15,10 +18,24 @@ const GroupAdmin = () => {
   const [members, setMembers] = useState<member[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [resourceSearchTerm, setResourceSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
   const [pendingResources, setPendingResources] = useState<any[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
   const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
+  
+  // Modal state for resource viewing
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
+  const [selectedVideoName, setSelectedVideoName] = useState('');
+  const [showFileModal, setShowFileModal] = useState(false);
+  const [selectedFileUrl, setSelectedFileUrl] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const [selectedFileType, setSelectedFileType] = useState('');
+  
+  // Confirmation modal state for member removal
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ id: number; name: string } | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  
   const location = useLocation();
 
   useEffect(() => {
@@ -116,6 +133,42 @@ const GroupAdmin = () => {
     }
   };
 
+  // Helper function to check if file is video
+  const isVideoFile = (fileName: string): boolean => {
+    const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'];
+    const fileExtension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+    return videoExtensions.includes(fileExtension);
+  };
+
+  // Handle video file click
+  const handleVideoClick = (resource: any) => {
+    const videoUrl = `http://localhost:3000/${resource.filePath}`;
+    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    setSelectedVideoUrl(videoUrl);
+    setSelectedVideoName(fileName);
+    setShowVideoModal(true);
+  };
+
+  // Handle non-video file click
+  const handleFileClick = (resource: any) => {
+    const fileUrl = `http://localhost:3000/${resource.filePath}`;
+    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    setSelectedFileUrl(fileUrl);
+    setSelectedFileName(fileName);
+    setSelectedFileType(resource.fileType || 'unknown');
+    setShowFileModal(true);
+  };
+
+  // Handle resource view - determines if video or file
+  const handleViewResource = (resource: any) => {
+    const fileName = resource.filePath || resource.fileName || '';
+    if (isVideoFile(fileName)) {
+      handleVideoClick(resource);
+    } else {
+      handleFileClick(resource);
+    }
+  };
+
   const handleEdit = () => setEditMode(true);
   const handleSave = async () => {
     setEditMode(false);
@@ -123,79 +176,40 @@ const GroupAdmin = () => {
   };
 
   const handleRemoveMember = async (memberId: number, memberName: string) => {
-    if (!group?.groupCode) return;
+    // Set up the confirmation modal data
+    setMemberToRemove({ id: memberId, name: memberName });
+    setShowRemoveConfirmation(true);
+  };
+
+  // Handler for confirming member removal
+  const handleConfirmRemoveMember = async () => {
+    if (!group?.groupCode || !memberToRemove) return;
     
-    if (confirm(`Are you sure you want to remove ${memberName} from the group?`)) {
-      setLoading(true);
-      try {
-        const result = await removeGroupMember(group.groupCode, memberId);
-        if (result.success) {
-          setMembers(prev => prev.filter(member => member.userId !== memberId));
-          alert(result.message);
-        } else {
-          alert(result.message);
-        }
-      } catch (error) {
-        alert('Failed to remove member');
-      } finally {
-        setLoading(false);
+    setIsRemoving(true);
+    try {
+      const result = await removeGroupMember(group.groupCode, memberToRemove.id);
+      if (result.success) {
+        setMembers(prev => prev.filter(member => member.userId !== memberToRemove.id));
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
       }
+    } catch (error) {
+      toast.error('Failed to remove member');
+    } finally {
+      setIsRemoving(false);
+      setShowRemoveConfirmation(false);
+      setMemberToRemove(null);
     }
   };
 
-  const handlePromoteMember = async (memberId: number, memberName: string) => {
-    if (!group?.groupCode) return;
-    
-    if (confirm(`Are you sure you want to promote ${memberName} to admin?`)) {
-      setLoading(true);
-      try {
-        const result = await promoteGroupMember(group.groupCode, memberId);
-        if (result.success) {
-          alert(result.message);
-          // Refresh the group data
-          if (group.groupCode) {
-            const updatedGroup = await retreiveGroupByCode(group.groupCode);
-            if (updatedGroup) {
-              setMembers(updatedGroup.members || []);
-            }
-          }
-        } else {
-          alert(result.message);
-        }
-      } catch (error) {
-        alert('Failed to promote member');
-      } finally {
-        setLoading(false);
-      }
-    }
+  // Handler for canceling member removal
+  const handleCancelRemoveMember = () => {
+    setShowRemoveConfirmation(false);
+    setMemberToRemove(null);
   };
 
-  const handleDemoteMember = async (memberId: number, memberName: string) => {
-    if (!group?.groupCode) return;
-    
-    if (confirm(`Are you sure you want to demote ${memberName} from admin?`)) {
-      setLoading(true);
-      try {
-        const result = await demoteGroupMember(group.groupCode, memberId);
-        if (result.success) {
-          alert(result.message);
-          // Refresh the group data
-          if (group.groupCode) {
-            const updatedGroup = await retreiveGroupByCode(group.groupCode);
-            if (updatedGroup) {
-              setMembers(updatedGroup.members || []);
-            }
-          }
-        } else {
-          alert(result.message);
-        }
-      } catch (error) {
-        alert('Failed to demote member');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
+ 
 
   const filteredMembers = members.filter(member => {
     if (!searchTerm.trim()) return true; // Show all members if search term is empty
@@ -354,7 +368,7 @@ const GroupAdmin = () => {
                                       <button
                                         className="text-red-600 hover:text-red-800 font-medium text-xs sm:text-sm px-2 py-1 rounded hover:bg-red-50"
                                         onClick={() => handleRemoveMember(member.userId, member.UserModel?.username || 'Unknown')}
-                                        disabled={loading}
+                                        disabled={isRemoving}
                                       >
                                         Remove
                                       </button>
@@ -477,6 +491,7 @@ const GroupAdmin = () => {
                                     <button 
                                       className="p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       title="View Resource"
+                                      onClick={() => handleViewResource(resource)}
                                     >
                                       <span className="material-icons-outlined text-lg">visibility</span>
                                     </button>
@@ -562,6 +577,7 @@ const GroupAdmin = () => {
                                       <button 
                                         className="p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         title="View Resource"
+                                        onClick={() => handleViewResource(resource)}
                                       >
                                         <span className="material-icons-outlined text-lg">visibility</span>
                                       </button>
@@ -612,6 +628,36 @@ const GroupAdmin = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoUrl={selectedVideoUrl}
+        fileName={selectedVideoName}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewerModal
+        isOpen={showFileModal}
+        onClose={() => setShowFileModal(false)}
+        fileUrl={selectedFileUrl}
+        fileName={selectedFileName}
+        fileType={selectedFileType}
+      />
+
+      {/* Member Removal Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showRemoveConfirmation}
+        title="Remove Member"
+        message={`Are you sure you want to remove ${memberToRemove?.name || 'this member'} from the group? This action cannot be undone.`}
+        confirmText="Yes, Remove"
+        cancelText="Cancel"
+        onConfirm={handleConfirmRemoveMember}
+        onCancel={handleCancelRemoveMember}
+        isLoading={isRemoving}
+        variant="danger"
+      />
     </div>
   );
 };

@@ -478,6 +478,15 @@ export const getGroupReportsAPI = async (groupCode: string, status?: string) => 
     }
 }
 
+export const updateReportStatusAPI = async (reportId: number, status: string, comment?: string) => {
+    try {
+        const response = await apiClient.patch(`/reports/reports/${reportId}/status`, { status, adminNotes: comment });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
 // Edit Group Syllabus API
 export const editGroupSyllabusAPI = async (groupCode: string, syllabusData: any) => {
     try {
