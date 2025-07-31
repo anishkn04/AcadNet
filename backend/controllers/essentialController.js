@@ -8,7 +8,7 @@ export const userInfo = async (req, res) => {
     jsonRes(res, 200, true, data);
   } catch (err) {
     console.log(err.message);
-    jsonRes(res, err.code, false, err.message);
+    jsonRes(res, err.code || 400, false, err.message);
   }
 };
 
@@ -30,6 +30,6 @@ export const userProfile = async (req, res) => {
     await userEdit(updates, id)
     jsonRes(res,200,true,'successful')
   } catch (err) {
-    jsonRes(res, err.code, false, err.message)
+    jsonRes(res, err.code || 500, false, err.message)
   }
 }
