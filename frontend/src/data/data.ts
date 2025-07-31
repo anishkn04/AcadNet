@@ -83,12 +83,12 @@ export const teamData = [
   },
   {
     name: "Anish Kumar Neupane",
-    role: "Support Backend Developer",
+    role: "Backend Developer",
     image: "anish.jpg",
   },
   {
     name: "Rishav Chapagain",
-    role: "Lead Backend Developer",
+    role: "Backend Developer",
     image: "rishav.png",
   },
 ];
