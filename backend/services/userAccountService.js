@@ -12,7 +12,7 @@ import ReplyLike from '../models/replyLike.model.js';
 import sequelize from '../config/database.js';
 import fs from 'fs';
 import path from 'path';
-import { throwWithCode } from '../utils/errorthrow.js';
+import throwWithCode from '../utils/errorthrow.js';
 import { Op } from 'sequelize';
 
 
@@ -54,8 +54,8 @@ export const deleteUserAccount = async (userId) => {
         await Membership.destroy({ where: { userId: userId }, transaction });
 
         // Delete user's forum threads and replies
-        await Reply.destroy({ where: { userId: userId }, transaction });
-        await Thread.destroy({ where: { userId: userId }, transaction });
+        await Reply.destroy({ where: { authorId: userId }, transaction });
+        await Thread.destroy({ where: { authorId: userId }, transaction });
 
         // Delete user's reports
         await UserReport.destroy({ where: { [Op.or]: [{ reporterId: userId }, { reportedUserId: userId }] }, transaction });

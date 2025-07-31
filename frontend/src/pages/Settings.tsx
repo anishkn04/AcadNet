@@ -1,15 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Shield, User, Bell, Key, Users } from "lucide-react";
+import { Shield, User, Bell, Key, Users, Trash2 } from "lucide-react";
 import JoinByCodeDialog from '@/components/own_components/JoinByCodeDialog';
+import DeleteAccountDialog from '@/components/ui/delete-account-dialog';
+import { useAuth } from '@/hooks/userContext';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { deleteAccount } = useAuth();
   const [showJoinByCodeDialog, setShowJoinByCodeDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handlePasswordReset = () => {
     navigate('/forgot');
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const success = await deleteAccount();
+      if (success) {
+        // Redirect to home page after successful deletion
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      console.error('Delete account error:', error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   return (
@@ -137,11 +158,45 @@ const Settings = () => {
             </div>
           </div>
         </section>
+
+        {/* Danger Zone */}
+        <section>
+          <h3 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Danger Zone</h3>
+          <div className="bg-white shadow rounded-xl border border-red-200 p-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 hover:bg-red-50 rounded-lg transition-colors border border-red-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Trash2 className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-red-900 font-medium">Delete Account</h4>
+                    <p className="text-red-600 text-sm">Permanently delete your account and all associated data</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowDeleteDialog(true)}
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete Account
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <JoinByCodeDialog 
         isOpen={showJoinByCodeDialog} 
         onClose={() => setShowJoinByCodeDialog(false)} 
+      />
+      
+      <DeleteAccountDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteAccount}
+        isDeleting={isDeleting}
       />
     </div>
   );
