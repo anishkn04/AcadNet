@@ -321,9 +321,53 @@
 
 ---
 
+## Password Reset API
+
+### POST /api/v1/auth/password-reset
+- **Description:** Initiate password reset process by sending OTP to user's email.
+- **Auth:** Not required
+- **Body:**
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+- **Response:**
+  - 200 OK: OTP sent to email
+  - 400/404: Email not found or invalid
+
+### POST /api/v1/auth/password-verify
+- **Description:** Verify OTP received via email for password reset.
+- **Auth:** Not required (uses cookies from previous step)
+- **Body:**
+  ```json
+  {
+    "otp": "123456"
+  }
+  ```
+- **Response:**
+  - 200 OK: OTP verified, proceed to change password
+  - 400/401: Invalid or expired OTP
+
+### POST /api/v1/auth/change-password
+- **Description:** Change password after OTP verification.
+- **Auth:** Not required (uses cookies from verification step)
+- **Body:**
+  ```json
+  {
+    "newPassword": "NewSecurePassword123!"
+  }
+  ```
+- **Response:**
+  - 200 OK: Password changed successfully
+  - 400: Invalid password format or missing OTP verification
+
+---
+
 ## Notes
 - All endpoints require authentication and CSRF protection.
 - Only group-related endpoints and models are documented here.
 - For file uploads, use the `additionalResources` field as an array in multipart form.
 - Syllabus must be sent as a JSON string in the request body.
 - Group Admin permissions: Group creators and users with 'admin' role can access admin endpoints.
+- Password reset process: Send email → Verify OTP → Change password (uses temporary cookies for session management).
