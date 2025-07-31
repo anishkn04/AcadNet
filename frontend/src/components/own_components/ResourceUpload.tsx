@@ -90,7 +90,7 @@ export const ResourceUpload: React.FC<ResourceUploadProps> = ({
       );
 
       if (status === 201 && data.success) {
-        toast.success('Resources uploaded successfully!');
+        toast.info('Your uploads will be reviewed by group admin');
         setSelectedFiles([]);
         setSelectedTopicId(undefined);
         setSelectedSubTopicId(undefined);

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '@/hooks/userInfoContext';
+import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI } from '@/services/UserServices';
+import { toast } from 'react-toastify';
 import type { Groups, member } from '@/models/User';
 
 const GroupAdmin = () => {
@@ -13,6 +15,9 @@ const GroupAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [resourceSearchTerm, setResourceSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingResources, setPendingResources] = useState<any[]>([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
   const location = useLocation();
 
   useEffect(() => {
@@ -47,6 +52,68 @@ const GroupAdmin = () => {
     };
     fetchGroup();
   }, [location.search, retreiveGroupByCode]);
+
+  // Fetch pending resources
+  useEffect(() => {
+    const fetchPendingResources = async () => {
+      const params = new URLSearchParams(location.search);
+      const groupCode = params.get('code');
+      
+      if (groupCode) {
+        setLoadingPending(true);
+        try {
+          const { data } = await getPendingResourcesAPI(groupCode);
+          if (data.success) {
+            const pendingResourcesData = data.message?.pendingResources || data.pendingResources || [];
+            setPendingResources(pendingResourcesData);
+          }
+        } catch (error) {
+          console.error('Error fetching pending resources:', error);
+          toast.error('Failed to fetch pending resources');
+        } finally {
+          setLoadingPending(false);
+        }
+      }
+    };
+
+    fetchPendingResources();
+  }, [location.search]);
+
+  const handleApproveResource = async (resourceId: number, fileName: string) => {
+    const params = new URLSearchParams(location.search);
+    const groupCode = params.get('code');
+    
+    if (!groupCode) return;
+    
+    try {
+      const { data } = await approveResourceAPI(groupCode, resourceId);
+      if (data.success) {
+        toast.success(`Resource "${fileName}" approved successfully`);
+        setPendingResources(prev => prev.filter(r => r.id !== resourceId));
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to approve resource');
+    }
+  };
+
+  const handleRejectResource = async (resourceId: number, fileName: string) => {
+    const params = new URLSearchParams(location.search);
+    const groupCode = params.get('code');
+    
+    if (!groupCode) return;
+    
+    const reason = prompt('Please provide a reason for rejection (optional):');
+    
+    try {
+      const { data } = await rejectResourceAPI(groupCode, resourceId, reason || undefined);
+      if (data.success) {
+        toast.success(`Resource "${fileName}" rejected successfully`);
+        setPendingResources(prev => prev.filter(r => r.id !== resourceId));
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to reject resource');
+    }
+  };
 
   const handleEdit = () => setEditMode(true);
   const handleSave = async () => {
@@ -304,7 +371,37 @@ const GroupAdmin = () => {
 
               {/* Resources Section */}
               <section>
-                <h3 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Resource Reports</h3>
+                <h3 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight mb-4">Resource Management</h3>
+                
+                {/* Tab Navigation */}
+                <div className="mb-4">
+                  <div className="border-b border-slate-200">
+                    <nav className="-mb-px flex space-x-8">
+                      <button
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                          activeTab === 'approved'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                        }`}
+                        onClick={() => setActiveTab('approved')}
+                      >
+                        Approved Resources ({group?.AdditionalResources?.length || 0})
+                      </button>
+                      <button
+                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                          activeTab === 'pending'
+                            ? 'border-orange-500 text-orange-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                        }`}
+                        onClick={() => setActiveTab('pending')}
+                      >
+                        Pending Approval ({pendingResources.length})
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+
+                {/* Search Bar */}
                 <div className="mb-4">
                   <label className="flex flex-col w-full">
                     <div className="flex w-full items-stretch rounded-lg shadow-sm border border-slate-300">
@@ -321,6 +418,7 @@ const GroupAdmin = () => {
                   </label>
                 </div>
                 
+                {/* Resources Table */}
                 <div className="@container">
                   <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
                     <table className="w-full">
@@ -328,61 +426,133 @@ const GroupAdmin = () => {
                         <tr>
                           <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Resource Name</th>
                           <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Type</th>
+                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded By</th>
                           <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded Date</th>
                           <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
                           <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
-                        {filteredResources.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
-                              {resourceSearchTerm ? 'No resources found matching your search.' : 'No resources uploaded yet.'}
-                            </td>
-                          </tr>
-                        ) : (
-                          filteredResources.map((resource, index) => (
-                            <tr key={resource.id || index}>
-                              <td className="px-4 py-3 text-slate-800 text-sm">
-                                {resource.filePath?.split('/').pop() || `Resource ${index + 1}`}
-                              </td>
-                              <td className="px-4 py-3 text-slate-500 text-sm">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  {resource.fileType || 'Unknown'}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 text-slate-500 text-sm">
-                                {new Date().toLocaleDateString()}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Approved
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 space-x-1">
-                                <button 
-                                  className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  title="View Resource"
-                                >
-                                  <span className="material-icons-outlined text-lg">visibility</span>
-                                </button>
-                                {isCreator && (
-                                  <button 
-                                    className="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    title="Delete Resource"
-                                  >
-                                    <span className="material-icons-outlined text-lg">delete</span>
-                                  </button>
-                                )}
-                                <button 
-                                  className="p-1.5 text-slate-500 hover:text-orange-600 rounded-md hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                  title="Report Resource"
-                                >
-                                  <span className="material-icons-outlined text-lg">report</span>
-                                </button>
+                        {activeTab === 'approved' ? (
+                          /* Approved Resources */
+                          filteredResources.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                                {resourceSearchTerm ? 'No approved resources found matching your search.' : 'No approved resources yet.'}
                               </td>
                             </tr>
-                          ))
+                          ) : (
+                            filteredResources.map((resource, index) => (
+                              <tr key={resource.id || index}>
+                                <td className="px-4 py-3 text-slate-800 text-sm">
+                                  {resource.filePath?.split('/').pop() || `Resource ${index + 1}`}
+                                </td>
+                                <td className="px-4 py-3 text-slate-500 text-sm">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {resource.fileType || 'Unknown'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-slate-500 text-sm">
+                                  Uploader
+                                </td>
+                                <td className="px-4 py-3 text-slate-500 text-sm">
+                                  {new Date(resource.created_at || new Date()).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Approved
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 space-x-1">
+                                  <button 
+                                    className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    title="View Resource"
+                                  >
+                                    <span className="material-icons-outlined text-lg">visibility</span>
+                                  </button>
+                                  {isCreator && (
+                                    <button 
+                                      className="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                      title="Delete Resource"
+                                    >
+                                      <span className="material-icons-outlined text-lg">delete</span>
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )
+                        ) : (
+                          /* Pending Resources */
+                          loadingPending ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                                Loading pending resources...
+                              </td>
+                            </tr>
+                          ) : pendingResources.filter(resource => {
+                            const resourceName = resource.fileName || '';
+                            return resourceName.toLowerCase().includes(resourceSearchTerm.toLowerCase()) ||
+                                   resource.fileType?.toLowerCase().includes(resourceSearchTerm.toLowerCase());
+                          }).length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                                {resourceSearchTerm ? 'No pending resources found matching your search.' : 'No pending resources for approval.'}
+                              </td>
+                            </tr>
+                          ) : (
+                            pendingResources
+                              .filter(resource => {
+                                const resourceName = resource.fileName || '';
+                                return resourceName.toLowerCase().includes(resourceSearchTerm.toLowerCase()) ||
+                                       resource.fileType?.toLowerCase().includes(resourceSearchTerm.toLowerCase());
+                              })
+                              .map((resource, index) => (
+                                <tr key={resource.id || index}>
+                                  <td className="px-4 py-3 text-slate-800 text-sm">
+                                    {resource.fileName || `Resource ${index + 1}`}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-500 text-sm">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                      {resource.fileType || 'Unknown'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-500 text-sm">
+                                    {resource.uploader?.username || 'Unknown'}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-500 text-sm">
+                                    {new Date(resource.uploadedAt).toLocaleDateString()}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                      Pending
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 space-x-1">
+                                    <button 
+                                      className="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                      title="Approve Resource"
+                                      onClick={() => handleApproveResource(resource.id, resource.fileName)}
+                                    >
+                                      <span className="material-icons-outlined text-lg">check_circle</span>
+                                    </button>
+                                    <button 
+                                      className="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                      title="Reject Resource"
+                                      onClick={() => handleRejectResource(resource.id, resource.fileName)}
+                                    >
+                                      <span className="material-icons-outlined text-lg">cancel</span>
+                                    </button>
+                                    <button 
+                                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      title="View Resource"
+                                    >
+                                      <span className="material-icons-outlined text-lg">visibility</span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                          )
                         )}
                       </tbody>
                     </table>

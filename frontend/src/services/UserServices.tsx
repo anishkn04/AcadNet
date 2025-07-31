@@ -397,3 +397,33 @@ export const dislikeReplyAPI = async (replyId: number) => {
         throw error;
     }
 }
+
+// Pending Resources APIs
+export const getPendingResourcesAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.get(`/group/${groupCode}/resources/pending`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const approveResourceAPI = async (groupCode: string, resourceId: number) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/resources/${resourceId}/approve`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const rejectResourceAPI = async (groupCode: string, resourceId: number, reason?: string) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/resources/${resourceId}/reject`, {
+            reason: reason || 'No reason provided'
+        });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
