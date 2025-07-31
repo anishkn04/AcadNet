@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup, getGroupReports } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -331,7 +331,7 @@ export const reportUserInGroup = async (req, res) => {
       return jsonRes(res, 400, false, "Invalid reason provided.");
     }
 
-    const report = await reportUserInGroup(
+    const report = await reportUserInGroupService(
       reporterId,
       parseInt(reportedUserId),
       groupCode,
@@ -362,5 +362,51 @@ export const getGroupReportsController = async (req, res) => {
     });
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to retrieve reports.");
+  }
+};
+
+// Get pending resources for admin approval
+export const getPendingResourcesController = async (req, res) => {
+  try {
+    const adminUserId = req.id;
+    const { groupCode } = req.params;
+
+    const result = await getPendingResources(adminUserId, groupCode);
+
+    jsonRes(res, 200, true, {
+      message: "Pending resources retrieved successfully.",
+      ...result
+    });
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to retrieve pending resources.");
+  }
+};
+
+// Approve a resource
+export const approveResourceController = async (req, res) => {
+  try {
+    const adminUserId = req.id;
+    const { groupCode, resourceId } = req.params;
+
+    const result = await approveResource(adminUserId, parseInt(resourceId), groupCode);
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to approve resource.");
+  }
+};
+
+// Reject a resource
+export const rejectResourceController = async (req, res) => {
+  try {
+    const adminUserId = req.id;
+    const { groupCode, resourceId } = req.params;
+    const { reason } = req.body;
+
+    const result = await rejectResource(adminUserId, parseInt(resourceId), groupCode, reason);
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to reject resource.");
   }
 };

@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -75,6 +75,31 @@ router.get(
   csrfMiddleware,
   addUser,
   getGroupReportsController
+);
+
+// Resource approval routes
+router.get(
+  "/:groupCode/resources/pending",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  getPendingResourcesController
+);
+
+router.post(
+  "/:groupCode/resources/:resourceId/approve",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  approveResourceController
+);
+
+router.post(
+  "/:groupCode/resources/:resourceId/reject",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  rejectResourceController
 );
 
 export default router

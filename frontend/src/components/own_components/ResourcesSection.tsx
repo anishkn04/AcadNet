@@ -18,10 +18,13 @@ import {
   faFileVideo,
   faFileAudio,
   faFileText,
-  faRefresh
+  faRefresh,
+  faPlay
 } from '@fortawesome/free-solid-svg-icons';
 import { LikeDislikeButton } from './LikeDislikeButton';
 import ResourceUpload from './ResourceUpload';
+import VideoPlayerModal from './VideoPlayerModal';
+import FileViewerModal from './FileViewerModal';
 import { getGroupResourcesAPI } from '@/services/UserServices';
 import type { Resource, topics } from '@/models/User';
 import { toast } from 'react-toastify';
@@ -47,6 +50,17 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   const [filterFileType, setFilterFileType] = useState<string>('all');
   const [filterTopic, setFilterTopic] = useState<string>('all');
   const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({});
+  
+  // Video player modal state
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
+  const [selectedVideoName, setSelectedVideoName] = useState('');
+
+  // File viewer modal state
+  const [showFileModal, setShowFileModal] = useState(false);
+  const [selectedFileUrl, setSelectedFileUrl] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const [selectedFileType, setSelectedFileType] = useState('');
 
   // Helper function to sort resources by creation date (newest first)
   const sortResourcesByDate = (resources: Resource[]) => {
@@ -65,6 +79,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     try {
       const { data, status } = await getGroupResourcesAPI(groupCode);
       if (status === 200 && data.success) {
+        console.log("raw data:",data)
         const responseData = data.message || data.data || {};
         // Map backend response to frontend expected format
         const resourcesData = responseData.resources || [];
@@ -82,7 +97,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           // For backward compatibility
           fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File'
         }));
-        
+        console.log(mappedResources)
         // Sort resources to ensure consistent ordering
         const sortedResources = sortResourcesByDate(mappedResources);
         setResources(sortedResources);
@@ -146,6 +161,18 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   // Get file type icon
   const getFileTypeIcon = (fileType: string) => {
     const type = fileType?.toLowerCase();
+    
+    // Handle mimetype format (e.g., 'video/mp4', 'image/jpeg')
+    if (type?.startsWith('video/')) return faFileVideo;
+    if (type?.startsWith('audio/')) return faFileAudio;
+    if (type?.startsWith('image/')) return faImage;
+    if (type?.includes('pdf')) return faFilePdf;
+    if (type?.includes('word') || type?.includes('document')) return faFileWord;
+    if (type?.includes('sheet') || type?.includes('excel')) return faFileExcel;
+    if (type?.includes('presentation') || type?.includes('powerpoint')) return faFilePowerpoint;
+    if (type?.includes('text/plain')) return faFileText;
+    
+    // Handle processed file type format (e.g., 'video', 'pdf')
     switch (type) {
       case 'pdf': return faFilePdf;
       case 'doc':
@@ -218,6 +245,50 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     const topic = topics.find(t => parseInt(t.id) === topicId);
     const subtopic = topic?.subTopics?.find(st => parseInt(st.id) === subTopicId);
     return subtopic?.title || `Subtopic ${subTopicId}`;
+  };
+
+  // Check if file is a video
+  const isVideoFile = (fileType: string) => {
+    if (!fileType) return false;
+    
+    const videoTypes = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'video', 'wmv', 'flv', 'm4v', 'ogv', '3gp'];
+    const lowerFileType = fileType?.toLowerCase();
+    
+    // Check for processed file type (like 'video') or file extensions (like 'mp4')
+    if (videoTypes.includes(lowerFileType)) {
+      return true;
+    }
+    
+    // Check for mimetype format (like 'video/mp4')
+    if (lowerFileType?.startsWith('video/')) {
+      return true;
+    }
+    
+    // Check if the file type contains video-related keywords
+    if (lowerFileType?.includes('video')) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Handle video file click
+  const handleVideoClick = (resource: Resource) => {
+    const videoUrl = `http://localhost:3000/${resource.filePath}`;
+    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    setSelectedVideoUrl(videoUrl);
+    setSelectedVideoName(fileName);
+    setShowVideoModal(true);
+  };
+
+  // Handle non-video file click
+  const handleFileClick = (resource: Resource) => {
+    const fileUrl = `http://localhost:3000/${resource.filePath}`;
+    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    setSelectedFileUrl(fileUrl);
+    setSelectedFileName(fileName);
+    setSelectedFileType(resource.fileType || 'unknown');
+    setShowFileModal(true);
   };
 
   // Initial load and handle refreshes
@@ -336,6 +407,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
               const fileName = resource.filePath.split('/').pop() || resource.filePath;
               const fileType = resource.fileType || 'file';
               
+              // Additional check: extract extension from filename if fileType is not helpful
+              const fileExtension = fileName.split('.').pop()?.toLowerCase();
+              const isVideo = isVideoFile(fileType) || (fileExtension && isVideoFile(fileExtension));
+              
               return (
                 <div 
                   key={resource.id || index} 
@@ -353,14 +428,9 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                     {/* File Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <a
-                          href={`http://localhost:3000/${resource.filePath}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium hover:underline text-blue-600 truncate"
-                        >
+                        <span className="font-medium text-gray-800 truncate cursor-default">
                           {fileName}
-                        </a>
+                        </span>
                         <span className="px-2 py-1 rounded text-xs font-mono bg-white/50">
                           {fileType.toUpperCase()}
                         </span>
@@ -381,22 +451,27 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                       {/* Actions and Stats */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="h-7 px-2 text-xs"
-                          >
-                            <a
-                              href={`http://localhost:3000/${resource.filePath}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1"
+                          {isVideo ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleVideoClick(resource)}
+                              className="h-7 px-2 text-xs"
+                            >
+                              <FontAwesomeIcon icon={faPlay} className="mr-1" />
+                              Play
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleFileClick(resource)}
+                              className="h-7 px-2 text-xs"
                             >
                               <FontAwesomeIcon icon={faEye} />
                               View
-                            </a>
-                          </Button>
+                            </Button>
+                          )}
                           
                           {/* <Button
                             variant="outline"
@@ -463,6 +538,23 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         onUploadSuccess={handleUploadSuccess}
         onClose={() => setShowUpload(false)}
         open={showUpload}
+      />
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoUrl={selectedVideoUrl}
+        fileName={selectedVideoName}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewerModal
+        isOpen={showFileModal}
+        onClose={() => setShowFileModal(false)}
+        fileUrl={selectedFileUrl}
+        fileName={selectedFileName}
+        fileType={selectedFileType}
       />
     </Card>
   );
