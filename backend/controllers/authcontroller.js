@@ -14,6 +14,7 @@ import {
   changePasswordService,
   terminateUser
 } from "../services/authservices.js";
+import { deleteUserAccount } from "../services/userAccountService.js";
 import UserModel from "../models/user.model.js";
 import { randomBytes } from "crypto";
 import path from "path";
@@ -373,16 +374,18 @@ export const deleteUser = async (req, res) => {
   try {
     const userid = req.id;
     
-    await terminateUser(userid)
+    // Use comprehensive deletion that removes all user data
+    const result = await deleteUserAccount(userid);
+    
     // Clear cookies on successful deletion
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     res.clearCookie("csrfToken");
 
-    return jsonRes(res, 200, true, "User deleted successfully");
+    return jsonRes(res, 200, true, result.message || "Account and all associated data deleted successfully");
   } catch (err) {
     console.log(err);
-    return jsonRes(res, err.code || 500, false, err.message || "Failed to delete user");
+    return jsonRes(res, err.code || 500, false, err.message || "Failed to delete user account");
   }
 };
 
