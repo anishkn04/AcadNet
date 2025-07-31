@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '@/hooks/userInfoContext';
-import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI, editGroupSyllabusAPI } from '@/services/UserServices';
+import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI, editGroupSyllabusAPI, deleteApprovedResourceAPI } from '@/services/UserServices';
 import { toast } from 'react-toastify';
 import type { Groups, member, topics, subTopics } from '@/models/User';
 import ComplaintsSection from '@/components/own_components/ComplaintsSection';
@@ -42,6 +42,11 @@ const GroupAdmin = () => {
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<{ id: number; name: string } | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  
+  // Confirmation modal state for resource deletion
+  const [showDeleteResourceConfirmation, setShowDeleteResourceConfirmation] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [isDeletingResource, setIsDeletingResource] = useState(false);
   
   const location = useLocation();
 
@@ -216,10 +221,70 @@ const GroupAdmin = () => {
     setMemberToRemove(null);
   };
 
+  // Resource deletion handlers
+  const handleDeleteResource = async (resourceId: number, resourceName: string) => {
+    // Set up the confirmation modal data
+    setResourceToDelete({ id: resourceId, name: resourceName });
+    setShowDeleteResourceConfirmation(true);
+  };
+
+  // Handler for confirming resource deletion
+  const handleConfirmDeleteResource = async () => {
+    if (!group?.groupCode || !resourceToDelete) return;
+    
+    setIsDeletingResource(true);
+    try {
+      const { data } = await deleteApprovedResourceAPI(group.groupCode, resourceToDelete.id);
+      if (data.success) {
+        // Remove the resource from the local state
+        setGroup(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            AdditionalResources: prev.AdditionalResources?.filter(resource => resource.id !== resourceToDelete.id) || []
+          };
+        });
+        toast.success(data.message || 'Resource deleted successfully');
+      } else {
+        toast.error(data.message || 'Failed to delete resource');
+      }
+    } catch (error: any) {
+      console.error('Error deleting resource:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete resource');
+    } finally {
+      setIsDeletingResource(false);
+      setShowDeleteResourceConfirmation(false);
+      setResourceToDelete(null);
+    }
+  };
+
+  // Handler for canceling resource deletion
+  const handleCancelDeleteResource = () => {
+    setShowDeleteResourceConfirmation(false);
+    setResourceToDelete(null);
+  };
+
   // Syllabus handlers
   const handleEditSyllabus = () => {
     if (group?.syllabus?.topics) {
-      setSyllabusData({ topics: group.syllabus.topics });
+      // Sort topics by created_at to maintain original order when editing
+      const sortedTopics = [...group.syllabus.topics].sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateA.getTime() - dateB.getTime();
+      });
+      
+      // Also sort subtopics within each topic
+      const topicsWithSortedSubtopics = sortedTopics.map(topic => ({
+        ...topic,
+        subTopics: topic.subTopics ? [...topic.subTopics].sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at || 0);
+          const dateB = new Date(b.created_at || 0);
+          return dateA.getTime() - dateB.getTime();
+        }) : []
+      }));
+      
+      setSyllabusData({ topics: topicsWithSortedSubtopics });
     }
     setShowSyllabusModal(true);
   };
@@ -235,7 +300,19 @@ const GroupAdmin = () => {
 
     setIsSavingSyllabus(true);
     try {
-      const result = await editGroupSyllabusAPI(groupCode, syllabusData);
+      // Add order indices to preserve the exact order from the modal
+      const syllabusWithOrder = {
+        topics: syllabusData.topics.map((topic, topicIndex) => ({
+          ...topic,
+          orderIndex: topicIndex, // Add explicit order index
+          subTopics: topic.subTopics ? topic.subTopics.map((subtopic, subTopicIndex) => ({
+            ...subtopic,
+            orderIndex: subTopicIndex // Add explicit order index for subtopics
+          })) : []
+        }))
+      };
+
+      const result = await editGroupSyllabusAPI(groupCode, syllabusWithOrder);
       if (result.data.success) {
         toast.success('Syllabus updated successfully');
         setShowSyllabusModal(false);
@@ -714,6 +791,7 @@ const GroupAdmin = () => {
                                       <button 
                                         className="p-1 sm:p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                                         title="Delete Resource"
+                                        onClick={() => handleDeleteResource(resource.id || 0, resource.fileName || resource.filePath?.split('/').pop() || 'Unknown Resource')}
                                       >
                                         <span className="material-icons-outlined text-lg">delete</span>
                                       </button>
@@ -830,10 +908,6 @@ const GroupAdmin = () => {
                     <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.AdditionalResources?.length || 0}</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium">Created Date</p>
-                    <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.createdAt}</p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
                     <p className="text-slate-600 text-sm font-medium">Privacy</p>
                     <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.isPrivate ? 'Private' : 'Public'}</p>
                   </div>
@@ -871,6 +945,19 @@ const GroupAdmin = () => {
         onConfirm={handleConfirmRemoveMember}
         onCancel={handleCancelRemoveMember}
         isLoading={isRemoving}
+        variant="danger"
+      />
+
+      {/* Resource Deletion Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteResourceConfirmation}
+        title="Delete Resource"
+        message={`Are you sure you want to delete "${resourceToDelete?.name || 'this resource'}"? This action cannot be undone and the file will be permanently removed.`}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDeleteResource}
+        onCancel={handleCancelDeleteResource}
+        isLoading={isDeletingResource}
         variant="danger"
       />
 
