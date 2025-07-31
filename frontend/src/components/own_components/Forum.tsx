@@ -643,18 +643,7 @@ const Forum = ({ groupCode }: ForumProps) => {
                             Reply
                           </Button>
                           
-                          <Button 
-                            onClick={() => {
-                              setShowThreadDialog(thread.id);
-                              setNewThreadContent(thread.content);
-                            }}
-                            variant="ghost" 
-                            size="sm"
-                            className="h-7 px-2 text-xs text-gray-500 hover:text-green-600 hover:bg-green-50"
-                          >
-                            <FontAwesomeIcon icon={faMessage} className="mr-1" />
-                            Create Thread
-                          </Button>
+                          
                           
                           <Button 
                             onClick={() => handleThreadClick(thread)}
@@ -666,8 +655,8 @@ const Forum = ({ groupCode }: ForumProps) => {
                             View ({thread.replyCount})
                           </Button>
                           
-                          {/* Report Button - Only show if not own thread */}
-                          {Number(userId) !== Number(thread.author.user_id) && (
+                          {/* Report Button - Only show if not own thread and not group creator */}
+                          {Number(userId) !== Number(thread.author.user_id) && !isCurrentUserCreator() && (
                             <Button 
                               onClick={(e) => {
                                 e.stopPropagation();

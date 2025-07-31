@@ -33,7 +33,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           iconColor: 'text-red-500',
           bgGradient: 'from-red-50 to-red-100',
           confirmButtonStyle: 'bg-red-500 hover:bg-red-600',
-          iconBg: 'bg-red-100'
+          iconBg: 'bg-red-200'
         };
       case 'warning':
         return {
@@ -63,8 +63,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md border-0 shadow-2xl overflow-hidden">
-        <div className={`flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br ${styles.bgGradient} rounded-lg`}>
+      <DialogContent className={`sm:max-w-md border-0 shadow-2xl bg-gradient-to-br ${styles.bgGradient} overflow-hidden`}>
+        <div className={`flex flex-col items-center justify-center p-6 text-center`}>
           {/* Warning Icon */}
           <div className="mb-4 relative">
             <div className={`relative ${styles.iconBg} rounded-full p-3 shadow-lg`}>
