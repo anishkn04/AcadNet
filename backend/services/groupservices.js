@@ -508,6 +508,12 @@ export const getGroupDetailsByCode = async (groupCode) => {
             model: SubTopic,
             attributes: ['id', 'title'],
             required: false
+          },
+          {
+            model: UserModel,
+            attributes: ['user_id', 'username', 'fullName'],
+            required: false,
+            as: 'uploader'
           }
         ]
       },
@@ -542,7 +548,25 @@ export const getGroupDetailsById = async (groupId) => {
         model: AdditionalResource,
         where: { status: 'approved' },
         required: false,
-        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status']
+        attributes: ['id', 'filePath', 'fileType', 'likesCount', 'dislikesCount', 'topicId', 'subTopicId', 'created_at', 'uploadedBy', 'status'],
+        include: [
+          {
+            model: Topic,
+            attributes: ['id', 'title'],
+            required: false
+          },
+          {
+            model: SubTopic,
+            attributes: ['id', 'title'],
+            required: false
+          },
+          {
+            model: UserModel,
+            attributes: ['user_id', 'username', 'fullName'],
+            required: false,
+            as: 'uploader'
+          }
+        ]
       },
       {
         model: Syllabus,
@@ -842,6 +866,12 @@ export const getGroupAdditionalResources = async (groupCode) => {
               attributes: ['id', 'title'],
               required: false,
               as: 'subTopic'
+            },
+            {
+              model: UserModel,
+              attributes: ['user_id', 'username', 'fullName'],
+              required: false,
+              as: 'uploader'
             }
           ]
         }
@@ -860,6 +890,12 @@ export const getGroupAdditionalResources = async (groupCode) => {
       likesCount: resource.likesCount,
       dislikesCount: resource.dislikesCount,
       uploadedAt: resource.created_at,
+      uploadedBy: resource.uploadedBy,
+      uploader: resource.uploader ? {
+        id: resource.uploader.user_id,
+        username: resource.uploader.username,
+        fullName: resource.uploader.fullName
+      } : null,
       topic: resource.topic ? {
         id: resource.topic.id,
         title: resource.topic.title

@@ -6,10 +6,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/Avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMessage, faEye, faReply, faLock, faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
+import { faMessage, faEye, faReply, faLock, faThumbsUp, faThumbsDown, faFlag } from '@fortawesome/free-solid-svg-icons';
 import { getGroupForumAPI, createThreadAPI, getThreadDetailsAPI, createReplyAPI, likeReplyAPI, dislikeReplyAPI, fetchGroupDetailsByIdAPI } from '@/services/UserServices';
 import type { GroupForum, Thread } from '@/models/User';
 import { useData } from '@/hooks/userInfoContext';
+import ReportUserModal from './ReportUserModal';
 
 interface ForumProps {
   groupCode: string;
@@ -38,6 +39,10 @@ const Forum = ({ groupCode }: ForumProps) => {
   // State to store group membership data for anonymous checking
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
   const [groupCreatorId, setGroupCreatorId] = useState<number | null>(null);
+  
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportedUser, setReportedUser] = useState<{ id: number; name: string } | null>(null);
 
   // Helper function to check if current user is the group creator
   const isCurrentUserCreator = (): boolean => {
@@ -347,6 +352,23 @@ const Forum = ({ groupCode }: ForumProps) => {
     }
   };
 
+  // Handler for reporting a user
+  const handleReportUser = (authorId: number, authorName: string) => {
+    // Don't allow reporting yourself
+    if (Number(userId) === Number(authorId)) {
+      return;
+    }
+    
+    setReportedUser({ id: authorId, name: authorName });
+    setShowReportModal(true);
+  };
+
+  // Handler for closing report modal
+  const handleCloseReportModal = () => {
+    setShowReportModal(false);
+    setReportedUser(null);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -643,6 +665,23 @@ const Forum = ({ groupCode }: ForumProps) => {
                             <FontAwesomeIcon icon={faEye} className="mr-1" />
                             View ({thread.replyCount})
                           </Button>
+                          
+                          {/* Report Button - Only show if not own thread */}
+                          {Number(userId) !== Number(thread.author.user_id) && (
+                            <Button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReportUser(thread.author.user_id, getDisplayName(thread.author));
+                              }}
+                              variant="ghost" 
+                              size="sm"
+                              className="h-7 px-2 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50"
+                              title="Report User"
+                            >
+                              <FontAwesomeIcon icon={faFlag} className="mr-1" />
+                              Report
+                            </Button>
+                          )}
                         </div>
                         
                         {/* Inline Reply Form */}
@@ -945,6 +984,17 @@ const Forum = ({ groupCode }: ForumProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Report User Modal */}
+      {reportedUser && (
+        <ReportUserModal
+          isOpen={showReportModal}
+          onClose={handleCloseReportModal}
+          groupCode={groupCode}
+          reportedUserId={reportedUser.id}
+          reportedUserName={reportedUser.name}
+        />
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useData } from '@/hooks/userInfoContext';
 import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI } from '@/services/UserServices';
 import { toast } from 'react-toastify';
 import type { Groups, member } from '@/models/User';
+import ComplaintsSection from '@/components/own_components/ComplaintsSection';
 
 const GroupAdmin = () => {
   const { retreiveGroupByCode, removeGroupMember, promoteGroupMember, demoteGroupMember, userId } = useData();
@@ -219,8 +220,8 @@ const GroupAdmin = () => {
 
   if (!group) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Group not found or loading...</p>
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <p className="text-gray-500 text-center">Group not found or loading...</p>
       </div>
     );
   }
@@ -228,23 +229,23 @@ const GroupAdmin = () => {
   return (
     <div className="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden" style={{ fontFamily: '"Plus Jakarta Sans", "Noto Sans", sans-serif' }}>
       <div className="layout-container flex h-full grow flex-col">
-        <div className="flex flex-1 py-5">
-          <div className="layout-content-container flex flex-col max-w-[960px] flex-1 px-8 py-6">
-            <div className="flex flex-wrap justify-between items-center gap-3 pb-6">
+        <div className="flex flex-1 py-3 sm:py-5">
+          <div className="layout-content-container flex flex-col w-full max-w-7xl mx-auto flex-1 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 sm:pb-6">
               <div className="flex flex-col gap-1">
-                <p className="text-slate-900 text-2xl font-bold leading-tight">Study Group Admin Panel</p>
+                <p className="text-slate-900 text-xl sm:text-2xl font-bold leading-tight">Study Group Admin Panel</p>
                 <p className="text-slate-500 text-sm font-normal leading-normal">Manage group settings, reports, and members.</p>
               </div>
             </div>
             
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {/* Group Settings Section */}
               <section>
-                <div className="space-y-6 max-w-xl">
+                <div className="space-y-4 sm:space-y-6 max-w-full lg:max-w-xl">
                   <div>
                     <label className="block text-slate-700 text-sm font-medium leading-normal pb-1.5" htmlFor="groupName">Group Name</label>
                     <input
-                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-sky-500/50 border border-slate-300 bg-white focus:border-sky-500 h-11 placeholder:text-slate-400 px-3.5 py-2.5 text-sm font-normal leading-normal shadow-sm"
+                      className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-sky-500/50 border border-slate-300 bg-white focus:border-sky-500 h-10 sm:h-11 placeholder:text-slate-400 px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm font-normal leading-normal shadow-sm"
                       id="groupName"
                       type="text"
                       value={groupName}
@@ -255,10 +256,10 @@ const GroupAdmin = () => {
                   <div>
                     <label className="block text-slate-700 text-sm font-medium leading-normal pb-1.5" htmlFor="groupDescription">Group Description</label>
                     <textarea
-                      className="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-sky-500/50 border border-slate-300 bg-white focus:border-sky-500 min-h-24 placeholder:text-slate-400 px-3.5 py-2.5 text-sm font-normal leading-normal shadow-sm"
+                      className="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-slate-900 focus:outline-0 focus:ring-2 focus:ring-sky-500/50 border border-slate-300 bg-white focus:border-sky-500 min-h-20 sm:min-h-24 placeholder:text-slate-400 px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm font-normal leading-normal shadow-sm"
                       id="groupDescription"
                       placeholder="Enter a brief description of the study group..."
-                      rows={4}
+                      rows={3}
                       value={groupDescription}
                       onChange={e => setGroupDescription(e.target.value)}
                       disabled={!editMode}
@@ -267,14 +268,14 @@ const GroupAdmin = () => {
                   <div className="flex justify-start">
                     {editMode ? (
                       <button
-                        className="flex items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-sky-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-sky-700 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-sky-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-sky-700 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
                         onClick={handleSave}
                       >
                         <span className="truncate">Save Changes</span>
                       </button>
                     ) : (
                       <button
-                        className="flex items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-gray-300 text-slate-800 text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-gray-400 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-gray-300 text-slate-800 text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-gray-400 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
                         onClick={handleEdit}
                       >
                         <span className="truncate">Edit</span>
@@ -286,14 +287,14 @@ const GroupAdmin = () => {
 
               {/* Members Management Section */}
               <section>
-                <div className="flex justify-between items-center pb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 pb-4">
                   <h2 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight">Members</h2>
-                  <div className="relative w-full max-w-xs">
+                  <div className="relative w-full sm:w-auto sm:max-w-xs">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                       <span className="material-icons-outlined text-slate-400 text-xl">search</span>
                     </div>
                     <input
-                      className="form-input block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm"
+                      className="form-input block w-full rounded-lg border border-slate-300 bg-white py-2 sm:py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 shadow-sm"
                       placeholder="Search by name, username, or user ID..."
                       type="search"
                       value={searchTerm}
@@ -303,69 +304,73 @@ const GroupAdmin = () => {
                   </div>
                 </div>
                 
-                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm @container">
-                  <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[40%]" scope="col">
-                          Name
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[30%]" scope="col">
-                          Role
-                        </th>
-                        {isCreator && (
-                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 w-[30%]" scope="col">
-                            Actions
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {filteredMembers.length === 0 ? (
+                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-slate-200">
+                      <thead className="bg-slate-50">
                         <tr>
-                          <td colSpan={isCreator ? 3 : 2} className="px-4 py-6 text-center text-slate-500">
-                            {searchTerm ? 'No members found matching your search.' : 'No members in this group yet.'}
-                          </td>
+                          <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" scope="col">
+                            Name
+                          </th>
+                          <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" scope="col">
+                            Role
+                          </th>
+                          {isCreator && (
+                            <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" scope="col">
+                              Actions
+                            </th>
+                          )}
                         </tr>
-                      ) : (
-                        filteredMembers.map((member) => (
-                          <tr key={member.id}>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
-                              {member.UserModel?.fullName || member.UserModel?.username || 'Unknown'}
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 bg-white">
+                        {filteredMembers.length === 0 ? (
+                          <tr>
+                            <td colSpan={isCreator ? 3 : 2} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
+                              {searchTerm ? 'No members found matching your search.' : 'No members in this group yet.'}
                             </td>
-                            <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                Number(member.userId) === Number(group.creatorId) 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                                {Number(member.userId) === Number(group.creatorId) ? 'Creator' : 'Member'}
-                                {member.isAnonymous && ' (Anonymous)'}
-                              </span>
-                            </td>
-                            {isCreator && (
-                              <td className="whitespace-nowrap px-4 py-3 text-sm">
-                                {Number(member.userId) !== Number(group.creatorId) && (
-                                  <div className="flex gap-2">
-                                    <button
-                                      className="text-red-600 hover:text-red-800 font-medium"
-                                      onClick={() => handleRemoveMember(member.userId, member.UserModel?.username || 'Unknown')}
-                                      disabled={loading}
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                )}
-                                {Number(member.userId) === Number(group.creatorId) && (
-                                  <span className="text-slate-400 text-sm">Creator</span>
-                                )}
-                              </td>
-                            )}
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          filteredMembers.map((member) => (
+                            <tr key={member.id}>
+                              <td className="px-3 sm:px-4 py-3 text-sm font-medium text-slate-800">
+                                <div className="truncate max-w-xs">
+                                  {member.UserModel?.fullName || member.UserModel?.username || 'Unknown'}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-3 text-sm text-slate-600">
+                                <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  Number(member.userId) === Number(group.creatorId) 
+                                    ? 'bg-purple-100 text-purple-800' 
+                                    : 'bg-green-100 text-green-800'
+                                }`}>
+                                  {Number(member.userId) === Number(group.creatorId) ? 'Creator' : 'Member'}
+                                  {member.isAnonymous && ' (Anonymous)'}
+                                </span>
+                              </td>
+                              {isCreator && (
+                                <td className="px-3 sm:px-4 py-3 text-sm">
+                                  {Number(member.userId) !== Number(group.creatorId) && (
+                                    <div className="flex gap-1 sm:gap-2">
+                                      <button
+                                        className="text-red-600 hover:text-red-800 font-medium text-xs sm:text-sm px-2 py-1 rounded hover:bg-red-50"
+                                        onClick={() => handleRemoveMember(member.userId, member.UserModel?.username || 'Unknown')}
+                                        disabled={loading}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  )}
+                                  {Number(member.userId) === Number(group.creatorId) && (
+                                    <span className="text-slate-400 text-xs sm:text-sm">Creator</span>
+                                  )}
+                                </td>
+                              )}
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </section>
 
@@ -376,9 +381,9 @@ const GroupAdmin = () => {
                 {/* Tab Navigation */}
                 <div className="mb-4">
                   <div className="border-b border-slate-200">
-                    <nav className="-mb-px flex space-x-8">
+                    <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
                       <button
-                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                           activeTab === 'approved'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -388,7 +393,7 @@ const GroupAdmin = () => {
                         Approved Resources ({group?.AdditionalResources?.length || 0})
                       </button>
                       <button
-                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                           activeTab === 'pending'
                             ? 'border-orange-500 text-orange-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -409,7 +414,7 @@ const GroupAdmin = () => {
                         <span className="material-icons-outlined text-xl">search</span>
                       </div>
                       <input 
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-11 placeholder:text-slate-400 px-3 text-base" 
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none bg-white h-10 sm:h-11 placeholder:text-slate-400 px-3 text-sm sm:text-base" 
                         placeholder="Search resources..." 
                         value={resourceSearchTerm}
                         onChange={e => setResourceSearchTerm(e.target.value)}
@@ -419,17 +424,17 @@ const GroupAdmin = () => {
                 </div>
                 
                 {/* Resources Table */}
-                <div className="@container">
-                  <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
-                    <table className="w-full">
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-full">
                       <thead className="bg-slate-50">
                         <tr>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Resource Name</th>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Type</th>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded By</th>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Uploaded Date</th>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Status</th>
-                          <th className="px-4 py-3.5 text-left text-slate-600 text-sm font-semibold">Actions</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold">Resource Name</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold">Type</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold hidden sm:table-cell">Uploaded By</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold hidden md:table-cell">Uploaded Date</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold">Status</th>
+                          <th className="px-3 sm:px-4 py-3 sm:py-3.5 text-left text-slate-600 text-xs sm:text-sm font-semibold">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
@@ -437,47 +442,53 @@ const GroupAdmin = () => {
                           /* Approved Resources */
                           filteredResources.length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                              <td colSpan={6} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
                                 {resourceSearchTerm ? 'No approved resources found matching your search.' : 'No approved resources yet.'}
                               </td>
                             </tr>
                           ) : (
                             filteredResources.map((resource, index) => (
                               <tr key={resource.id || index}>
-                                <td className="px-4 py-3 text-slate-800 text-sm">
-                                  {resource.filePath?.split('/').pop() || `Resource ${index + 1}`}
+                                <td className="px-3 sm:px-4 py-3 text-slate-800 text-sm">
+                                  <div className="truncate max-w-xs">
+                                    {resource.filePath?.split('/').pop() || `Resource ${index + 1}`}
+                                  </div>
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 text-sm">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm">
+                                  <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {resource.fileType || 'Unknown'}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 text-sm">
-                                  Uploader
+                                <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden sm:table-cell">
+                                  <div className="truncate max-w-xs">
+                                    {resource.uploader?.username || resource.uploader?.username || 'Unknown'}
+                                  </div>
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 text-sm">
+                                <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden md:table-cell">
                                   {new Date(resource.created_at || new Date()).toLocaleDateString()}
                                 </td>
-                                <td className="px-4 py-3">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <td className="px-3 sm:px-4 py-3">
+                                  <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     Approved
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 space-x-1">
-                                  <button 
-                                    className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    title="View Resource"
-                                  >
-                                    <span className="material-icons-outlined text-lg">visibility</span>
-                                  </button>
-                                  {isCreator && (
+                                <td className="px-3 sm:px-4 py-3">
+                                  <div className="flex space-x-1">
                                     <button 
-                                      className="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                      title="Delete Resource"
+                                      className="p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      title="View Resource"
                                     >
-                                      <span className="material-icons-outlined text-lg">delete</span>
+                                      <span className="material-icons-outlined text-lg">visibility</span>
                                     </button>
-                                  )}
+                                    {isCreator && (
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        title="Delete Resource"
+                                      >
+                                        <span className="material-icons-outlined text-lg">delete</span>
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))
@@ -486,7 +497,7 @@ const GroupAdmin = () => {
                           /* Pending Resources */
                           loadingPending ? (
                             <tr>
-                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                              <td colSpan={6} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
                                 Loading pending resources...
                               </td>
                             </tr>
@@ -496,7 +507,7 @@ const GroupAdmin = () => {
                                    resource.fileType?.toLowerCase().includes(resourceSearchTerm.toLowerCase());
                           }).length === 0 ? (
                             <tr>
-                              <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                              <td colSpan={6} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
                                 {resourceSearchTerm ? 'No pending resources found matching your search.' : 'No pending resources for approval.'}
                               </td>
                             </tr>
@@ -509,46 +520,52 @@ const GroupAdmin = () => {
                               })
                               .map((resource, index) => (
                                 <tr key={resource.id || index}>
-                                  <td className="px-4 py-3 text-slate-800 text-sm">
-                                    {resource.fileName || `Resource ${index + 1}`}
+                                  <td className="px-3 sm:px-4 py-3 text-slate-800 text-sm">
+                                    <div className="truncate max-w-xs">
+                                      {resource.fileName || `Resource ${index + 1}`}
+                                    </div>
                                   </td>
-                                  <td className="px-4 py-3 text-slate-500 text-sm">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm">
+                                    <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                       {resource.fileType || 'Unknown'}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-3 text-slate-500 text-sm">
-                                    {resource.uploader?.username || 'Unknown'}
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden sm:table-cell">
+                                    <div className="truncate max-w-xs">
+                                      {resource.uploader?.username || 'Unknown'}
+                                    </div>
                                   </td>
-                                  <td className="px-4 py-3 text-slate-500 text-sm">
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden md:table-cell">
                                     {new Date(resource.uploadedAt).toLocaleDateString()}
                                   </td>
-                                  <td className="px-4 py-3">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                  <td className="px-3 sm:px-4 py-3">
+                                    <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                       Pending
                                     </span>
                                   </td>
-                                  <td className="px-4 py-3 space-x-1">
-                                    <button 
-                                      className="p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                      title="Approve Resource"
-                                      onClick={() => handleApproveResource(resource.id, resource.fileName)}
-                                    >
-                                      <span className="material-icons-outlined text-lg">check_circle</span>
-                                    </button>
-                                    <button 
-                                      className="p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                      title="Reject Resource"
-                                      onClick={() => handleRejectResource(resource.id, resource.fileName)}
-                                    >
-                                      <span className="material-icons-outlined text-lg">cancel</span>
-                                    </button>
-                                    <button 
-                                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      title="View Resource"
-                                    >
-                                      <span className="material-icons-outlined text-lg">visibility</span>
-                                    </button>
+                                  <td className="px-3 sm:px-4 py-3">
+                                    <div className="flex space-x-1">
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        title="Approve Resource"
+                                        onClick={() => handleApproveResource(resource.id, resource.fileName)}
+                                      >
+                                        <span className="material-icons-outlined text-lg">check_circle</span>
+                                      </button>
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        title="Reject Resource"
+                                        onClick={() => handleRejectResource(resource.id, resource.fileName)}
+                                      >
+                                        <span className="material-icons-outlined text-lg">cancel</span>
+                                      </button>
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        title="View Resource"
+                                      >
+                                        <span className="material-icons-outlined text-lg">visibility</span>
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))
@@ -560,29 +577,34 @@ const GroupAdmin = () => {
                 </div>
               </section>
 
+              {/* Complaints Section */}
+              {group?.groupCode && (
+                <ComplaintsSection groupCode={group.groupCode} />
+              )}
+
               {/* Group Details Section */}
               <section>
                 <h2 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight pb-4">Group Details</h2>
                 <div className="rounded-lg border border-slate-200 bg-white shadow-sm divide-y divide-slate-200">
-                  <div className="grid grid-cols-3 gap-4 p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium col-span-1">Total Members</p>
-                    <p className="text-slate-800 text-sm font-medium col-span-2">{members.length}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
+                    <p className="text-slate-600 text-sm font-medium">Total Members</p>
+                    <p className="text-slate-800 text-sm font-medium sm:col-span-2">{members.length}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium col-span-1">Group Code</p>
-                    <p className="text-slate-800 text-sm font-medium col-span-2">{group.groupCode}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
+                    <p className="text-slate-600 text-sm font-medium">Group Code</p>
+                    <p className="text-slate-800 text-sm font-medium sm:col-span-2 break-all">{group.groupCode}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium col-span-1">Total Resources</p>
-                    <p className="text-slate-800 text-sm font-medium col-span-2">{group.AdditionalResources?.length || 0}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
+                    <p className="text-slate-600 text-sm font-medium">Total Resources</p>
+                    <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.AdditionalResources?.length || 0}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium col-span-1">Created Date</p>
-                    <p className="text-slate-800 text-sm font-medium col-span-2">{group.createdAt}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
+                    <p className="text-slate-600 text-sm font-medium">Created Date</p>
+                    <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.createdAt}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 p-4 items-center">
-                    <p className="text-slate-600 text-sm font-medium col-span-1">Privacy</p>
-                    <p className="text-slate-800 text-sm font-medium col-span-2">{group.isPrivate ? 'Private' : 'Public'}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-3 sm:p-4 items-center">
+                    <p className="text-slate-600 text-sm font-medium">Privacy</p>
+                    <p className="text-slate-800 text-sm font-medium sm:col-span-2">{group.isPrivate ? 'Private' : 'Public'}</p>
                   </div>
                 </div>
               </section>
