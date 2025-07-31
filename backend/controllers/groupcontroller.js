@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup, getGroupReports } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -297,5 +297,70 @@ export const addGroupResources = async (req, res) => {
     }
     
     jsonRes(res, err.code || 500, false, err.message || "Failed to add additional resources.");
+  }
+};
+
+// Report a user within a group
+export const reportUserInGroup = async (req, res) => {
+  try {
+    const reporterId = req.id;
+    const { groupCode, reportedUserId } = req.params;
+    const { reason, description } = req.body;
+
+    // Validate required fields
+    if (!reason) {
+      return jsonRes(res, 400, false, "Reason is required.");
+    }
+
+    if (!reportedUserId || !groupCode) {
+      return jsonRes(res, 400, false, "Reported user ID and group code are required.");
+    }
+
+    const validReasons = [
+      'inappropriate_behavior',
+      'harassment', 
+      'spam',
+      'offensive_content',
+      'violation_of_rules',
+      'fake_profile',
+      'academic_dishonesty',
+      'other'
+    ];
+
+    if (!validReasons.includes(reason)) {
+      return jsonRes(res, 400, false, "Invalid reason provided.");
+    }
+
+    const report = await reportUserInGroup(
+      reporterId,
+      parseInt(reportedUserId),
+      groupCode,
+      { reason, description }
+    );
+
+    jsonRes(res, 201, true, {
+      message: "User reported successfully.",
+      report
+    });
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to report user.");
+  }
+};
+
+// Get reports for a group (admin only)
+export const getGroupReportsController = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode } = req.params;
+    const { status } = req.query;
+
+    const reports = await getGroupReports(userId, groupCode, status);
+
+    jsonRes(res, 200, true, {
+      message: "Reports retrieved successfully.",
+      reports
+    });
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to retrieve reports.");
   }
 };
