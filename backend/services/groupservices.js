@@ -1504,15 +1504,28 @@ export const editGroupSyllabus = async (adminUserId, groupCode, updatedSyllabusD
     const syllabusId = group.syllabus.id;
 
     // Delete existing topics and subtopics
-    await SubTopic.destroy({
-      where: {
-        topicId: {
-          [Op.in]: sequelize.literal(`(SELECT id FROM topics WHERE syllabusId = ${syllabusId})`)
-        }
-      },
+    // First get all topic IDs for this syllabus
+    const topics = await Topic.findAll({
+      where: { syllabusId },
+      attributes: ['id'],
       transaction
     });
 
+    const topicIds = topics.map(topic => topic.id);
+
+    // Delete subtopics first (due to foreign key constraints)
+    if (topicIds.length > 0) {
+      await SubTopic.destroy({
+        where: {
+          topicId: {
+            [Op.in]: topicIds
+          }
+        },
+        transaction
+      });
+    }
+
+    // Then delete topics
     await Topic.destroy({
       where: { syllabusId },
       transaction
