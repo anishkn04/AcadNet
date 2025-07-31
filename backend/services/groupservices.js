@@ -1442,5 +1442,297 @@ export const rejectResource = async (adminUserId, resourceId, groupCode, reason 
   }
 };
 
+// Edit syllabus for a group (admin only)
+export const editGroupSyllabus = async (adminUserId, groupCode, updatedSyllabusData) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      include: [
+        {
+          model: Syllabus,
+          include: [
+            {
+              model: Topic,
+              include: [SubTopic]
+            }
+          ]
+        }
+      ],
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: adminUserId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    const isCreator = group.creatorId === adminUserId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to edit the syllabus.", 403);
+    }
+
+    if (!group.syllabus) {
+      throwWithCode("Group doesn't have a syllabus.", 404);
+    }
+
+    // Validate the updated syllabus data
+    if (!updatedSyllabusData.topics || !Array.isArray(updatedSyllabusData.topics) || updatedSyllabusData.topics.length === 0) {
+      throwWithCode("Syllabus must contain at least one topic.", 400);
+    }
+
+    for (const topic of updatedSyllabusData.topics) {
+      if (!topic.title) {
+        throwWithCode("Each topic must have a title.", 400);
+      }
+    }
+
+    const syllabusId = group.syllabus.id;
+
+    // Delete existing topics and subtopics
+    await SubTopic.destroy({
+      where: {
+        topicId: {
+          [Op.in]: sequelize.literal(`(SELECT id FROM topics WHERE syllabusId = ${syllabusId})`)
+        }
+      },
+      transaction
+    });
+
+    await Topic.destroy({
+      where: { syllabusId },
+      transaction
+    });
+
+    // Create new topics and subtopics
+    const createdTopics = [];
+    for (const topicData of updatedSyllabusData.topics) {
+      const newTopic = await Topic.create(
+        {
+          syllabusId: syllabusId,
+          title: topicData.title,
+          description: topicData.description || null,
+        },
+        { transaction }
+      );
+
+      const createdSubTopics = [];
+      if (topicData.subTopics && Array.isArray(topicData.subTopics)) {
+        for (const subTopicData of topicData.subTopics) {
+          const newSubTopic = await SubTopic.create(
+            {
+              topicId: newTopic.id,
+              title: subTopicData.title,
+              content: subTopicData.content || null,
+            },
+            { transaction }
+          );
+          createdSubTopics.push(newSubTopic.toJSON());
+        }
+      }
+      createdTopics.push({ ...newTopic.toJSON(), subTopics: createdSubTopics });
+    }
+
+    await transaction.commit();
+
+    return {
+      message: "Syllabus updated successfully.",
+      groupCode,
+      groupName: group.name,
+      syllabus: {
+        id: syllabusId,
+        topics: createdTopics
+      }
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
+// Delete an approved resource (admin only)
+export const deleteApprovedResource = async (adminUserId, groupCode, resourceId) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: adminUserId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    const isCreator = group.creatorId === adminUserId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to delete resources.", 403);
+    }
+
+    // Find the resource
+    const resource = await AdditionalResource.findOne({
+      where: { 
+        id: resourceId,
+        studyGroupId: group.id,
+        status: 'approved'
+      },
+      transaction
+    });
+
+    if (!resource) {
+      throwWithCode("Resource not found or not approved.", 404);
+    }
+
+    // Delete the physical file
+    if (fs.existsSync(resource.filePath)) {
+      fs.unlinkSync(resource.filePath);
+    }
+
+    // Delete the resource record
+    await resource.destroy({ transaction });
+
+    await transaction.commit();
+
+    return {
+      message: "Resource deleted successfully.",
+      resourceId: resource.id,
+      fileName: path.basename(resource.filePath)
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
+// Report a resource (changes status from approved to pending)
+export const reportResource = async (userId, groupCode, resourceId, reportData) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is a member of the group
+    const membership = await Membership.findOne({
+      where: { 
+        userId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    if (!membership) {
+      throwWithCode("You must be a member of this group to report resources.", 403);
+    }
+
+    // Find the resource
+    const resource = await AdditionalResource.findOne({
+      where: { 
+        id: resourceId,
+        studyGroupId: group.id,
+        status: 'approved'
+      },
+      transaction
+    });
+
+    if (!resource) {
+      throwWithCode("Resource not found or not approved.", 404);
+    }
+
+    // Prevent users from reporting their own resources
+    if (resource.uploadedBy === userId) {
+      throwWithCode("You cannot report your own resource.", 400);
+    }
+
+    // Import UserReport model to create resource report
+    const { UserReport } = await import("../models/index.model.js");
+
+    // Check if user has already reported this resource
+    const existingReport = await UserReport.findOne({
+      where: {
+        reporterId: userId,
+        reportedUserId: resource.uploadedBy,
+        studyGroupId: group.id,
+        reason: 'inappropriate_resource',
+        description: `Resource ID: ${resourceId}`
+      },
+      transaction
+    });
+
+    if (existingReport) {
+      throwWithCode("You have already reported this resource.", 409);
+    }
+
+    // Create a user report for the resource
+    const userReport = await UserReport.create({
+      reporterId: userId,
+      reportedUserId: resource.uploadedBy,
+      studyGroupId: group.id,
+      reason: reportData.reason || 'offensive_content',
+      description: `Resource Report - Resource ID: ${resourceId} - ${reportData.description || 'No description provided'}`
+    }, { transaction });
+
+    // Change resource status to pending
+    resource.status = 'pending';
+    await resource.save({ transaction });
+
+    await transaction.commit();
+
+    return {
+      message: "Resource reported successfully. The resource has been marked as pending review.",
+      resourceId: resource.id,
+      fileName: path.basename(resource.filePath),
+      reportId: userReport.id,
+      status: 'pending'
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
 
 

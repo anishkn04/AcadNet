@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -408,5 +408,84 @@ export const rejectResourceController = async (req, res) => {
     jsonRes(res, 200, true, result);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to reject resource.");
+  }
+};
+
+// Edit group syllabus
+export const editGroupSyllabusController = async (req, res) => {
+  try {
+    const adminUserId = req.id;
+    const { groupCode } = req.params;
+    let { syllabus } = req.body;
+
+    // Parse syllabus if it's a string
+    if (typeof syllabus === 'string') {
+      try {
+        syllabus = JSON.parse(syllabus);
+      } catch (parseError) {
+        return jsonRes(res, 400, false, "Invalid syllabus JSON format.");
+      }
+    }
+
+    // Validate syllabus structure
+    if (!syllabus || !syllabus.topics) {
+      return jsonRes(res, 400, false, "Syllabus data with topics is required.");
+    }
+
+    const result = await groupServices.editGroupSyllabus(adminUserId, groupCode, syllabus);
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to edit syllabus.");
+  }
+};
+
+// Delete approved resource
+export const deleteApprovedResourceController = async (req, res) => {
+  try {
+    const adminUserId = req.id;
+    const { groupCode, resourceId } = req.params;
+
+    const result = await groupServices.deleteApprovedResource(adminUserId, groupCode, parseInt(resourceId));
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to delete resource.");
+  }
+};
+
+// Report a resource
+export const reportResourceController = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode, resourceId } = req.params;
+    const { reason, description } = req.body;
+
+    // Validate reason if provided
+    if (reason) {
+      const validReasons = [
+        'inappropriate_behavior',
+        'harassment', 
+        'spam',
+        'offensive_content',
+        'violation_of_rules',
+        'fake_profile',
+        'academic_dishonesty',
+        'other'
+      ];
+
+      if (!validReasons.includes(reason)) {
+        return jsonRes(res, 400, false, "Invalid reason provided.");
+      }
+    }
+
+    const result = await groupServices.reportResource(userId, groupCode, parseInt(resourceId), {
+      reason: reason || 'offensive_content',
+      description: description || ''
+    });
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to report resource.");
   }
 };
