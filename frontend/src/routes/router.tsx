@@ -20,6 +20,7 @@ import MyGroup from "@/pages/MyGroup";
 import Overview from "@/pages/Overview";
 import GroupAdmin from "@/pages/GroupAdmin";
 import Settings from "@/pages/Settings";
+import SysAdmin from "@/pages/SysAdmin";
 
 export const router = createBrowserRouter([
   {
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
       {
         path: "settings",
         element: <Settings />,
+      },
+      {
+        path: "sysadmin",
+        element: <SysAdmin />,
       },
     ],
   },
