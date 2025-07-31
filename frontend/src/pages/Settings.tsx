@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Shield, User, Bell, Key } from "lucide-react";
+import { Shield, User, Bell, Key, Users } from "lucide-react";
+import JoinByCodeDialog from '@/components/own_components/JoinByCodeDialog';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const [showJoinByCodeDialog, setShowJoinByCodeDialog] = useState(false);
 
   const handlePasswordReset = () => {
     navigate('/forgot');
@@ -56,6 +59,26 @@ const Settings = () => {
             
             <div className="flex items-center justify-between">
               <div className="space-y-1">
+                <h3 className="text-sm font-medium">Join Private Groups</h3>
+                <p className="text-sm text-muted-foreground">
+                  Join private groups using their unique group codes.
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowJoinByCodeDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Join by Code
+              </Button>
+            </div>
+            
+            <Separator />
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
                 <h3 className="text-sm font-medium">Account Security</h3>
                 <p className="text-sm text-muted-foreground">
                   Additional security settings will be available soon.
@@ -95,6 +118,11 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <JoinByCodeDialog 
+        isOpen={showJoinByCodeDialog}
+        onClose={() => setShowJoinByCodeDialog(false)}
+      />
     </div>
   );
 };
