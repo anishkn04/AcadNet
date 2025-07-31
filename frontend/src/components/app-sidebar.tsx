@@ -1,3 +1,4 @@
+
 import { User, Home, Settings, Users, Shield } from "lucide-react";
 
 import {
@@ -10,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import { Link, useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
 
@@ -26,7 +28,7 @@ const items = [
     icon: User,
   },
   {
-    title: "My Group",
+    title: "My Groups",
     url: "/user/mygroup",
     icon: Users,
   },
@@ -69,7 +71,7 @@ export function AppSidebar() {
     }
     return location.pathname === url || location.pathname.startsWith(url + "/");
   };
-  
+
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
