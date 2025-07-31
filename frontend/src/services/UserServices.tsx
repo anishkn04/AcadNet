@@ -120,6 +120,15 @@ export const fetchGroupDetailsByIdAPI = async (groupCode: string | number) => {
                 dislikesCount: resource.dislikesCount || 0,
                 created_at: resource.created_at,
                 fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File',
+                uploader: resource.uploader ? {
+                    id: resource.uploader.user_id || resource.uploadedBy,
+                    username: resource.uploader.username || 'Unknown',
+                    fullName: resource.uploader.fullName || 'Unknown'
+                } : {
+                    id: resource.uploadedBy || 0,
+                    username: 'Unknown',
+                    fullName: 'Unknown'
+                },
                 linkedTo: {
                     topicId: resource.Topic?.id || resource.topic?.id || null,
                     subTopicId: resource.SubTopic?.id || resource.subTopic?.id || null
@@ -168,8 +177,29 @@ export const fetchGroupDetailsByIdDirectAPI = async (groupId: string | number) =
         // Map backend response to frontend expected structure
         const mappedData: Groups = {
             ...backendData,
-            // Map AdditionalResources (if returned as lowercase)
-            AdditionalResources: backendData.AdditionalResources || backendData.additionalResources || [],
+            // Map AdditionalResources with uploader information
+            AdditionalResources: (backendData.AdditionalResources || backendData.additionalResources || []).map((resource: any) => ({
+                id: resource.id,
+                filePath: resource.filePath,
+                fileType: resource.fileType,
+                likesCount: resource.likesCount || 0,
+                dislikesCount: resource.dislikesCount || 0,
+                created_at: resource.created_at,
+                fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File',
+                uploader: resource.uploader ? {
+                    id: resource.uploader.user_id || resource.uploadedBy,
+                    username: resource.uploader.username || 'Unknown',
+                    fullName: resource.uploader.fullName || 'Unknown'
+                } : {
+                    id: resource.uploadedBy || 0,
+                    username: 'Unknown',
+                    fullName: 'Unknown'
+                },
+                linkedTo: {
+                    topicId: resource.Topic?.id || resource.topic?.id || null,
+                    subTopicId: resource.SubTopic?.id || resource.subTopic?.id || null
+                }
+            })),
             // Map Memberships to members
             members: (backendData.Memberships || backendData.memberships || []).map((membership: any) => ({
                 id: membership.id,
@@ -422,6 +452,26 @@ export const rejectResourceAPI = async (groupCode: string, resourceId: number, r
         const response = await apiClient.post(`/group/${groupCode}/resources/${resourceId}/reject`, {
             reason: reason || 'No reason provided'
         });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// User Report APIs
+export const reportUserAPI = async (groupCode: string, reportedUserId: number, reportData: { reason: string; description?: string }) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/report/${reportedUserId}`, reportData);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getGroupReportsAPI = async (groupCode: string, status?: string) => {
+    try {
+        const params = status ? { status } : {};
+        const response = await apiClient.get(`/group/${groupCode}/reports`, { params });
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;

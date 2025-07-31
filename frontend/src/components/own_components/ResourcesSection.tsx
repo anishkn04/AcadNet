@@ -28,6 +28,7 @@ import FileViewerModal from './FileViewerModal';
 import { getGroupResourcesAPI } from '@/services/UserServices';
 import type { Resource, topics } from '@/models/User';
 import { toast } from 'react-toastify';
+import { useData } from '@/hooks/userInfoContext';
 
 interface ResourcesSectionProps {
   groupCode: string;
@@ -42,6 +43,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   canUpload = true,
   initialResources = []
 }) => {
+  const { userId } = useData();
   const [resources, setResources] = useState<Resource[]>(initialResources);
   const [filteredResources, setFilteredResources] = useState<Resource[]>(initialResources);
   const [showUpload, setShowUpload] = useState(false);
@@ -49,6 +51,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFileType, setFilterFileType] = useState<string>('all');
   const [filterTopic, setFilterTopic] = useState<string>('all');
+  const [filterUploader, setFilterUploader] = useState<string>('all');
   const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({});
   
   // Video player modal state
@@ -90,6 +93,16 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           likesCount: resource.likesCount || 0,
           dislikesCount: resource.dislikesCount || 0,
           created_at: resource.uploadedAt || resource.created_at,
+          // Add uploader information
+          uploader: resource.uploader ? {
+            id: resource.uploader.id || resource.uploadedBy,
+            username: resource.uploader.username || 'Unknown',
+            fullName: resource.uploader.fullName || 'Unknown'
+          } : {
+            id: resource.uploadedBy || 0,
+            username: 'Unknown',
+            fullName: 'Unknown'
+          },
           linkedTo: {
             topicId: resource.topic?.id || null,
             subTopicId: resource.subTopic?.id || null
@@ -139,10 +152,17 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
       );
     }
 
+    // Uploader filter - NEW
+    if (filterUploader === 'mine') {
+      filtered = filtered.filter(resource =>
+        resource.uploader?.id === userId
+      );
+    }
+
     // Apply consistent sorting to filtered results
     const sortedFiltered = sortResourcesByDate(filtered);
     setFilteredResources(sortedFiltered);
-  }, [resources, searchTerm, filterFileType, filterTopic]);
+  }, [resources, searchTerm, filterFileType, filterTopic, filterUploader, userId]);
 
   // Handle status updates from like/dislike buttons
   const handleStatusUpdate = (resourceId: number, newStatus: { likesCount: number; dislikesCount: number; userReaction: 'like' | 'dislike' | null }) => {
@@ -345,6 +365,24 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
       </CardHeader>
       
       <CardContent>
+        {/* Anonymous User Info */}
+        {!canUpload && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-amber-800">
+                  <strong>Anonymous Member:</strong> You can view, but cannot upload new ones.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Search and Filters */}
         <div className="space-y-4 mb-4">
           {/* Search */}
@@ -392,6 +430,17 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                 </SelectContent>
               </Select>
             )}
+
+            {/* NEW: My uploads filter */}
+            <Select value={filterUploader} onValueChange={setFilterUploader}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Uploads</SelectItem>
+                <SelectItem value="mine">My Uploads</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -473,21 +522,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                             </Button>
                           )}
                           
-                          {/* <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="h-7 px-2 text-xs"
-                          >
-                            <a
-                              href={`http://localhost:3000/${resource.filePath}`}
-                              download
-                              className="flex items-center gap-1"
-                            >
-                              <FontAwesomeIcon icon={faDownload} />
-                              Download
-                            </a>
-                          </Button> */}
+                          {/* Add uploader info */}
+                          <span className="text-xs text-gray-500 ml-2">
+                            Uploaded by: <span className="font-medium">{resource.uploader?.username || 'Unknown'}</span>
+                          </span>
                         </div>
 
                         {/* Like/Dislike Buttons */}
@@ -509,7 +547,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm || filterFileType !== 'all' || filterTopic !== 'all' ? (
+            {searchTerm || filterFileType !== 'all' || filterTopic !== 'all' || filterUploader !== 'all' ? (
               <div>
                 <p>No resources match your filters.</p>
                 <Button
@@ -518,6 +556,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                     setSearchTerm('');
                     setFilterFileType('all');
                     setFilterTopic('all');
+                    setFilterUploader('all');
                   }}
                   className="text-blue-500"
                 >

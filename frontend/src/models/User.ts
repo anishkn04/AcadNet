@@ -81,6 +81,11 @@ export interface Resource {
   userReaction?: 'like' | 'dislike' | null;
   created_at?: string; // Added for timestamp
   uploadedAt?: string; // Added for upload timestamp
+  uploader?: {
+    id: number;
+    username: string;
+    fullName: string;
+  };
 }
 
 // *** CRITICAL CHANGE HERE: ALIGN CREATEGROUPINTERFACE WITH GROUPS FOR SYLLABUS STRUCTURE ***
