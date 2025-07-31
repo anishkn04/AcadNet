@@ -53,8 +53,10 @@ const CreateGroupForm: React.FC = () => {
         toast.success("Study group created successfully!");
         navigate('/join', { replace: true });
       } else {
-        // If createGroup returns false, show a generic error
-        toast.error("Failed to create group. Please check your input.");
+        toast.info('Please complete your Profile details! redirecting to My Profile...')
+        setTimeout(()=>{
+          navigate('/user',{replace:true})
+        },2000)
       }
     } catch (err:any) {
       // Handle backend error response according to API documentation

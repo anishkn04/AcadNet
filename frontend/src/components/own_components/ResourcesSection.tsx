@@ -79,6 +79,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     try {
       const { data, status } = await getGroupResourcesAPI(groupCode);
       if (status === 200 && data.success) {
+        console.log("raw data:",data)
         const responseData = data.message || data.data || {};
         // Map backend response to frontend expected format
         const resourcesData = responseData.resources || [];
@@ -96,7 +97,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           // For backward compatibility
           fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File'
         }));
-        
+        console.log(mappedResources)
         // Sort resources to ensure consistent ordering
         const sortedResources = sortResourcesByDate(mappedResources);
         setResources(sortedResources);
