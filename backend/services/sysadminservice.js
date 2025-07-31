@@ -54,8 +54,7 @@ export const listAllGroupsService = async () => {
     attributes: ["id", "name", "creatorId"],
     include: [{
       model: UserModel,
-      attributes: ["username", "email"],
-      as: "creatorId"
+      attributes: ["username", "email"]
     }]
   });
   return groups.map(g => ({
