@@ -4,10 +4,11 @@ import type { Groups } from '@/models/User';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import SuccessModal from '../ui/success-modal';
 import ErrorModal from '../ui/error-modal';
+import { Search } from 'lucide-react';
 
 interface StudyGroupListProps {
   search: string;
@@ -46,7 +47,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
       }
     };
     groupList();
-  }, []);
+  }, [retreiveGroups]);
 
   // Filtering logic (adjust field names as needed)
   const filteredGroups = groups.filter((group) => {
@@ -126,43 +127,87 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
 
   return (
     <>
-      <h2 className="text-[#101518]  text-xl font-semibold leading-tight tracking-[-0.015em] px-4 ">
-        Available Groups ({filteredGroups.length}) {isRefreshing && <span className="text-sm text-gray-500 ml-2">Refreshing...</span>}
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-10">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+          Available Groups ({filteredGroups.length})
+          {isRefreshing && <span className="text-sm text-slate-500 ml-2 font-normal">Refreshing...</span>}
+        </h2>
+        <p className="text-slate-600">
+          Browse through available study groups and find the perfect match for your learning goals.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredGroups.length > 0 ? (
           filteredGroups.map((group) => {
             const isCreator = group?.creatorId === userId;
             // Check if current user is a member of this group
             const isMember = group?.members?.some(member => Number(member.userId) === Number(userId));
             
-      
-            
             return (
-              <Card key={group.id}>
-                <CardHeader>
-                  <CardTitle>
+              <Card key={group.id} className="border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-slate-900 line-clamp-1">
                     {group?.name}
                   </CardTitle>
-                  <CardDescription>
-                    {group?.description}
+                  <CardDescription className="text-slate-600 line-clamp-2 min-h-[2.5rem]">
+                    {group?.description || "No description available"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  {isCreator || isMember ? (
-                    <Button onClick={() => handleEnterGroup(group)}>Enter Group</Button>
-                  ) : (
-                    <div className='flex gap-2 flex-col sm:flex-row'>
-                      <Button onClick={() => handleViewGroup(group)}>View</Button>
-                      <Button onClick={() => handleJoinGroupClick(group)}>Join Group</Button>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded font-mono">
+                      Code: {group?.groupCode}
                     </div>
-                  )}
+                    {isCreator || isMember ? (
+                      <Button 
+                        onClick={() => handleEnterGroup(group)}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+                      >
+                        Enter Group
+                      </Button>
+                    ) : (
+                      <div className='flex gap-2 flex-col sm:flex-row'>
+                        <Button 
+                          onClick={() => handleViewGroup(group)}
+                          variant="outline"
+                          className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50"
+                        >
+                          View Details
+                        </Button>
+                        <Button 
+                          onClick={() => handleJoinGroupClick(group)}
+                          className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
+                        >
+                          Join Group
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
           })
         ) : (
-          <p className="px-4">No groups available at the moment.</p>
+          <div className="col-span-full text-center py-12">
+            <div className="text-slate-400 mb-4">
+              <Search className="h-12 w-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No groups found</h3>
+            <p className="text-slate-500 mb-4">
+              {search ? 
+                "No groups match your search criteria. Try adjusting your search terms." :
+                "No study groups are available at the moment. Be the first to create one!"
+              }
+            </p>
+            {!search && (
+              <Link to="/create">
+                <Button className="bg-slate-900 hover:bg-slate-800 text-white">
+                  Create First Group
+                </Button>
+              </Link>
+            )}
+          </div>
         )}
       </div>
 

@@ -110,3 +110,12 @@ export const verifySignupOtpAPI = async (otp: string) => {
     throw error;
   }
 };
+
+export const deleteAccountAPI = async () => {
+  try {
+    const response = await apiClient.post<any>("auth/delete-user");
+    return { data: response.data, status: response.status };
+  } catch (error) {
+    throw error;
+  }
+};

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Key, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StudyGroupList from '@/components/own_components/StudyGroupList';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import JoinByCodeDialog from '@/components/own_components/JoinByCodeDialog';
 import { Button } from '@/components/ui/button';
 
 const StudyGroups: React.FC = () => {
@@ -10,49 +10,86 @@ const StudyGroups: React.FC = () => {
   const [subject] = useState('');
   const [course] = useState('');
   const [timeSlot] = useState('');
-
-
+  const [showJoinByCodeDialog, setShowJoinByCodeDialog] = useState(false);
 
   return (
-    <div className="contain mx-auto  justify-center item-center p-10">
-      <Card className='flex flex-col md:flex-row w-full justify-start md:justify-center  md:items-center'>
-        <CardHeader className='w-full'>
-          <CardTitle className='text-3xl font-bold leading-tight'>Create a Study Group</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Link to={'/create'}>
-            <Button className='text-lg font-medium cursor-pointer'>Create</Button>
-          </Link>
-        </CardContent>
-      </Card>
-      <div className="flex flex-col sm:flex-row justify-start items-center sm:items-center gap-4 p-4 mb-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-[#101518] tracking-tight text-3xl font-bold leading-tight">Study Groups</h1>
-          <p className="text-gray-500 text-sm font-normal leading-normal">
-            Find a study group that fits your schedule and academic needs.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+                  Study Groups
+                </h1>
+                <p className="text-slate-600 max-w-2xl">
+                  Discover and join study groups that match your academic interests. 
+                  Collaborate with peers, share resources, and enhance your learning experience.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={() => setShowJoinByCodeDialog(true)}
+                  variant="outline"
+                  className="flex items-center gap-2 border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400"
+                >
+                  <Key size={16} />
+                  Join by Code
+                </Button>
+                <Link to={'/create'}>
+                  <Button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm">
+                    <Plus size={16} />
+                    Create Group
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Section */}
+        <div className="mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Search Groups
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-colors"
+                    placeholder="Search by group name, subject, or keywords..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+                <p className="mt-2 text-sm text-slate-500">
+                  Find groups that match your interests and academic goals
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Study Groups List */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <StudyGroupList
+            search={search}
+            subject={subject}
+            course={course}
+            timeSlot={timeSlot}
+          />
         </div>
       </div>
-      <div className="px-4 pb-6">
-        <label className="flex flex-col min-w-40 h-12 w-full">
-          <div className="flex w-full flex-1 items-stretch rounded-xl h-full bg-white soft-shadow">
-            <div className="text-gray-400 flex border-none items-center justify-center pl-4 rounded-l-xl border-r-0">
-              <Search size={24} />
-            </div>
-            <input
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101518] focus:outline-0 focus:ring-0 border-none bg-transparent focus:border-none h-full placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-              placeholder="Search for groups by name, subject, or keywords..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-        </label>
-      </div>
-      <StudyGroupList
-        search={search}
-        subject={subject}
-        course={course}
-        timeSlot={timeSlot}
+      
+      <JoinByCodeDialog 
+        isOpen={showJoinByCodeDialog}
+        onClose={() => setShowJoinByCodeDialog(false)}
       />
     </div>
   );

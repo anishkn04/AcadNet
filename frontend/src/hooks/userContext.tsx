@@ -10,6 +10,7 @@ import {
   sendSignupOtpAPI,
   verifySignupOtpAPI,
   refresTokenAPI,
+  deleteAccountAPI,
 } from "@/services/AuthServices";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -29,6 +30,7 @@ type UserContextType = {
   resetPasswordWithOTP: (otp: string, newPassword: string) => Promise<boolean>;
   sendSignupOtp: () => Promise<boolean>;
   verifySignupOtp: (otp: string) => Promise<boolean>;
+  deleteAccount: () => Promise<boolean>;
 };
 
 type Props = { children: React.ReactNode };
@@ -323,6 +325,37 @@ export const UserProvider = ({ children }: Props) => {
     return false;
   };
 
+  const deleteAccount = async (): Promise<boolean> => {
+    try {
+      const { data, status } = await deleteAccountAPI();
+      if (status === 200 && data.success === true) {
+        // Clear authentication state
+        setIsAuthenticated(false);
+        setIsVerified(false);
+        
+        toast.success(data.message || "Account deleted successfully");
+        return true;
+      } else {
+        toast.error(data.message || "Failed to delete account");
+        return false;
+      }
+    } catch (e) {
+      if (
+        axios.isAxiosError(e) &&
+        e.response &&
+        e.response.data &&
+        e.response.data.message
+      ) {
+        toast.error(e.response.data.message);
+      } else {
+        toast.error(
+          "Could not connect to the server or an unknown error occurred during account deletion."
+        );
+      }
+    }
+    return false;
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -336,6 +369,7 @@ export const UserProvider = ({ children }: Props) => {
         resetPasswordWithOTP,
         sendSignupOtp,
         verifySignupOtp,
+        deleteAccount,
       }}
     >
       {!isLoading && children}
