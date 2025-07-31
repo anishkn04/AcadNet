@@ -159,6 +159,26 @@
   - 400: Group code is required
   - 404: Group not found
 
+### POST /api/v1/group/join/:groupCode
+- **Description:** Join a study group using its unique group code. Useful for joining private groups.
+- **Auth:** Required
+- **CSRF:** Required
+- **Request Params:**
+  - `groupCode` (string, required): The 6-character alphanumeric group code.
+- **Request Body:**
+  ```json
+  {
+    "isAnonymous": false
+  }
+  ```
+- **Response:**
+  - 200 OK: Successfully joined group
+  - 400: Invalid group code or already a member
+  - 404: Group not found
+  - 403: Permission denied
+
+---
+
 
 ---
 

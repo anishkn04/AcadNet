@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Key } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StudyGroupList from '@/components/own_components/StudyGroupList';
+import JoinByCodeDialog from '@/components/own_components/JoinByCodeDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -10,6 +11,7 @@ const StudyGroups: React.FC = () => {
   const [subject] = useState('');
   const [course] = useState('');
   const [timeSlot] = useState('');
+  const [showJoinByCodeDialog, setShowJoinByCodeDialog] = useState(false);
 
 
 
@@ -25,14 +27,26 @@ const StudyGroups: React.FC = () => {
           </Link>
         </CardContent>
       </Card>
-      <div className="flex flex-col sm:flex-row justify-start items-center sm:items-center gap-4 p-4 mb-6">
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 mb-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-[#101518] tracking-tight text-3xl font-bold leading-tight">Study Groups</h1>
           <p className="text-gray-500 text-sm font-normal leading-normal">
             Find a study group that fits your schedule and academic needs.
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowJoinByCodeDialog(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Key size={16} />
+            Join by Code
+          </Button>
+        </div>
       </div>
+      
       <div className="px-4 pb-6">
         <label className="flex flex-col min-w-40 h-12 w-full">
           <div className="flex w-full flex-1 items-stretch rounded-xl h-full bg-white soft-shadow">
@@ -53,6 +67,11 @@ const StudyGroups: React.FC = () => {
         subject={subject}
         course={course}
         timeSlot={timeSlot}
+      />
+      
+      <JoinByCodeDialog 
+        isOpen={showJoinByCodeDialog}
+        onClose={() => setShowJoinByCodeDialog(false)}
       />
     </div>
   );
