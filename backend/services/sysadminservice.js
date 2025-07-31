@@ -28,10 +28,14 @@ export const deleteUserAndDataService = async (userId) => {
     const groups = await StudyGroup.findAll({ where: { creatorId: userId } });
     for (const group of groups) {
       await AdditionalResource.destroy({ where: { studyGroupId: group.id } });
-      await Thread.destroy({ where: { studyGroupId: group.id } });
-      await Forum.destroy({ where: { studyGroupId: group.id } });
       await Membership.destroy({ where: { studyGroupId: group.id } });
       await UserReport.destroy({ where: { studyGroupId: group.id } });
+      // Find all forums for this group
+      const forums = await Forum.findAll({ where: { studyGroupId: group.id } });
+      for (const forum of forums) {
+        await Thread.destroy({ where: { forumId: forum.id } });
+        await forum.destroy();
+      }
       await group.destroy();
     }
     await AdditionalResource.destroy({ where: { uploadedBy: userId } });
@@ -52,14 +56,49 @@ export const deleteUserAndDataService = async (userId) => {
 export const listAllGroupsService = async () => {
   const groups = await StudyGroup.findAll({
     attributes: ["id", "name", "creatorId"],
-    include: [{
-      model: UserModel,
-      attributes: ["username", "email"]
-    }]
   });
-  return groups.map(g => ({
-    groupId: g.id,
-    groupName: g.name,
-    groupOwner: g.UserModel ? { username: g.UserModel.username, email: g.UserModel.email } : null
+  // Fetch owner details for each group
+  const formatted = await Promise.all(groups.map(async g => {
+    const owner = await UserModel.findOne({
+      where: { user_id: g.creatorId },
+      attributes: ["username", "email"]
+    });
+    return {
+      groupId: g.id,
+      groupName: g.name,
+      groupOwner: owner ? { username: owner.username, email: owner.email } : null
+    };
   }));
+  return formatted;
+};
+
+export const deleteGroupAndDataService = async (groupId) => {
+  const group = await StudyGroup.findOne({ where: { id: groupId } });
+  if (!group) {
+    // Group not found, do not throw error
+    return "notfound";
+  }
+  try {
+    await AdditionalResource.destroy({ where: { studyGroupId: groupId } });
+    await Membership.destroy({ where: { studyGroupId: groupId } });
+    await UserReport.destroy({ where: { studyGroupId: groupId } });
+    // Find all forums for this group
+    const forums = await Forum.findAll({ where: { studyGroupId: groupId } });
+    for (const forum of forums) {
+      await Thread.destroy({ where: { forumId: forum.id } });
+      await forum.destroy();
+    }
+    await group.destroy();
+    return "success";
+  } catch {
+    return "error";
+  }
+};
+
+export const searchUserByUsernameService = async (username) => {
+  return await UserModel.findOne({ where: { username }, attributes: ["user_id", "username", "email"] });
+};
+
+export const searchGroupByNameService = async (groupname) => {
+  return await StudyGroup.findOne({ where: { name: groupname }, attributes: ["id", "name", "creatorId"] });
 };
