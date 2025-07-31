@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { UserProfileData } from "@/models/User";
 import { useForm } from "react-hook-form";
+import countryList from "@/data/country.json";
 import { useData } from "@/hooks/userInfoContext";
 const FOS_list = {
     options: [
@@ -148,13 +149,18 @@ const UserProfile = () => {
                             </div>
                             <div className="w-full flex flex-col gap-2">
                                 <Label htmlFor="nationality">Nationality</Label>
-                                <Input
+                                <select
                                     id="nationality"
                                     {...register('nationality')}
-                                    type="text"
-                                    defaultValue={userInformation?.nationality}
+                                    defaultValue={userInformation?.nationality || ""}
                                     disabled={!formVisible}
-                                />
+                                    className="w-full border-1 mt-2 h-9 rounded-md px-2"
+                                >
+                                    <option value="" disabled>Select Nationality</option>
+                                    {countryList.map((country: string) => (
+                                        <option key={country} value={country}>{country}</option>
+                                    ))}
+                                </select>
                                 {errors.nationality && <span className="text-red-500 text-sm">{errors.nationality.message}</span>}
                             </div>
                         </div>
