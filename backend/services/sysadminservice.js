@@ -63,3 +63,27 @@ export const listAllGroupsService = async () => {
     groupOwner: g.UserModel ? { username: g.UserModel.username, email: g.UserModel.email } : null
   }));
 };
+
+export const deleteGroupAndDataService = async (groupId) => {
+  const group = await StudyGroup.findOne({ where: { id: groupId } });
+  if (!group) return "notfound";
+  try {
+    await AdditionalResource.destroy({ where: { studyGroupId: groupId } });
+    await Thread.destroy({ where: { studyGroupId: groupId } });
+    await Forum.destroy({ where: { studyGroupId: groupId } });
+    await Membership.destroy({ where: { studyGroupId: groupId } });
+    await UserReport.destroy({ where: { studyGroupId: groupId } });
+    await group.destroy();
+    return "success";
+  } catch {
+    return "error";
+  }
+};
+
+export const searchUserByUsernameService = async (username) => {
+  return await UserModel.findOne({ where: { username }, attributes: ["user_id", "username", "email"] });
+};
+
+export const searchGroupByNameService = async (groupname) => {
+  return await StudyGroup.findOne({ where: { name: groupname }, attributes: ["id", "name", "creatorId"] });
+};
