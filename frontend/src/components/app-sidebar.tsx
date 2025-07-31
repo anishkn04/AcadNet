@@ -1,15 +1,4 @@
 import { User, Home, Settings, Users } from "lucide-react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
 
@@ -26,7 +15,7 @@ const items = [
     icon: User,
   },
   {
-    title: "My Group",
+    title: "My Groups",
     url: "/user/mygroup",
     icon: Users,
   },
@@ -59,39 +48,41 @@ export function AppSidebar() {
     }
     return location.pathname === url || location.pathname.startsWith(url + "/");
   };
+
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
-            <p>{user}</p>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className="pl-14 py-5 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-700"
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url ?? "#"}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      {/* <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>hello</SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter> */}
-    </Sidebar>
+    <div className="bg-white shadow-lg layout-content-container flex flex-col w-80 p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center space-x-3">
+        <div className="p-2 bg-blue-600 rounded-full text-white">
+          <User className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-slate-900 text-lg font-semibold leading-tight">AcadNet</h1>
+          <p className="text-slate-500 text-sm font-normal leading-normal">Welcome, {user}</p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex flex-col space-y-1">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.url);
+          return (
+            <Link
+              key={item.title}
+              to={item.url}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-150 ${
+                active
+                  ? "bg-blue-100 text-blue-700"
+                  : "hover:bg-slate-100 text-slate-700"
+              }`}
+            >
+              <Icon className={`h-5 w-5 ${active ? "text-blue-700" : "text-slate-600"}`} />
+              <p className="text-sm font-medium">{item.title}</p>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
