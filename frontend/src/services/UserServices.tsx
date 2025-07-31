@@ -477,3 +477,25 @@ export const getGroupReportsAPI = async (groupCode: string, status?: string) => 
         throw error;
     }
 }
+
+// Edit Group Syllabus API
+export const editGroupSyllabusAPI = async (groupCode: string, syllabusData: any) => {
+    try {
+        const response = await apiClient.put(`/group/${groupCode}/syllabus/edit`, {
+            syllabus: syllabusData
+        });
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Delete Approved Resource API
+export const deleteApprovedResourceAPI = async (groupCode: string, resourceId: number) => {
+    try {
+        const response = await apiClient.delete(`/group/${groupCode}/resources/${resourceId}/delete`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}

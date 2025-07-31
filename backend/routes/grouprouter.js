@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController, editGroupSyllabusController, deleteApprovedResourceController} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -100,6 +100,23 @@ router.post(
   csrfMiddleware,
   addUser,
   rejectResourceController
+);
+
+// New routes for syllabus editing and resource deletion
+router.put(
+  "/:groupCode/syllabus/edit",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  editGroupSyllabusController
+);
+
+router.delete(
+  "/:groupCode/resources/:resourceId/delete",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  deleteApprovedResourceController
 );
 
 export default router
