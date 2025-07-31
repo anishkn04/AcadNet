@@ -5,15 +5,17 @@ import { sysadminDashboard, getStats, listAllUsers, deleteUserById, listAllGroup
 
 const router = express.Router();
 
-router.get("/", sysadminMiddleware, sysadminDashboard);
 
+router.get("/", sysadminMiddleware, csrfMiddleware, sysadminDashboard);
 
-router.get("/users", sysadminMiddleware, listAllUsers);
+router.get("/stats", sysadminMiddleware, csrfMiddleware, getStats);
 
-router.delete("/user/:userId", sysadminMiddleware, deleteUserById);
-router.get("/groups", sysadminMiddleware, listAllGroups);
-router.delete("/group/:groupId", sysadminMiddleware, deleteGroupById);
-router.get("/search/user", sysadminMiddleware, searchUserByUsername);
-router.get("/search/group", sysadminMiddleware, searchGroupByName);
+router.get("/users", sysadminMiddleware, csrfMiddleware, listAllUsers);
+
+router.delete("/user/:userId", sysadminMiddleware, csrfMiddleware, deleteUserById);
+router.get("/groups", sysadminMiddleware, csrfMiddleware, listAllGroups);
+router.delete("/group/:groupId", sysadminMiddleware, csrfMiddleware, deleteGroupById);
+router.get("/search/user", sysadminMiddleware, csrfMiddleware, searchUserByUsername);
+router.get("/search/group", sysadminMiddleware, csrfMiddleware, searchGroupByName);
 
 export default router;
