@@ -52,6 +52,7 @@ const UserProfile = () => {
             try {
                 const data = await getInfo();
                 if (data) {
+                    console.log("user Data: ",data)
                     setUserInformation(data);
                     reset(data);
                 }
@@ -133,6 +134,28 @@ const UserProfile = () => {
                                     disabled={!formVisible}
                                 />
                                 {errors.fullName && <span className="text-red-500 text-sm">{errors.fullName.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="Age">Age</Label>
+                                <Input
+                                    id="age"
+                                    {...register('age')}
+                                    type="text"
+                                    defaultValue={userInformation?.age}
+                                    disabled={!formVisible}
+                                />
+                                {errors.age && <span className="text-red-500 text-sm">{errors.age.message}</span>}
+                            </div>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="nationality">Nationality</Label>
+                                <Input
+                                    id="nationality"
+                                    {...register('nationality')}
+                                    type="text"
+                                    defaultValue={userInformation?.nationality}
+                                    disabled={!formVisible}
+                                />
+                                {errors.nationality && <span className="text-red-500 text-sm">{errors.nationality.message}</span>}
                             </div>
                         </div>
                         <hr className="my-5" />

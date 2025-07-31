@@ -6,6 +6,8 @@ import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import SuccessModal from '../ui/success-modal';
+import ErrorModal from '../ui/error-modal';
 
 interface StudyGroupListProps {
   search: string;
@@ -26,6 +28,11 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
   const [isJoining, setIsJoining] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [joinAsAnonymous, setJoinAsAnonymous] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [successGroupCode, setSuccessGroupCode] = useState(''); // Store group code for navigation
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { retreiveGroups, userId, joinGroup } = useData();
   const navigate = useNavigate();
 
@@ -77,10 +84,18 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
     try {
       const result = await joinGroup(selectedGroup.groupCode, joinAsAnonymous);
       if (result.success) {
-        alert(`Successfully joined "${selectedGroup.name}"${joinAsAnonymous ? ' as anonymous' : ''}!`);
+        // Store group code for navigation after modal closes
+        setSuccessGroupCode(selectedGroup.groupCode);
+        
+        // Close the join dialog first
         setShowJoinDialog(false);
         setSelectedGroup(null);
         setJoinAsAnonymous(false); // Reset the checkbox
+        
+        // Show success modal with custom message
+        const message = `Successfully joined "${selectedGroup.name}"${joinAsAnonymous ? ' as anonymous' : ''}!`;
+        setSuccessMessage(message);
+        setShowSuccessModal(true);
         
         // Refresh the groups list to update UI
         setIsRefreshing(true);
@@ -89,15 +104,14 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
           setGroups(data);
         }
         setIsRefreshing(false);
-        
-        // Optionally redirect to the group
-        navigate(`/group?code=${selectedGroup.groupCode}`);
       } else {
-        alert(`Failed to join group: ${result.message}`);
+        setErrorMessage(`Failed to join group: ${result.message}`);
+        setShowErrorModal(true);
       }
     } catch (error) {
       console.error('Join group error:', error);
-      alert('An error occurred while joining the group. Please try again.');
+      setErrorMessage('An error occurred while joining the group. Please try again.');
+      setShowErrorModal(true);
     } finally {
       setIsJoining(false);
     }
@@ -154,7 +168,7 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
 
       {/* Join Group Confirmation Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent onClose={handleCancelJoin}>
+        <DialogContent >
           <DialogHeader>
             <DialogTitle>Join Study Group</DialogTitle>
             <DialogDescription>
@@ -211,6 +225,28 @@ const StudyGroupList: React.FC<StudyGroupListProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message={successMessage}
+        onClose={() => setShowSuccessModal(false)}
+        autoCloseDelay={2500} // 2.5 seconds
+        onAutoClose={() => {
+          // Navigate to the group after the modal closes
+          if (successGroupCode) {
+            navigate(`/group?code=${successGroupCode}`);
+            setSuccessGroupCode(''); // Clear the stored code
+          }
+        }}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </>
   );
 };

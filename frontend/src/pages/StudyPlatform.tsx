@@ -6,6 +6,7 @@ import type { Groups } from '@/models/User'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import Forum from '@/components/own_components/Forum'
 import ResourcesSection from '@/components/own_components/ResourcesSection'
 import { useData } from '@/hooks/userInfoContext'
@@ -13,6 +14,7 @@ import { useData } from '@/hooks/userInfoContext'
 const StudyPlatform = () => {
     const [groupData, setGroupData] = useState<Groups | null>(null)
     const [isLeaving, setIsLeaving] = useState(false)
+    const [showLeaveDialog, setShowLeaveDialog] = useState(false)
     const location = useLocation()
     const navigate = useNavigate()
     const { leaveGroup, userId } = useData()
@@ -80,27 +82,38 @@ const StudyPlatform = () => {
         fetchData()
     }, [groupCode])
 
-    // Handler for leaving the group
-    const handleLeaveGroup = async () => {
+    // Handler for showing leave dialog
+    const handleLeaveGroupClick = () => {
+        setShowLeaveDialog(true);
+    };
+
+    // Handler for canceling leave
+    const handleCancelLeave = () => {
+        setShowLeaveDialog(false);
+    };
+
+    // Handler for confirming leave
+    const handleConfirmLeave = async () => {
         if (!groupCode) return;
-        
-        const confirmLeave = window.confirm('Are you sure you want to leave this group? You will lose access to all resources and discussions.');
-        if (!confirmLeave) return;
 
         setIsLeaving(true);
         try {
             const result = await leaveGroup(groupCode);
             if (result.success) {
-                alert(`Successfully left the group!`);
-                navigate('/join', { replace: true });
+                // Show "Leaving..." state for 1 second before navigating
+                setTimeout(() => {
+                    navigate('/join', { replace: true });
+                }, 1000);
             } else {
                 alert(`Failed to leave group: ${result.message}`);
+                setIsLeaving(false);
+                setShowLeaveDialog(false);
             }
         } catch (error) {
             console.error('Leave group error:', error);
             alert('An error occurred while leaving the group. Please try again.');
-        } finally {
             setIsLeaving(false);
+            setShowLeaveDialog(false);
         }
     };
 
@@ -198,7 +211,7 @@ const StudyPlatform = () => {
                                 <Button 
                                     variant="destructive" 
                                     size="sm"
-                                    onClick={handleLeaveGroup}
+                                    onClick={handleLeaveGroupClick}
                                     disabled={isLeaving}
                                     className="ml-auto"
                                 >
@@ -265,6 +278,45 @@ const StudyPlatform = () => {
                     />
                 </div>
             </div>
+
+            {/* Leave Group Confirmation Dialog */}
+            <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Leave Group</DialogTitle>
+                        <DialogDescription>
+                            {isLeaving 
+                                ? "Leaving the group... Please wait."
+                                : "Are you sure you want to leave this group? You will lose access to all resources and discussions."
+                            }
+                        </DialogDescription>
+                    </DialogHeader>
+                    {isLeaving && (
+                        <div className="flex items-center justify-center py-4">
+                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+                            <span className="ml-2 text-sm text-gray-600">Leaving group...</span>
+                        </div>
+                    )}
+                    <DialogFooter className="flex gap-2 sm:gap-0">
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={handleCancelLeave}
+                            disabled={isLeaving}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            type="button" 
+                            variant="destructive" 
+                            onClick={handleConfirmLeave}
+                            disabled={isLeaving}
+                        >
+                            {isLeaving ? 'Leaving...' : 'Yes, Leave Group'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

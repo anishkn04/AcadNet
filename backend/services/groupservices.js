@@ -1183,5 +1183,228 @@ export const getGroupReports = async (userId, groupCode, status = null) => {
   }
 };
 
+// Get pending resources for group admin approval
+export const getPendingResources = async (adminUserId, groupCode) => {
+  try {
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode }
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: adminUserId, 
+        studyGroupId: group.id 
+      }
+    });
+
+    const isCreator = group.creatorId === adminUserId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to view pending resources.", 403);
+    }
+
+    // Get all pending resources for this group
+    const pendingResources = await AdditionalResource.findAll({
+      where: { 
+        studyGroupId: group.id,
+        status: 'pending'
+      },
+      include: [
+        {
+          model: UserModel,
+          attributes: ['user_id', 'username', 'fullName'],
+          as: 'uploader'
+        },
+        {
+          model: Topic,
+          attributes: ['id', 'title'],
+          required: false
+        },
+        {
+          model: SubTopic,
+          attributes: ['id', 'title'],
+          required: false
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    const formattedResources = pendingResources.map(resource => ({
+      id: resource.id,
+      fileName: path.basename(resource.filePath),
+      filePath: resource.filePath,
+      fileType: resource.fileType,
+      uploadedAt: resource.created_at,
+      status: resource.status,
+      uploader: {
+        id: resource.uploadedBy,
+        username: resource.uploader?.username || 'Unknown',
+        fullName: resource.uploader?.fullName || 'Unknown'
+      },
+      topic: resource.Topic ? {
+        id: resource.Topic.id,
+        title: resource.Topic.title
+      } : null,
+      subTopic: resource.SubTopic ? {
+        id: resource.SubTopic.id,
+        title: resource.SubTopic.title
+      } : null
+    }));
+
+    return {
+      groupCode,
+      groupName: group.name,
+      totalPendingResources: formattedResources.length,
+      pendingResources: formattedResources
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Approve a resource
+export const approveResource = async (adminUserId, resourceId, groupCode) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists and user is admin
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: adminUserId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    const isCreator = group.creatorId === adminUserId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to approve resources.", 403);
+    }
+
+    // Find the resource
+    const resource = await AdditionalResource.findOne({
+      where: { 
+        id: resourceId,
+        studyGroupId: group.id,
+        status: 'pending'
+      },
+      transaction
+    });
+
+    if (!resource) {
+      throwWithCode("Resource not found or already processed.", 404);
+    }
+
+    // Update resource status to approved
+    resource.status = 'approved';
+    await resource.save({ transaction });
+
+    await transaction.commit();
+
+    return {
+      message: "Resource approved successfully.",
+      resourceId: resource.id,
+      fileName: path.basename(resource.filePath)
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
+// Reject a resource
+export const rejectResource = async (adminUserId, resourceId, groupCode, reason = null) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists and user is admin
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: adminUserId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    const isCreator = group.creatorId === adminUserId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to reject resources.", 403);
+    }
+
+    // Find the resource
+    const resource = await AdditionalResource.findOne({
+      where: { 
+        id: resourceId,
+        studyGroupId: group.id,
+        status: 'pending'
+      },
+      transaction
+    });
+
+    if (!resource) {
+      throwWithCode("Resource not found or already processed.", 404);
+    }
+
+    // Delete the physical file
+    if (fs.existsSync(resource.filePath)) {
+      fs.unlinkSync(resource.filePath);
+    }
+
+    // Delete the resource record
+    await resource.destroy({ transaction });
+
+    await transaction.commit();
+
+    return {
+      message: "Resource rejected and deleted successfully.",
+      resourceId: resource.id,
+      fileName: path.basename(resource.filePath),
+      reason: reason || "No reason provided"
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
 
 
