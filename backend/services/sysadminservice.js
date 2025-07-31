@@ -1,10 +1,66 @@
-// Sysadmin service for dashboard logic
+import { UserModel, AdditionalResource, StudyGroup, Thread, Reply, Membership, Forum, UserReport } from "../models/index.model.js";
+
 export const getDashboard = (user) => {
-  // For now, just log and return a message
   if (user.role === "admin") {
     console.log("Welcome to SysAdmin Dashboard");
     return { message: "SysAdmin Dashboard Access Granted" };
   } else {
     return { message: "Access Denied: Not an Admin" };
   }
+};
+
+export const getStatsService = async () => {
+  const totalUsers = await UserModel.count();
+  const totalResources = await AdditionalResource.count();
+  const totalActiveGroups = await StudyGroup.count({ where: { isPrivate: false } });
+  return {
+    totalUsers,
+    totalResources,
+    totalActiveGroups
+  };
+};
+
+export const deleteUserAndDataService = async (userId) => {
+  const userToDelete = await UserModel.findOne({ where: { user_id: userId } });
+  if (!userToDelete) return "notfound";
+  if (userToDelete.role === "admin") return "admin";
+  try {
+    const groups = await StudyGroup.findAll({ where: { creatorId: userId } });
+    for (const group of groups) {
+      await AdditionalResource.destroy({ where: { studyGroupId: group.id } });
+      await Thread.destroy({ where: { studyGroupId: group.id } });
+      await Forum.destroy({ where: { studyGroupId: group.id } });
+      await Membership.destroy({ where: { studyGroupId: group.id } });
+      await UserReport.destroy({ where: { studyGroupId: group.id } });
+      await group.destroy();
+    }
+    await AdditionalResource.destroy({ where: { uploadedBy: userId } });
+    await Thread.destroy({ where: { authorId: userId } });
+    await Reply.destroy({ where: { authorId: userId } });
+    await Membership.destroy({ where: { userId: userId } });
+    await UserReport.destroy({ where: { reporterId: userId } });
+    await UserReport.destroy({ where: { reportedUserId: userId } });
+    await UserReport.destroy({ where: { reviewedBy: userId } });
+    const deleted = await UserModel.destroy({ where: { user_id: userId } });
+    if (deleted) return "success";
+    return "notfound";
+  } catch {
+    return "error";
+  }
+};
+
+export const listAllGroupsService = async () => {
+  const groups = await StudyGroup.findAll({
+    attributes: ["id", "name", "creatorId"],
+    include: [{
+      model: UserModel,
+      attributes: ["username", "email"],
+      as: "creatorId"
+    }]
+  });
+  return groups.map(g => ({
+    groupId: g.id,
+    groupName: g.name,
+    groupOwner: g.UserModel ? { username: g.UserModel.username, email: g.UserModel.email } : null
+  }));
 };
