@@ -518,3 +518,76 @@ export const reportResourceAPI = async (groupCode: string, resourceId: number, r
         throw error;
     }
 }
+
+// SysAdmin API Functions
+export const sysadminDashboardAPI = async () => {
+    try {
+        const response = await apiClient.get('/sysadmin');
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getStatsAPI = async () => {
+    try {
+        const response = await apiClient.get('/sysadmin/stats');
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const listAllUsersAPI = async () => {
+    try {
+        const response = await apiClient.get('/sysadmin/users');
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const deleteUserByIdAPI = async (userId: string) => {
+    try {
+        const response = await apiClient.delete(`/sysadmin/user/${userId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const listAllGroupsAPI = async () => {
+    try {
+        const response = await apiClient.get('/sysadmin/groups');
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const deleteGroupByIdAPI = async (groupId: string) => {
+    try {
+        const response = await apiClient.delete(`/sysadmin/group/${groupId}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const searchUserByUsernameAPI = async (username: string) => {
+    try {
+        const response = await apiClient.get(`/sysadmin/search/user?username=${username}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const searchGroupByNameAPI = async (groupname: string) => {
+    try {
+        const response = await apiClient.get(`/sysadmin/search/group?groupname=${groupname}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}

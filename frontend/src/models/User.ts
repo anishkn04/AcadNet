@@ -46,6 +46,28 @@ export interface UserProfileData {
   }
 }
 
+// SysAdmin Types
+export interface SysAdminStats {
+  totalUsers: number;
+  totalResources: number;
+  totalActiveGroups: number;
+}
+
+export interface SysAdminUser {
+  user_id: number;
+  username: string;
+  email: string;
+}
+
+export interface SysAdminGroup {
+  groupId: number;
+  groupName: string;
+  groupOwner: {
+    username: string;
+    email: string;
+  } | null;
+}
+
 //study groups
 export interface subTopics{ 
   id:string

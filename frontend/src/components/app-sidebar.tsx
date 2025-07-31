@@ -1,4 +1,4 @@
-import { User, Home, Settings, Users } from "lucide-react";
+import { User, Home, Settings, Users, Shield } from "lucide-react";
 
 import {
   Sidebar,
@@ -35,10 +35,17 @@ const items = [
     url: "/user/settings",
     icon: Settings,
   },
+  {
+    title: "System Admin",
+    url: "/user/sysadmin",
+    icon: Shield,
+  },
 ];
 
 export function AppSidebar() {
   const { user } = useData();
+  // Determine if user is sysadmin
+  const isSysAdmin = user && (user.role === "sysadmin" || user.isSysAdmin);
   const location = useLocation();
 
   const isActive = (url: string) => {
@@ -57,32 +64,41 @@ export function AppSidebar() {
     if (url === "/user/settings") {
       return location.pathname === "/user/settings";
     }
+    if (url === "/user/sysadmin") {
+      return location.pathname === "/user/sysadmin";
+    }
     return location.pathname === url || location.pathname.startsWith(url + "/");
   };
+  
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
-            <p>{user}</p>
+            <p>{user && user.username ? user.username : user}</p>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className="pl-14 py-5 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-700"
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url ?? "#"}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items
+                .filter(
+                  (item) =>
+                    item.title !== "System Admin" || isSysAdmin
+                )
+                .map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className="pl-14 py-5 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-700"
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                    >
+                      <Link to={item.url ?? "#"}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
