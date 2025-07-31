@@ -3,8 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFlag, faEye, faCheck, faTimes, faExclamationTriangle, faRefresh } from '@fortawesome/free-solid-svg-icons';
-import { getGroupReportsAPI } from '@/services/UserServices';
+import { faFlag, faEye, faCheck, faTimes, faExclamationTriangle, faRefresh, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { getGroupReportsAPI, updateReportStatusAPI } from '@/services/UserServices';
+import { useData } from '@/hooks/userInfoContext';
 import { toast } from 'react-toastify';
 
 interface Report {
@@ -40,11 +41,16 @@ interface ComplaintsSectionProps {
 }
 
 const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
+  const { removeGroupMember } = useData();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // State for remove user confirmation
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   useEffect(() => {
     fetchReports();
@@ -53,7 +59,15 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const response = await getGroupReportsAPI(groupCode, statusFilter === 'all' ? undefined : statusFilter);
+      // Map frontend filter values to backend status values
+      const getBackendStatus = (filter: string) => {
+        if (filter === 'all') return undefined;
+        if (filter === 'ignored') return 'dismissed';
+        return filter;
+      };
+      
+      const backendStatus = getBackendStatus(statusFilter);
+      const response = await getGroupReportsAPI(groupCode, backendStatus);
       console.log('API Response:', response.data);
       
       if (response.data.success) {
@@ -71,8 +85,6 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
         } else if (Array.isArray(response.data.message)) {
           reportsData = response.data.message;
         }
-        
-        console.log('Extracted reports data:', reportsData);
         setReports(reportsData);
       } else {
         toast.error(response.data.message || 'Failed to fetch reports');
@@ -88,9 +100,9 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { class: 'bg-yellow-100 text-yellow-800', text: 'Pending', icon: faExclamationTriangle },
-      reviewed: { class: 'bg-blue-100 text-blue-800', text: 'Reviewed', icon: faEye },
+      reviewed: { class: 'bg-blue-100 text-blue-800', text: 'Reviewed', icon: faEyeSlash },
       resolved: { class: 'bg-green-100 text-green-800', text: 'Resolved', icon: faCheck },
-      dismissed: { class: 'bg-gray-100 text-gray-800', text: 'Dismissed', icon: faTimes }
+      dismissed: { class: 'bg-gray-100 text-gray-800', text: 'Ignored', icon: faEyeSlash }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -123,17 +135,69 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
     setShowDetailModal(true);
   };
 
+  const handleRemoveUser = async () => {
+    if (!selectedReport) return;
+    
+    setShowRemoveConfirmation(true);
+  };
+
+  const handleConfirmRemoveUser = async () => {
+    if (!selectedReport) return;
+    
+    setIsRemoving(true);
+    try {
+      const result = await removeGroupMember(groupCode, selectedReport.reportedUser.user_id);
+      if (result.success) {
+        toast.success(`${selectedReport.reportedUser.username} has been removed from the group`);
+        setShowDetailModal(false);
+        setShowRemoveConfirmation(false);
+        // Refresh reports after removing user
+        fetchReports();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to remove user from group');
+      console.error('Remove user error:', error);
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const handleIgnoreReport = async () => {
+    if (!selectedReport) return;
+    
+    try {
+      const response = await updateReportStatusAPI(selectedReport.id, 'resolved', 'Report ignored by admin');
+      if (response.data.success) {
+        toast.success('Report has been ignored');
+        setShowDetailModal(false);
+        // Update the report in the local state
+        setReports(prev => prev.map(report => 
+          report.id === selectedReport.id 
+            ? { ...report, status: 'dismissed' as const }
+            : report
+        ));
+      } else {
+        toast.error('Failed to ignore report');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to ignore report');
+      console.error('Ignore report error:', error);
+    }
+  };
+
   const filteredReports = reports.filter(report => {
     if (statusFilter === 'all') return true;
+    if (statusFilter === 'ignored') return report.status === 'dismissed';
     return report.status === statusFilter;
   });
 
   const reportStats = {
     total: reports.length,
     pending: reports.filter(r => r.status === 'pending').length,
-    reviewed: reports.filter(r => r.status === 'reviewed').length,
+    ignored: reports.filter(r => r.status === 'dismissed').length,
     resolved: reports.filter(r => r.status === 'resolved').length,
-    dismissed: reports.filter(r => r.status === 'dismissed').length
   };
 
   if (loading) {
@@ -213,22 +277,10 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
             <div className="text-xs sm:text-sm text-gray-600">Pending</div>
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-xl sm:text-2xl font-bold text-blue-600">{reportStats.reviewed}</div>
-            <div className="text-xs sm:text-sm text-gray-600">Reviewed</div>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500 hover:shadow-md transition-shadow">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-xl sm:text-2xl font-bold text-green-600">{reportStats.resolved}</div>
-            <div className="text-xs sm:text-sm text-gray-600">Resolved</div>
-          </CardContent>
-        </Card>
         <Card className="border-l-4 border-l-gray-500 hover:shadow-md transition-shadow">
           <CardContent className="p-3 sm:p-4">
-            <div className="text-xl sm:text-2xl font-bold text-gray-600">{reportStats.dismissed}</div>
-            <div className="text-xs sm:text-sm text-gray-600">Dismissed</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-600">{reportStats.ignored}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Ignored</div>
           </CardContent>
         </Card>
       </div>
@@ -240,9 +292,7 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
             {[
               { key: 'all', label: `All Reports (${reportStats.total})` },
               { key: 'pending', label: `Pending (${reportStats.pending})` },
-              { key: 'reviewed', label: `Reviewed (${reportStats.reviewed})` },
-              { key: 'resolved', label: `Resolved (${reportStats.resolved})` },
-              { key: 'dismissed', label: `Dismissed (${reportStats.dismissed})` }
+              { key: 'ignored', label: `Ignored (${reportStats.ignored})` }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -510,9 +560,65 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
             </div>
           )}
 
-          <div className="flex justify-end pt-4 border-t">
+          <div className="flex justify-between items-center pt-4 border-t">
+            <div className="flex gap-2">
+              {selectedReport?.status === 'pending' && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleIgnoreReport}
+                    className="flex items-center gap-2 hover:bg-gray-50"
+                  >
+                    <FontAwesomeIcon icon={faEyeSlash} className="text-sm" />
+                    Ignore Report
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleRemoveUser}
+                    className="flex items-center gap-2"
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="text-sm" />
+                    Remove User
+                  </Button>
+                </>
+              )}
+            </div>
             <Button variant="outline" onClick={() => setShowDetailModal(false)}>
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove User Confirmation Modal */}
+      <Dialog open={showRemoveConfirmation} onOpenChange={setShowRemoveConfirmation}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <FontAwesomeIcon icon={faExclamationTriangle} />
+              Remove User
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove <strong>{selectedReport?.reportedUser.username}</strong> from the group? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-end gap-3 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowRemoveConfirmation(false)}
+              disabled={isRemoving}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmRemoveUser}
+              disabled={isRemoving}
+              className="flex items-center gap-2"
+            >
+              {isRemoving && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
+              {isRemoving ? 'Removing...' : 'Yes, Remove'}
             </Button>
           </div>
         </DialogContent>

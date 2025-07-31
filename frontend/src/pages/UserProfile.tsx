@@ -163,8 +163,8 @@ const UserProfile = () => {
                                 />
                                 {errors.age && <span className="text-red-500 text-sm">{errors.age.message}</span>}
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="nationality" className="text-slate-600 text-sm font-medium">Nationality</Label>
+                            <div className="w-full flex flex-col gap-2">
+                                <Label htmlFor="nationality">Country</Label>
                                 <select
                                     id="nationality"
                                     {...register('nationality')}

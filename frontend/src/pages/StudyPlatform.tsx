@@ -67,20 +67,75 @@ const StudyPlatform = () => {
         return { avatarInitials, displayName };
     }
 
+    // Function to check membership and redirect if necessary
+    const checkMembershipAndRedirect = async () => {
+        if (!groupCode || !userId) return false;
+        
+        try {
+            const {data, status} = await fetchGroupDetailsByIdAPI(groupCode);
+            if (status === 200) {
+                const isCreator = data.creatorId === userId;
+                const isMember = data.members?.some((member: any) => Number(member.userId) === Number(userId));
+                
+                if (!isCreator && !isMember) {
+                    // User is not a member (possibly removed), redirect to join page
+                    console.warn("User is not a member of this group. Redirecting...");
+                    navigate('/join', { replace: true });
+                    return true; // Indicates redirect happened
+                }
+                
+                setGroupData(data);
+                return false; // No redirect needed
+            }
+        } catch (error) {
+            console.error("Error checking membership:", error);
+        }
+        return false;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (groupCode) {
-                const {data,status} = await fetchGroupDetailsByIdAPI(groupCode);
-                if(status === 200){
-                    setGroupData(data)
-                }
+                await checkMembershipAndRedirect();
             } else {
                 setGroupData(null)
                 console.warn("No group code found in URL.")
             }
         }
         fetchData()
-    }, [groupCode])
+    }, [groupCode, userId, navigate])
+
+    // Periodic membership check every 30 seconds
+    useEffect(() => {
+        if (!groupCode || !userId) return;
+
+        const intervalId = setInterval(async () => {
+            await checkMembershipAndRedirect();
+        }, 30000); // Check every 30 seconds
+
+        return () => clearInterval(intervalId);
+    }, [groupCode, userId, navigate]);
+
+    // Check membership when user returns to the tab/window
+    useEffect(() => {
+        const handleFocus = async () => {
+            if (groupCode && userId) {
+                await checkMembershipAndRedirect();
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && groupCode && userId) {
+                handleFocus();
+            }
+        });
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleFocus);
+        };
+    }, [groupCode, userId, navigate]);
 
     // Handler for showing leave dialog
     const handleLeaveGroupClick = () => {
