@@ -273,7 +273,11 @@ const StudyPlatform = () => {
                     <ResourcesSection 
                         groupCode={groupCode || ''}
                         topics={groupData.syllabus?.topics || []}
-                        canUpload={true}
+                        canUpload={(() => {
+                            const currentUserMembership = groupData.members?.find(member => member.userId === Number(userId));
+                            const isCurrentUserAnonymous = currentUserMembership?.isAnonymous || false;
+                            return !isCurrentUserAnonymous;
+                        })()}
                         initialResources={groupData.AdditionalResources || []}
                     />
                 </div>
