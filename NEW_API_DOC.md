@@ -301,6 +301,24 @@
   - 403 Forbidden: Not authorized  
   - 404 Not Found: Resource not found or not approved
 
+### POST /api/group/:groupCode/resources/:resourceId/report
+- **Description:** Report an approved resource (group member only)
+- **Auth:** Required (Group Member)
+- **CSRF:** Required
+- **Body:**
+  ```json
+  {
+    "reason": "offensive_content",
+    "description": "Optional description of the issue"
+  }
+  ```
+- **Response:**
+  - 200 OK: Resource reported and status changed to pending
+  - 400 Bad Request: Invalid reason or self-reporting
+  - 403 Forbidden: Not a group member
+  - 404 Not Found: Resource not found or not approved
+  - 409 Conflict: Already reported by this user
+
 ---
 
 ## Notes

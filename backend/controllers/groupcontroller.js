@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -451,5 +451,41 @@ export const deleteApprovedResourceController = async (req, res) => {
     jsonRes(res, 200, true, result);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to delete resource.");
+  }
+};
+
+// Report a resource
+export const reportResourceController = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode, resourceId } = req.params;
+    const { reason, description } = req.body;
+
+    // Validate reason if provided
+    if (reason) {
+      const validReasons = [
+        'inappropriate_behavior',
+        'harassment', 
+        'spam',
+        'offensive_content',
+        'violation_of_rules',
+        'fake_profile',
+        'academic_dishonesty',
+        'other'
+      ];
+
+      if (!validReasons.includes(reason)) {
+        return jsonRes(res, 400, false, "Invalid reason provided.");
+      }
+    }
+
+    const result = await groupServices.reportResource(userId, groupCode, parseInt(resourceId), {
+      reason: reason || 'offensive_content',
+      description: description || ''
+    });
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to report resource.");
   }
 };

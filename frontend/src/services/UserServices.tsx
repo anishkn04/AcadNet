@@ -499,3 +499,13 @@ export const deleteApprovedResourceAPI = async (groupCode: string, resourceId: n
         throw error;
     }
 }
+
+// Report Resource API
+export const reportResourceAPI = async (groupCode: string, resourceId: number, reportData: { reason?: string; description?: string }) => {
+    try {
+        const response = await apiClient.post(`/group/${groupCode}/resources/${resourceId}/report`, reportData);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}

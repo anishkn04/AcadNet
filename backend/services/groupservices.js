@@ -1636,5 +1636,103 @@ export const deleteApprovedResource = async (adminUserId, groupCode, resourceId)
   }
 };
 
+// Report a resource (changes status from approved to pending)
+export const reportResource = async (userId, groupCode, resourceId, reportData) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is a member of the group
+    const membership = await Membership.findOne({
+      where: { 
+        userId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    if (!membership) {
+      throwWithCode("You must be a member of this group to report resources.", 403);
+    }
+
+    // Find the resource
+    const resource = await AdditionalResource.findOne({
+      where: { 
+        id: resourceId,
+        studyGroupId: group.id,
+        status: 'approved'
+      },
+      transaction
+    });
+
+    if (!resource) {
+      throwWithCode("Resource not found or not approved.", 404);
+    }
+
+    // Prevent users from reporting their own resources
+    if (resource.uploadedBy === userId) {
+      throwWithCode("You cannot report your own resource.", 400);
+    }
+
+    // Import UserReport model to create resource report
+    const { UserReport } = await import("../models/index.model.js");
+
+    // Check if user has already reported this resource
+    const existingReport = await UserReport.findOne({
+      where: {
+        reporterId: userId,
+        reportedUserId: resource.uploadedBy,
+        studyGroupId: group.id,
+        reason: 'inappropriate_resource',
+        description: `Resource ID: ${resourceId}`
+      },
+      transaction
+    });
+
+    if (existingReport) {
+      throwWithCode("You have already reported this resource.", 409);
+    }
+
+    // Create a user report for the resource
+    const userReport = await UserReport.create({
+      reporterId: userId,
+      reportedUserId: resource.uploadedBy,
+      studyGroupId: group.id,
+      reason: reportData.reason || 'offensive_content',
+      description: `Resource Report - Resource ID: ${resourceId} - ${reportData.description || 'No description provided'}`
+    }, { transaction });
+
+    // Change resource status to pending
+    resource.status = 'pending';
+    await resource.save({ transaction });
+
+    await transaction.commit();
+
+    return {
+      message: "Resource reported successfully. The resource has been marked as pending review.",
+      resourceId: resource.id,
+      fileName: path.basename(resource.filePath),
+      reportId: userReport.id,
+      status: 'pending'
+    };
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
 
 
