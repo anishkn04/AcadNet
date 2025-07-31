@@ -267,8 +267,63 @@
 
 ---
 
+### PUT /api/group/:groupCode/syllabus/edit
+- **Description:** Edit group syllabus structure (group admin only)
+- **Auth:** Required (Group Creator or Admin)
+- **CSRF:** Required
+- **Body:**
+  ```json
+  {
+    "syllabus": {
+      "topics": [
+        {
+          "title": "Unit 1",
+          "description": "...",
+          "subTopics": [
+            { "title": "Subtopic 1", "content": "..." }
+          ]
+        }
+      ]
+    }
+  }
+  ```
+- **Response:**
+  - 200 OK: Updated syllabus structure
+  - 403 Forbidden: Not authorized
+  - 400 Bad Request: Invalid syllabus data
+
+### DELETE /api/group/:groupCode/resources/:resourceId/delete
+- **Description:** Delete an approved resource (group admin only)
+- **Auth:** Required (Group Creator or Admin)
+- **CSRF:** Required
+- **Response:**
+  - 200 OK: Resource deleted successfully
+  - 403 Forbidden: Not authorized  
+  - 404 Not Found: Resource not found or not approved
+
+### POST /api/group/:groupCode/resources/:resourceId/report
+- **Description:** Report an approved resource (group member only)
+- **Auth:** Required (Group Member)
+- **CSRF:** Required
+- **Body:**
+  ```json
+  {
+    "reason": "offensive_content",
+    "description": "Optional description of the issue"
+  }
+  ```
+- **Response:**
+  - 200 OK: Resource reported and status changed to pending
+  - 400 Bad Request: Invalid reason or self-reporting
+  - 403 Forbidden: Not a group member
+  - 404 Not Found: Resource not found or not approved
+  - 409 Conflict: Already reported by this user
+
+---
+
 ## Notes
 - All endpoints require authentication and CSRF protection.
 - Only group-related endpoints and models are documented here.
 - For file uploads, use the `additionalResources` field as an array in multipart form.
 - Syllabus must be sent as a JSON string in the request body.
+- Group Admin permissions: Group creators and users with 'admin' role can access admin endpoints.
