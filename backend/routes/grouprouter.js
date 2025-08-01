@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController, editGroupSyllabusController, deleteApprovedResourceController, reportResourceController} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController, editGroupSyllabusController, deleteApprovedResourceController, reportResourceController, editGroupDetailsController} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -126,6 +126,17 @@ router.post(
   csrfMiddleware,
   addUser,
   reportResourceController
+);
+
+
+
+// Edit group details (name and description)
+router.put(
+  "/:groupCode/details/edit",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  editGroupDetailsController
 );
 
 export default router

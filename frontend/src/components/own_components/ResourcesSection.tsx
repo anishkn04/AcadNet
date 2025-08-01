@@ -19,12 +19,14 @@ import {
   faFileAudio,
   faFileText,
   faRefresh,
-  faPlay
+  faPlay,
+  // faFlag
 } from '@fortawesome/free-solid-svg-icons';
 import { LikeDislikeButton } from './LikeDislikeButton';
 import ResourceUpload from './ResourceUpload';
 import VideoPlayerModal from './VideoPlayerModal';
 import FileViewerModal from './FileViewerModal';
+// import ReportResourceModal from './ReportResourceModal';
 import { getGroupResourcesAPI } from '@/services/UserServices';
 import type { Resource, topics } from '@/models/User';
 import { toast } from 'react-toastify';
@@ -64,6 +66,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   const [selectedFileUrl, setSelectedFileUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
   const [selectedFileType, setSelectedFileType] = useState('');
+
+  // // Report resource modal state
+  // const [showReportModal, setShowReportModal] = useState(false);
+  // const [selectedResourceForReport, setSelectedResourceForReport] = useState<{id: number; name: string} | null>(null);
 
   // Helper function to sort resources by creation date (newest first)
   const sortResourcesByDate = (resources: Resource[]) => {
@@ -219,35 +225,6 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     }
   };
 
-  // Get file type color classes
-  // const getFileTypeColors = (fileType: string) => {
-  //   const type = fileType?.toLowerCase();
-  //   switch (type) {
-  //     case 'pdf': return 'bg-red-50 border-red-200 text-red-800';
-  //     case 'doc':
-  //     case 'docx': return 'bg-blue-50 border-blue-200 text-blue-800';
-  //     case 'xls':
-  //     case 'xlsx': return 'bg-green-50 border-green-200 text-green-800';
-  //     case 'ppt':
-  //     case 'pptx': return 'bg-orange-50 border-orange-200 text-orange-800';
-  //     case 'jpg':
-  //     case 'jpeg':
-  //     case 'png':
-  //     case 'gif':
-  //     case 'image': return 'bg-purple-50 border-purple-200 text-purple-800';
-  //     case 'mp4':
-  //     case 'avi':
-  //     case 'mov':
-  //     case 'video': return 'bg-pink-50 border-pink-200 text-pink-800';
-  //     case 'mp3':
-  //     case 'wav':
-  //     case 'audio': return 'bg-indigo-50 border-indigo-200 text-indigo-800';
-  //     case 'txt':
-  //     case 'text': return 'bg-gray-50 border-gray-200 text-gray-800';
-  //     default: return 'bg-gray-50 border-gray-200 text-gray-800';
-  //   }
-  // };
-
   // Get unique file types for filter
   const getUniqueFileTypes = () => {
     const types = resources.map(r => r.fileType?.toLowerCase()).filter(Boolean) as string[];
@@ -310,6 +287,22 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     setSelectedFileType(resource.fileType || 'unknown');
     setShowFileModal(true);
   };
+
+  // // Handle report resource
+  // const handleReportResource = (resource: Resource) => {
+  //   const fileName = resource.filePath.split('/').pop() || resource.filePath;
+  //   setSelectedResourceForReport({
+  //     id: resource.id || 0,
+  //     name: fileName
+  //   });
+  //   setShowReportModal(true);
+  // };
+
+  // Handle close report modal
+  // const handleCloseReportModal = () => {
+  //   setShowReportModal(false);
+  //   setSelectedResourceForReport(null);
+  // };
 
   // Initial load and handle refreshes
   useEffect(() => {
@@ -522,6 +515,19 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                             </Button>
                           )}
                           
+                          {/* Report Button - Only show for resources not owned by current user */}
+                          {/* {resource.uploader?.id !== Number(userId) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReportResource(resource)}
+                              className="h-7 px-2 text-xs ml-2 text-red-600 border-red-300 hover:bg-red-50"
+                              title="Report this resource"
+                            >
+                              <FontAwesomeIcon icon={faFlag} />
+                            </Button>
+                          )} */}
+                          
                           {/* Add uploader info */}
                           <span className="text-xs text-gray-500 ml-2">
                             Uploaded by: <span className="font-medium">{resource.uploader?.username || 'Unknown'}</span>
@@ -595,6 +601,15 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         fileName={selectedFileName}
         fileType={selectedFileType}
       />
+
+      {/* Report Resource Modal
+      <ReportResourceModal
+        isOpen={showReportModal}
+        onClose={handleCloseReportModal}
+        resourceId={selectedResourceForReport?.id || 0}
+        resourceName={selectedResourceForReport?.name || ''}
+        groupCode={groupCode}
+      /> */}
     </Card>
   );
 };

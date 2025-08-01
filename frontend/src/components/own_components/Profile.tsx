@@ -13,7 +13,7 @@ import { useData } from "@/hooks/userInfoContext";
 
 export default function Profile() {
   const { logout } = useAuth();
-  const { user } = useData();
+  const { user, userProfile } = useData();
 
   // If user is undefined (still loading or not logged in), render a simpler avatar or null
   if (!user) {
@@ -65,6 +65,12 @@ export default function Profile() {
             <Link to="/user/settings">Settings</Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+
+        {userProfile?.role === 'admin' && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link to="/user/sysadmin">System Admin</Link>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuItem onClick={logout} className="cursor-pointer">
           Log out

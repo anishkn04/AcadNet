@@ -458,6 +458,16 @@ export const rejectResourceAPI = async (groupCode: string, resourceId: number, r
     }
 }
 
+// Get Reported Resources API
+export const getReportedResourcesAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.get(`/group/${groupCode}/resources/reported`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
 // User Report APIs
 export const reportUserAPI = async (groupCode: string, reportedUserId: number, reportData: { reason: string; description?: string }) => {
     try {
@@ -577,6 +587,16 @@ export const deleteGroupByIdAPI = async (groupId: string) => {
 export const searchUserByUsernameAPI = async (username: string) => {
     try {
         const response = await apiClient.get(`/sysadmin/search/user?username=${username}`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Edit Group Details API (name and description)
+export const editGroupDetailsAPI = async (groupCode: string, groupData: { name: string; description?: string }) => {
+    try {
+        const response = await apiClient.put(`/group/${groupCode}/details/edit`, groupData);
         return { data: response.data, status: response.status };
     } catch (error) {
         throw error;
