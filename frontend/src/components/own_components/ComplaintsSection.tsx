@@ -54,20 +54,13 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
 
   useEffect(() => {
     fetchReports();
-  }, [groupCode, statusFilter]);
+  }, [groupCode]);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
-      // Map frontend filter values to backend status values
-      const getBackendStatus = (filter: string) => {
-        if (filter === 'all') return undefined;
-        if (filter === 'ignored') return 'dismissed';
-        return filter;
-      };
-      
-      const backendStatus = getBackendStatus(statusFilter);
-      const response = await getGroupReportsAPI(groupCode, backendStatus);
+      // Always fetch all reports and filter on frontend
+      const response = await getGroupReportsAPI(groupCode);
       console.log('API Response:', response.data);
       
       if (response.data.success) {
@@ -168,7 +161,7 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
     if (!selectedReport) return;
     
     try {
-      const response = await updateReportStatusAPI(selectedReport.id, 'resolved', 'Report ignored by admin');
+      const response = await updateReportStatusAPI(selectedReport.id, 'dismissed', 'Report ignored by admin');
       if (response.data.success) {
         toast.success('Report has been ignored');
         setShowDetailModal(false);
