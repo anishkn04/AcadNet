@@ -1831,6 +1831,181 @@ export const editGroupDetails = async (userId, groupCode, updatedDetails) => {
   }
 };
 
+// Delete a group by group creator
+export const deleteGroupByCreator = async (creatorId, groupCode) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is the group creator - ensure both values are numbers for comparison
+    const groupCreatorId = parseInt(group.creatorId);
+    const requestCreatorId = parseInt(creatorId);
+    
+    if (groupCreatorId !== requestCreatorId) {
+      throwWithCode("Only the group creator can delete the group.", 403);
+    }
+
+    // Get all resources for this group and delete physical files
+    const groupResources = await AdditionalResource.findAll({
+      where: { studyGroupId: group.id },
+      transaction
+    });
+
+    for (const resource of groupResources) {
+      if (resource.filePath && fs.existsSync(resource.filePath)) {
+        try {
+          fs.unlinkSync(resource.filePath);
+        } catch (fileError) {
+          console.error(`Error deleting file ${resource.filePath}:`, fileError);
+          // Continue with deletion even if file removal fails
+        }
+      }
+    }
+
+    // Delete all group-related data in proper order due to foreign key constraints
+    
+    // Delete resource likes
+    await ResourceLike.destroy({
+      where: {
+        resourceId: {
+          [Op.in]: groupResources.map(r => r.id)
+        }
+      },
+      transaction
+    });
+
+    // Delete additional resources
+    await AdditionalResource.destroy({
+      where: { studyGroupId: group.id },
+      transaction
+    });
+
+    // Delete user reports related to this group
+    const { UserReport } = await import("../models/index.model.js");
+    await UserReport.destroy({
+      where: { studyGroupId: group.id },
+      transaction
+    });
+
+    // Delete forum threads and replies if any forums exist
+    const { Forum, Thread, Reply, ReplyLike } = await import("../models/index.model.js");
+    
+    const forums = await Forum.findAll({
+      where: { studyGroupId: group.id },
+      transaction
+    });
+
+    for (const forum of forums) {
+      // Get all threads for this forum
+      const threads = await Thread.findAll({
+        where: { forumId: forum.id },
+        transaction
+      });
+
+      // Delete reply likes for all threads in this forum
+      for (const thread of threads) {
+        await ReplyLike.destroy({
+          where: {
+            replyId: {
+              [Op.in]: await Reply.findAll({
+                where: { threadId: thread.id },
+                attributes: ['id'],
+                transaction
+              }).then(replies => replies.map(r => r.id))
+            }
+          },
+          transaction
+        });
+
+        // Delete replies
+        await Reply.destroy({
+          where: { threadId: thread.id },
+          transaction
+        });
+      }
+
+      // Delete threads
+      await Thread.destroy({
+        where: { forumId: forum.id },
+        transaction
+      });
+
+      // Delete forum
+      await forum.destroy({ transaction });
+    }
+
+    // Delete subtopics
+    const syllabusId = group.syllabus?.id;
+    if (syllabusId) {
+      const topics = await Topic.findAll({
+        where: { syllabusId },
+        attributes: ['id'],
+        transaction
+      });
+
+      const topicIds = topics.map(topic => topic.id);
+
+      if (topicIds.length > 0) {
+        await SubTopic.destroy({
+          where: {
+            topicId: {
+              [Op.in]: topicIds
+            }
+          },
+          transaction
+        });
+      }
+
+      // Delete topics
+      await Topic.destroy({
+        where: { syllabusId },
+        transaction
+      });
+
+      // Delete syllabus
+      await Syllabus.destroy({
+        where: { id: syllabusId },
+        transaction
+      });
+    }
+
+    // Delete memberships
+    await Membership.destroy({
+      where: { studyGroupId: group.id },
+      transaction
+    });
+
+    // Finally, delete the group
+    await group.destroy({ transaction });
+
+    await transaction.commit();
+
+    return {
+      success: true,
+      message: "Group and all related data deleted successfully.",
+      deletedGroupId: group.id,
+      deletedGroupName: group.name
+    };
+
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
 
 
 

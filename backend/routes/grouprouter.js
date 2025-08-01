@@ -1,5 +1,5 @@
 import express from 'express'
-import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController, editGroupSyllabusController, deleteApprovedResourceController, reportResourceController, editGroupDetailsController} from '../controllers/groupcontroller.js'
+import { getGroups , createGroup, groupOverview, groupDetails, groupDetailsById, groupOverviewByCode , likeAdditionalResource, dislikeAdditionalResource, getResourceStatus, leaveGroup, removeGroupMember, promoteGroupMember, demoteGroupMember, getGroupResources, addGroupResources, reportUserInGroup, getGroupReportsController, getPendingResourcesController, approveResourceController, rejectResourceController, editGroupSyllabusController, deleteApprovedResourceController, reportResourceController, editGroupDetailsController, deleteGroupController} from '../controllers/groupcontroller.js'
 import { joinGroup } from '../services/groupservices.js';
 import authMiddleware from "../middlewares/authmiddleware.js";
 import csrfMiddleware from "../middlewares/csrf.js";
@@ -137,6 +137,15 @@ router.put(
   csrfMiddleware,
   addUser,
   editGroupDetailsController
+);
+
+// Delete group (creator only)
+router.delete(
+  "/:groupCode/delete",
+  authMiddleware,
+  csrfMiddleware,
+  addUser,
+  deleteGroupController
 );
 
 export default router
