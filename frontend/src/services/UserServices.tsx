@@ -603,6 +603,16 @@ export const editGroupDetailsAPI = async (groupCode: string, groupData: { name: 
     }
 }
 
+// Delete Group API (creator only)
+export const deleteGroupAPI = async (groupCode: string) => {
+    try {
+        const response = await apiClient.delete(`/group/${groupCode}/delete`);
+        return { data: response.data, status: response.status };
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const searchGroupByNameAPI = async (groupname: string) => {
     try {
         const response = await apiClient.get(`/sysadmin/search/group?groupname=${groupname}`);

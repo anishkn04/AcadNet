@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource, editGroupDetails } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource, editGroupDetails, deleteGroupByCreator } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -510,6 +510,24 @@ export const editGroupDetailsController = async (req, res) => {
     jsonRes(res, 200, true, result);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to edit group details.");
+  }
+};
+
+// Delete group (creator only)
+export const deleteGroupController = async (req, res) => {
+  try {
+    const creatorId = req.id;
+    const { groupCode } = req.params;
+
+    if (!groupCode) {
+      return jsonRes(res, 400, false, "Group code is required.");
+    }
+
+    const result = await groupServices.deleteGroupByCreator(creatorId, groupCode);
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to delete group.");
   }
 };
 

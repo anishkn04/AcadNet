@@ -9,6 +9,7 @@ import {
   deleteApprovedResourceAPI,
   editGroupDetailsAPI,
   getReportedResourcesAPI,
+  deleteGroupAPI,
 } from "@/services/UserServices";
 import { toast } from "react-toastify";
 import type { Groups, member, topics, subTopics } from "@/models/User";
@@ -81,6 +82,11 @@ const GroupAdmin = () => {
     name: string;
   } | null>(null);
   const [isDeletingResource, setIsDeletingResource] = useState(false);
+
+  // Confirmation modal state for group deletion
+  const [showDeleteGroupConfirmation, setShowDeleteGroupConfirmation] =
+    useState(false);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
 
   const location = useLocation();
 
@@ -417,6 +423,39 @@ const GroupAdmin = () => {
     setResourceToDelete(null);
   };
 
+  // Group deletion handlers
+  const handleDeleteGroup = () => {
+    setShowDeleteGroupConfirmation(true);
+  };
+
+  // Handler for confirming group deletion
+  const handleConfirmDeleteGroup = async () => {
+    if (!group?.groupCode) return;
+
+    setIsDeletingGroup(true);
+    try {
+      const { data } = await deleteGroupAPI(group.groupCode);
+      if (data.success) {
+        toast.success(data.message || "Group deleted successfully");
+        // Redirect to localhost:5500 after successful deletion
+        window.location.href = "http://localhost:5500";
+      } else {
+        toast.error(data.message || "Failed to delete group");
+      }
+    } catch (error: any) {
+      console.error("Error deleting group:", error);
+      toast.error(error.response?.data?.message || "Failed to delete group");
+    } finally {
+      setIsDeletingGroup(false);
+      setShowDeleteGroupConfirmation(false);
+    }
+  };
+
+  // Handler for canceling group deletion
+  const handleCancelDeleteGroup = () => {
+    setShowDeleteGroupConfirmation(false);
+  };
+
   // Syllabus handlers
   const handleEditSyllabus = () => {
     if (group?.syllabus?.topics) {
@@ -737,6 +776,42 @@ const GroupAdmin = () => {
                           Only the group creator can edit the group name and
                           description.
                         </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Delete Group Section - Only visible to group creator */}
+                  {isCreator && (
+                    <div className="mt-8 pt-6 border-t border-slate-200">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-start">
+                          <span className="material-icons-outlined text-red-600 mr-3 mt-0.5">
+                            warning
+                          </span>
+                          <div className="flex-1">
+                            <h3 className="text-red-800 text-sm font-semibold mb-2">
+                              Danger Zone
+                            </h3>
+                            <p className="text-red-700 text-sm mb-4">
+                              Once you delete this group, there is no going back. This will permanently delete:
+                            </p>
+                            <ul className="text-red-700 text-sm mb-4 pl-4 space-y-1">
+                              <li>• All group resources and files</li>
+                              <li>• All forum discussions and replies</li>
+                              <li>• All member data and reports</li>
+                              <li>• The complete syllabus</li>
+                            </ul>
+                            <button
+                              className="flex items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-red-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors duration-150"
+                              onClick={handleDeleteGroup}
+                            >
+                              <span className="material-icons-outlined text-lg mr-2">
+                                delete_forever
+                              </span>
+                              <span className="truncate">Delete Group Permanently</span>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1552,6 +1627,21 @@ const GroupAdmin = () => {
         onConfirm={handleConfirmDeleteResource}
         onCancel={handleCancelDeleteResource}
         isLoading={isDeletingResource}
+        variant="danger"
+      />
+
+      {/* Group Deletion Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteGroupConfirmation}
+        title="Delete Group Permanently"
+        message={`Are you sure you want to permanently delete the group "${
+          group?.name || "this group"
+        }"? This action cannot be undone and will permanently delete all group data including resources, forums, members, and the syllabus.`}
+        confirmText="Yes, Delete Permanently"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDeleteGroup}
+        onCancel={handleCancelDeleteGroup}
+        isLoading={isDeletingGroup}
         variant="danger"
       />
 
