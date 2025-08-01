@@ -1121,16 +1121,6 @@ const GroupAdmin = () => {
                       >
                         Pending Approval ({pendingResources.length})
                       </button>
-                      <button
-                        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                          activeTab === "reported"
-                            ? "border-red-500 text-red-600"
-                            : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                        }`}
-                        onClick={() => setActiveTab("reported")}
-                      >
-                        Reported Resources ({reportedResources.length})
-                      </button>
                     </nav>
                   </div>
                 </div>
