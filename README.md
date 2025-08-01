@@ -1,165 +1,234 @@
-# AcadNet
+# 🎓 AcadNet - Academic Study Platform
 
-AcadNet is a full-stack web application designed to serve as an academy software. It includes user authentication (including OAuth with GitHub), profile management, and a modern frontend built with React and Vite.
+> **Learn together, grow together** - Join or build study groups tailored to your syllabus.
 
-## Tech Stack
+AcadNet is a comprehensive academic collaboration platform designed to connect students through structured study groups, resource sharing, and interactive discussions. Built with modern web technologies, it facilitates seamless academic collaboration and knowledge sharing.
 
-### Backend
+## ✨ Key Features
+
+### 🔗 **Study Group Management**
+- **Create & Join Groups**: Form study groups with custom syllabi and course structures
+- **Public & Private Groups**: Control group visibility and access
+- **Anonymous Participation**: Join groups without revealing your identity
+- **Role-based Access**: Admin and member roles with different permissions
+
+### 📚 **Resource Sharing**
+- **File Upload & Management**: Share notes, assignments, and study materials
+- **Content Moderation**: Admin approval system for shared resources
+- **Topic Organization**: Categorize resources by syllabus topics and subtopics
+- **Like/Dislike System**: Community-driven content rating
+
+### 💬 **Discussion Forums**
+- **Group Forums**: Dedicated discussion spaces for each study group
+- **Threaded Conversations**: Organized discussions with replies and nested comments
+- **Pinned Threads**: Highlight important discussions
+- **Moderation Tools**: Lock threads and manage conversations
+
+### 👤 **User Management**
+- **Profile System**: Complete user profiles with educational background
+- **Authentication**: Secure login with OAuth integration (GitHub)
+- **User Reporting**: Community moderation and safety features
+- **Admin Dashboard**: System administration tools
+
+## 🏗️ Tech Stack
+
+### **Backend**
 - **Framework**: Express.js
-- **Database**: PostgreSQL
-- **ORM**: Sequelize
-- **Authentication**: Passport.js for OAuth, JWT for session management
-- **Email**: Nodemailer for sending OTPs
+- **Database**: PostgreSQL with Sequelize ORM
+- **Authentication**: JWT + Passport.js (GitHub OAuth)
+- **File Storage**: Local file system with organized structure
+- **Email**: Nodemailer for OTP verification
 
-### Frontend
-- **Framework**: React
+### **Frontend**
+- **Framework**: React 19 with TypeScript
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
-- **UI Components**: Shadcn UI
-- **Language**: TypeScript
+- **UI Components**: Radix UI + Shadcn/UI
+- **State Management**: React Context API
+- **Routing**: React Router DOM
 
-## Getting Started
-
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or later recommended)
-- [npm](https://www.npmjs.com/)
+- [Node.js](https://nodejs.org/) (v18 or later)
 - [PostgreSQL](https://www.postgresql.org/)
+- [npm](https://www.npmjs.com/)
 
-### Installation & Setup
+### Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/anishkn04/AcadNet.git
-    cd AcadNet
-    ```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/anishkn04/AcadNet.git
+   cd AcadNet
+   ```
 
-2.  **Install dependencies:**
-    This will install both backend and frontend dependencies.
-    ```bash
-    npm install
-    ```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-3.  **Setup the database:**
-    - Make sure your PostgreSQL server is running.
-    - Create a new database. You can name it `acadnet` or choose another name.
+3. **Database Setup**
+   ```bash
+   # Create PostgreSQL database
+   createdb acadnet
+   ```
 
-4.  **Create a `.env` file:**
-    Create a `.env` file in the root of the project and add the following environment variables. These are required to run the backend server.
+4. **Environment Configuration**
+   Create a `.env` file in the root directory:
+   ```env
+   # PostgreSQL Database Configuration
+   PG_HOST=localhost
+   PG_PORT=5432
+   PG_USER=your_postgres_user
+   PG_PASSWORD=your_postgres_password
+   PG_DATABASE=acadnet
 
-    ```env
-    # PostgreSQL Database Configuration
-    PG_HOST=localhost
-    PG_PORT=5432
-    PG_USER=your_postgres_user
-    PG_PASSWORD=your_postgres_password
-    PG_DATABASE=acadnet
+   # JWT Secrets
+   JWT_ACCESS_SECRET=your_jwt_access_secret
+   JWT_REFRESH_SECRET=your_jwt_refresh_secret
 
-    # Or you can use a single DATABASE_URL
-    # DATABASE_URL="postgres://your_postgres_user:your_postgres_password@localhost:5432/acadnet"
+   # GitHub OAuth Credentials (Optional)
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
 
-    # JWT Secrets
-    JWT_ACCESS_SECRET=your_jwt_access_secret
-    JWT_REFRESH_SECRET=your_jwt_refresh_secret
+   # Email Configuration
+   EMAIL=your_email@example.com
+   EMAIL_PASSWORD=your_email_password
 
-    # GitHub OAuth Credentials
-    GITHUB_CLIENT_ID=your_github_client_id
-    GITHUB_CLIENT_SECRET=your_github_client_secret
+   # Server Configuration
+   BACKEND_PORT=3000
+   ```
 
-    # Nodemailer Configuration (for sending emails)
-    EMAIL=your_email@example.com
-    EMAIL_PASSWORD=your_email_password
-    ```
+5. **Start the Application**
+   ```bash
+   # Backend server (Terminal 1)
+   npm start
+   
+   # Frontend development server (Terminal 2)
+   npm run dev
+   ```
 
-5.  **Start the application:**
-    You can run the backend and frontend in separate terminals.
+6. **Access the Application**
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:3000`
+   - API Documentation: `http://localhost:3000/api-docs`
 
-    - **Start the backend server:**
-      ```bash
-      npm start
-      ```
-      The backend will be running on `http://localhost:3000` (or the port specified in your environment).
+## 📁 Project Structure
 
-    - **Start the frontend development server:**
-      ```bash
-      npm run dev
-      ```
-      The frontend will be available at `http://localhost:5173`.
-
-## Available Scripts
-
-- `npm start`: Starts the backend server with `nodemon`.
-- `npm run dev`: Starts the frontend development server with Vite.
-- `npm run build`: Builds the frontend for production.
-- `npm run lint`: Lints the frontend code.
-- `npm run preview`: Previews the production build of the frontend.
-- `npm test`: (Not yet configured)
-
-## API Endpoints
-
-The backend exposes the following REST API endpoints.
-
-### Authentication Routes
-
-Base path: `/api/v1/auth`
-
-| Method | Endpoint              | Description                                       | Protected |
-| :----- | :-------------------- | :------------------------------------------------ | :-------- |
-| `POST` | `/signup`             | Register a new user.                              | No        |
-| `POST` | `/login`              | Login an existing user.                           | No        |
-| `GET`  | `/github`             | Initiates GitHub OAuth2 authentication.           | No        |
-| `GET`  | `/github/callback`    | Callback URL for GitHub OAuth2.                   | No        |
-| `GET`  | `/failure`            | Redirect URL on OAuth failure.                    | No        |
-| `POST` | `/checkSession`       | Checks if the user's session is valid.            | Yes       |
-| `POST` | `/refresh-token`      | Refreshes the JWT access token.                   | Yes       |
-| `POST` | `/logout`             | Logs out the user from the current device.        | No        |
-| `POST` | `/logout-all`         | Logs out the user from all devices.               | Yes       |
-| `GET`  | `/authorizedPage`     | Example of an authorization-protected route.      | Yes       |
-| `POST` | `/otp-auth`           | Generates and sends an OTP for verification.      | No        |
-| `POST` | `/otp-verify`         | Verifies the provided OTP.                        | No        |
-| `POST` | `/password-reset`     | Sends a password reset link/token.                | No        |
-| `POST` | `/password-verify`    | Verifies the password reset token.                | No        |
-| `POST` | `/change-password`    | Changes the user's password.                      | No        |
-
-### Data Routes
-
-Base path: `/api/v1/data`
-
-| Method | Endpoint        | Description                  | Protected |
-| :----- | :-------------- | :--------------------------- | :-------- |
-| `GET`  | `/user`         | Get the current user's info. | Yes       |
-| `GET`  | `/user/:userId`  | Get the details of given user id  | Yes
-| `POST` | `/editprofile`  | Edit the user's profile.     | Yes       |
-
-#### The GET /user returns all data of current user while the /user/userId only returns given data:
-```json
-{
-  "user_id": 6,
-  "username": "anishkn",
-  "created_at": "2025-06-27T19:33:52.960Z",
-  "email": "anish@gmail.com",
-  "fullName": null,
-  "role": "user",
-  "age": null,
-  "phone": null,
-  "nationality": null,
-  "address": {},
-  "education": {}
-}
+```
+AcadNet/
+├── backend/
+│   ├── controllers/         # Route handlers
+│   ├── models/             # Database models (Sequelize)
+│   ├── routes/             # API route definitions
+│   ├── services/           # Business logic layer
+│   ├── middlewares/        # Express middlewares
+│   ├── config/             # Database & app configuration
+│   ├── passport/           # OAuth strategies
+│   ├── utils/              # Utility functions
+│   └── validator/          # Input validation
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API service functions
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── utils/          # Utility functions
+│   │   └── data/           # Static data & constants
+│   └── public/             # Static assets
+└── package.json
 ```
 
-## Frontend
+## 📋 Available Scripts
 
-The frontend is a single-page application (SPA) built with React and Vite.
+```bash
+# Development
+npm start          # Start backend server with nodemon
+npm run dev        # Start frontend development server
+npm run build      # Build frontend for production
+npm run preview    # Preview production build
+npm run lint       # Run ESLint on frontend
 
-- **Routing**: `react-router-dom` is used for client-side routing.
-- **State Management**: React Context API is used for managing user state.
-- **Styling**: Styled with Tailwind CSS and uses `shadcn/ui` for components.
-- **Structure**:
-    - `src/pages`: Contains the main pages of the application.
-    - `src/components`: Contains reusable UI components.
-    - `src/layouts`: Contains layout components for different parts of the app.
-    - `src/services`: Contains functions for making API calls to the backend.
-    - `src/routes`: Defines the application's routes, including protected routes.
+# Testing
+npm test          # Run tests (not yet configured)
+```
+
+## 🔌 API Endpoints
+
+### Authentication Routes (`/api/v1/auth`)
+
+| Method | Endpoint | Description | Protected |
+|--------|----------|-------------|-----------|
+| `POST` | `/signup` | Register new user | No |
+| `POST` | `/login` | User login | No |
+| `GET` | `/github` | GitHub OAuth login | No |
+| `POST` | `/logout` | Logout user | No |
+| `POST` | `/refresh-token` | Refresh JWT token | Yes |
+| `POST` | `/otp-auth` | Send OTP verification | No |
+| `POST` | `/otp-verify` | Verify OTP | No |
+| `POST` | `/password-reset` | Reset password | No |
+
+### Study Groups (`/api/v1/groups`)
+
+| Method | Endpoint | Description | Protected |
+|--------|----------|-------------|-----------|
+| `GET` | `/` | Get all groups | Yes |
+| `POST` | `/create` | Create new group | Yes |
+| `GET` | `/:groupCode` | Get group details | Yes |
+| `POST` | `/:groupCode/join` | Join a group | Yes |
+| `POST` | `/:groupCode/leave` | Leave a group | Yes |
+| `POST` | `/:groupCode/resources` | Upload resources | Yes |
+
+### Forum Routes (`/api/v1/forum`)
+
+| Method | Endpoint | Description | Protected |
+|--------|----------|-------------|-----------|
+| `GET` | `/groups/:groupCode/forum` | Get group forum | Yes |
+| `POST` | `/groups/:groupCode/threads` | Create thread | Yes |
+| `GET` | `/threads/:threadId` | Get thread details | Yes |
+| `POST` | `/threads/:threadId/replies` | Create reply | Yes |
+
+## 🌟 Key Features Deep Dive
+
+### Study Group Workflow
+1. **Create Account** - Register with email and complete profile
+2. **Browse Groups** - Discover existing study groups or create custom ones
+3. **Join/Create** - Join groups matching your courses or create new groups
+4. **Collaborate** - Share resources, participate in discussions
+5. **Moderate** - Admins manage content and members
+
+### Resource Management
+- Upload study materials with topic categorization
+- Admin approval system for quality control
+- Community rating system (likes/dislikes)
+- Organized storage by group and topic structure
+
+### Discussion System
+- Real-time forum discussions within study groups
+- Threaded conversations for organized communication
+- Moderation tools (pin/lock threads)
+- Anonymous participation options
+
+## 🛡️ Security & Privacy
+
+- **JWT Authentication**: Secure token-based authentication
+- **CSRF Protection**: Cross-site request forgery protection
+- **Input Validation**: Comprehensive validation using express-validator
+- **File Upload Security**: Safe file handling with type validation
+- **Privacy Controls**: Anonymous participation and private groups
+
+## 👥 Contributing Team
+
+- **Rishav Chapagain**
+- **Anish Kumar Neupane**  
+- **Rushab Risal**
+- **Nishan Paudel**
+
+## 🔗 Links
+
+- **Issues**: [Bug Reports & Feature Requests](mailto:gainrishavchap@gmail.com)
+
+---
+
+**Built with ❤️ for academic collaboration**

@@ -83,7 +83,8 @@ export const likeReply = async (req, res) => {
     const { replyId } = req.params;
     
     const result = await forumServices.likeReply(userId, replyId);
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to like reply.");
   }
@@ -96,7 +97,8 @@ export const dislikeReply = async (req, res) => {
     const { replyId } = req.params;
     
     const result = await forumServices.dislikeReply(userId, replyId);
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to dislike reply.");
   }

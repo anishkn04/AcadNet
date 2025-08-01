@@ -167,7 +167,8 @@ export const likeAdditionalResource = async (req, res) => {
     }
 
     const result = await likeResource(userId, parseInt(resourceId));
-    return jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    return jsonRes(res, 200, true, result.message);
   } catch (err) {
     console.log(err);
     return jsonRes(res, err.code || 500, false, err.message || "Failed to like resource.");
@@ -184,7 +185,8 @@ export const dislikeAdditionalResource = async (req, res) => {
     }
 
     const result = await dislikeResource(userId, parseInt(resourceId));
-    return jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    return jsonRes(res, 200, true, result.message);
   } catch (err) {
     console.log(err);
     return jsonRes(res, err.code || 500, false, err.message || "Failed to dislike resource.");
@@ -448,7 +450,8 @@ export const deleteApprovedResourceController = async (req, res) => {
 
     const result = await groupServices.deleteApprovedResource(adminUserId, groupCode, parseInt(resourceId));
 
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to delete resource.");
   }
@@ -484,7 +487,8 @@ export const reportResourceController = async (req, res) => {
       description: description || ''
     });
 
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to report resource.");
   }
@@ -526,7 +530,8 @@ export const deleteGroupController = async (req, res) => {
 
     const result = await groupServices.deleteGroupByCreator(creatorId, groupCode);
 
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to delete group.");
   }
