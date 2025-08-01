@@ -286,10 +286,9 @@ const Guide = () => {
                         <div className="px-4 pb-4">
                           <p className="text-gray-600 text-sm font-normal leading-relaxed">
                             If you encounter a user violating platform rules,
-                            you can report them by navigating to their profile
-                            and clicking the 'Report User' button. Provide a
-                            brief description of the issue for our moderation
-                            team.
+                            you can report them by clicking the 'Report' button
+                            in the discussion area. Provide a brief description
+                            of the issue for moderation team.
                           </p>
                         </div>
                       </details>

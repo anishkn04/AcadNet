@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -16,14 +16,24 @@ const Privacy = () => {
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({});
+  const scrollPositionRef = useRef<number>(0);
 
   const toggleSection = (sectionId: string) => {
+    // Store current scroll position before state change
+    scrollPositionRef.current = window.scrollY;
+
     setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
     }));
   };
 
+  // Use useLayoutEffect to restore scroll position after DOM updates
+  useLayoutEffect(() => {
+    if (scrollPositionRef.current > 0) {
+      window.scrollTo(0, scrollPositionRef.current);
+    }
+  });
   const CollapsibleSection = ({
     id,
     title,
