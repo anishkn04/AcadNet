@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faFileArrowUp, 
-  faSearch, 
-  // faDownload, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFileArrowUp,
+  faSearch,
+  // faDownload,
   faEye,
   faFile,
   faImage,
@@ -21,16 +27,16 @@ import {
   faRefresh,
   faPlay,
   // faFlag
-} from '@fortawesome/free-solid-svg-icons';
-import { LikeDislikeButton } from './LikeDislikeButton';
-import ResourceUpload from './ResourceUpload';
-import VideoPlayerModal from './VideoPlayerModal';
-import FileViewerModal from './FileViewerModal';
+} from "@fortawesome/free-solid-svg-icons";
+import { LikeDislikeButton } from "./LikeDislikeButton";
+import ResourceUpload from "./ResourceUpload";
+import VideoPlayerModal from "./VideoPlayerModal";
+import FileViewerModal from "./FileViewerModal";
 // import ReportResourceModal from './ReportResourceModal';
-import { getGroupResourcesAPI } from '@/services/UserServices';
-import type { Resource, topics } from '@/models/User';
-import { toast } from 'react-toastify';
-import { useData } from '@/hooks/userInfoContext';
+import { getGroupResourcesAPI } from "@/services/UserServices";
+import type { Resource, topics } from "@/models/User";
+import { toast } from "react-toastify";
+import { useData } from "@/hooks/userInfoContext";
 
 interface ResourcesSectionProps {
   groupCode: string;
@@ -43,29 +49,32 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   groupCode,
   topics = [],
   canUpload = true,
-  initialResources = []
+  initialResources = [],
 }) => {
   const { userId } = useData();
   const [resources, setResources] = useState<Resource[]>(initialResources);
-  const [filteredResources, setFilteredResources] = useState<Resource[]>(initialResources);
+  const [filteredResources, setFilteredResources] =
+    useState<Resource[]>(initialResources);
   const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterFileType, setFilterFileType] = useState<string>('all');
-  const [filterTopic, setFilterTopic] = useState<string>('all');
-  const [filterUploader, setFilterUploader] = useState<string>('all');
-  const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>({});
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterFileType, setFilterFileType] = useState<string>("all");
+  const [filterTopic, setFilterTopic] = useState<string>("all");
+  const [filterUploader, setFilterUploader] = useState<string>("all");
+  const [resourceStatuses, setResourceStatuses] = useState<Record<number, any>>(
+    {}
+  );
+
   // Video player modal state
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
-  const [selectedVideoName, setSelectedVideoName] = useState('');
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
+  const [selectedVideoName, setSelectedVideoName] = useState("");
 
   // File viewer modal state
   const [showFileModal, setShowFileModal] = useState(false);
-  const [selectedFileUrl, setSelectedFileUrl] = useState('');
-  const [selectedFileName, setSelectedFileName] = useState('');
-  const [selectedFileType, setSelectedFileType] = useState('');
+  const [selectedFileUrl, setSelectedFileUrl] = useState("");
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [selectedFileType, setSelectedFileType] = useState("");
 
   // // Report resource modal state
   // const [showReportModal, setShowReportModal] = useState(false);
@@ -83,12 +92,12 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   // Fetch resources
   const fetchResources = async () => {
     if (!groupCode) return;
-    
+
     setLoading(true);
     try {
       const { data, status } = await getGroupResourcesAPI(groupCode);
       if (status === 200 && data.success) {
-        console.log("raw data:",data)
+        console.log("raw data:", data);
         const responseData = data.message || data.data || {};
         // Map backend response to frontend expected format
         const resourcesData = responseData.resources || [];
@@ -100,31 +109,36 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           dislikesCount: resource.dislikesCount || 0,
           created_at: resource.uploadedAt || resource.created_at,
           // Add uploader information
-          uploader: resource.uploader ? {
-            id: resource.uploader.id || resource.uploadedBy,
-            username: resource.uploader.username || 'Unknown',
-            fullName: resource.uploader.fullName || 'Unknown'
-          } : {
-            id: resource.uploadedBy || 0,
-            username: 'Unknown',
-            fullName: 'Unknown'
-          },
+          uploader: resource.uploader
+            ? {
+                id: resource.uploader.id || resource.uploadedBy,
+                username: resource.uploader.username || "Unknown",
+                fullName: resource.uploader.fullName || "Unknown",
+              }
+            : {
+                id: resource.uploadedBy || 0,
+                username: "Unknown",
+                fullName: "Unknown",
+              },
           linkedTo: {
             topicId: resource.topic?.id || null,
-            subTopicId: resource.subTopic?.id || null
+            subTopicId: resource.subTopic?.id || null,
           },
           // For backward compatibility
-          fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File'
+          fileName:
+            resource.fileName ||
+            resource.filePath?.split("/").pop() ||
+            "Unknown File",
         }));
-        console.log(mappedResources)
+        console.log(mappedResources);
         // Sort resources to ensure consistent ordering
         const sortedResources = sortResourcesByDate(mappedResources);
         setResources(sortedResources);
         setFilteredResources(sortedResources);
       }
     } catch (error) {
-      console.error('Failed to fetch resources:', error);
-      toast.error('Failed to load resources');
+      console.error("Failed to fetch resources:", error);
+      toast.error("Failed to load resources");
     } finally {
       setLoading(false);
     }
@@ -136,45 +150,63 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(resource => {
-        const fileName = resource.fileName || resource.filePath?.split('/').pop() || '';
-        return fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               resource.fileType?.toLowerCase().includes(searchTerm.toLowerCase());
+      filtered = filtered.filter((resource) => {
+        const fileName =
+          resource.fileName || resource.filePath?.split("/").pop() || "";
+        return (
+          fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          resource.fileType?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       });
     }
 
     // File type filter
-    if (filterFileType !== 'all') {
-      filtered = filtered.filter(resource =>
-        resource.fileType?.toLowerCase() === filterFileType.toLowerCase()
+    if (filterFileType !== "all") {
+      filtered = filtered.filter(
+        (resource) =>
+          resource.fileType?.toLowerCase() === filterFileType.toLowerCase()
       );
     }
 
     // Topic filter
-    if (filterTopic !== 'all') {
+    if (filterTopic !== "all") {
       const topicId = parseInt(filterTopic);
-      filtered = filtered.filter(resource =>
-        resource.linkedTo?.topicId === topicId
+      filtered = filtered.filter(
+        (resource) => resource.linkedTo?.topicId === topicId
       );
     }
 
     // Uploader filter - NEW
-    if (filterUploader === 'mine') {
-      filtered = filtered.filter(resource =>
-        resource.uploader?.id === userId
+    if (filterUploader === "mine") {
+      filtered = filtered.filter(
+        (resource) => resource.uploader?.id === userId
       );
     }
 
     // Apply consistent sorting to filtered results
     const sortedFiltered = sortResourcesByDate(filtered);
     setFilteredResources(sortedFiltered);
-  }, [resources, searchTerm, filterFileType, filterTopic, filterUploader, userId]);
+  }, [
+    resources,
+    searchTerm,
+    filterFileType,
+    filterTopic,
+    filterUploader,
+    userId,
+  ]);
 
   // Handle status updates from like/dislike buttons
-  const handleStatusUpdate = (resourceId: number, newStatus: { likesCount: number; dislikesCount: number; userReaction: 'like' | 'dislike' | null }) => {
-    setResourceStatuses(prev => ({
+  const handleStatusUpdate = (
+    resourceId: number,
+    newStatus: {
+      likesCount: number;
+      dislikesCount: number;
+      userReaction: "like" | "dislike" | null;
+    }
+  ) => {
+    setResourceStatuses((prev) => ({
       ...prev,
-      [resourceId]: newStatus
+      [resourceId]: newStatus,
     }));
   };
 
@@ -187,92 +219,118 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   // Get file type icon
   const getFileTypeIcon = (fileType: string) => {
     const type = fileType?.toLowerCase();
-    
+
     // Handle mimetype format (e.g., 'video/mp4', 'image/jpeg')
-    if (type?.startsWith('video/')) return faFileVideo;
-    if (type?.startsWith('audio/')) return faFileAudio;
-    if (type?.startsWith('image/')) return faImage;
-    if (type?.includes('pdf')) return faFilePdf;
-    if (type?.includes('word') || type?.includes('document')) return faFileWord;
-    if (type?.includes('sheet') || type?.includes('excel')) return faFileExcel;
-    if (type?.includes('presentation') || type?.includes('powerpoint')) return faFilePowerpoint;
-    if (type?.includes('text/plain')) return faFileText;
-    
+    if (type?.startsWith("video/")) return faFileVideo;
+    if (type?.startsWith("audio/")) return faFileAudio;
+    if (type?.startsWith("image/")) return faImage;
+    if (type?.includes("pdf")) return faFilePdf;
+    if (type?.includes("word") || type?.includes("document")) return faFileWord;
+    if (type?.includes("sheet") || type?.includes("excel")) return faFileExcel;
+    if (type?.includes("presentation") || type?.includes("powerpoint"))
+      return faFilePowerpoint;
+    if (type?.includes("text/plain")) return faFileText;
+
     // Handle processed file type format (e.g., 'video', 'pdf')
     switch (type) {
-      case 'pdf': return faFilePdf;
-      case 'doc':
-      case 'docx': return faFileWord;
-      case 'xls':
-      case 'xlsx': return faFileExcel;
-      case 'ppt':
-      case 'pptx': return faFilePowerpoint;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-      case 'image': return faImage;
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-      case 'video': return faFileVideo;
-      case 'mp3':
-      case 'wav':
-      case 'audio': return faFileAudio;
-      case 'txt':
-      case 'text': return faFileText;
-      default: return faFile;
+      case "pdf":
+        return faFilePdf;
+      case "doc":
+      case "docx":
+        return faFileWord;
+      case "xls":
+      case "xlsx":
+        return faFileExcel;
+      case "ppt":
+      case "pptx":
+        return faFilePowerpoint;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+      case "image":
+        return faImage;
+      case "mp4":
+      case "avi":
+      case "mov":
+      case "video":
+        return faFileVideo;
+      case "mp3":
+      case "wav":
+      case "audio":
+        return faFileAudio;
+      case "txt":
+      case "text":
+        return faFileText;
+      default:
+        return faFile;
     }
   };
 
   // Get unique file types for filter
   const getUniqueFileTypes = () => {
-    const types = resources.map(r => r.fileType?.toLowerCase()).filter(Boolean) as string[];
+    const types = resources
+      .map((r) => r.fileType?.toLowerCase())
+      .filter(Boolean) as string[];
     return [...new Set(types)];
   };
 
   // Get topic name by ID
   const getTopicName = (topicId: number) => {
-    const topic = topics.find(t => parseInt(t.id) === topicId);
+    const topic = topics.find((t) => parseInt(t.id) === topicId);
     return topic?.title || `Topic ${topicId}`;
   };
 
   // Get subtopic name by topic ID and subtopic ID
   const getSubTopicName = (topicId: number, subTopicId: number) => {
-    const topic = topics.find(t => parseInt(t.id) === topicId);
-    const subtopic = topic?.subTopics?.find(st => parseInt(st.id) === subTopicId);
+    const topic = topics.find((t) => parseInt(t.id) === topicId);
+    const subtopic = topic?.subTopics?.find(
+      (st) => parseInt(st.id) === subTopicId
+    );
     return subtopic?.title || `Subtopic ${subTopicId}`;
   };
 
   // Check if file is a video
   const isVideoFile = (fileType: string) => {
     if (!fileType) return false;
-    
-    const videoTypes = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'video', 'wmv', 'flv', 'm4v', 'ogv', '3gp'];
+
+    const videoTypes = [
+      "mp4",
+      "avi",
+      "mov",
+      "mkv",
+      "webm",
+      "video",
+      "wmv",
+      "flv",
+      "m4v",
+      "ogv",
+      "3gp",
+    ];
     const lowerFileType = fileType?.toLowerCase();
-    
+
     // Check for processed file type (like 'video') or file extensions (like 'mp4')
     if (videoTypes.includes(lowerFileType)) {
       return true;
     }
-    
+
     // Check for mimetype format (like 'video/mp4')
-    if (lowerFileType?.startsWith('video/')) {
+    if (lowerFileType?.startsWith("video/")) {
       return true;
     }
-    
+
     // Check if the file type contains video-related keywords
-    if (lowerFileType?.includes('video')) {
+    if (lowerFileType?.includes("video")) {
       return true;
     }
-    
+
     return false;
   };
 
   // Handle video file click
   const handleVideoClick = (resource: Resource) => {
     const videoUrl = `http://localhost:3000/${resource.filePath}`;
-    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    const fileName = resource.filePath.split("/").pop() || resource.filePath;
     setSelectedVideoUrl(videoUrl);
     setSelectedVideoName(fileName);
     setShowVideoModal(true);
@@ -281,10 +339,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   // Handle non-video file click
   const handleFileClick = (resource: Resource) => {
     const fileUrl = `http://localhost:3000/${resource.filePath}`;
-    const fileName = resource.filePath.split('/').pop() || resource.filePath;
+    const fileName = resource.filePath.split("/").pop() || resource.filePath;
     setSelectedFileUrl(fileUrl);
     setSelectedFileName(fileName);
-    setSelectedFileType(resource.fileType || 'unknown');
+    setSelectedFileType(resource.fileType || "unknown");
     setShowFileModal(true);
   };
 
@@ -311,17 +369,22 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
       fetchResources();
     } else {
       // Map initialResources to ensure proper format
-      const mappedInitialResources = initialResources.map(resource => ({
+      const mappedInitialResources = initialResources.map((resource) => ({
         ...resource,
-        fileName: resource.fileName || resource.filePath?.split('/').pop() || 'Unknown File',
+        fileName:
+          resource.fileName ||
+          resource.filePath?.split("/").pop() ||
+          "Unknown File",
         linkedTo: resource.linkedTo || {
           topicId: (resource as any).topicId || null,
-          subTopicId: (resource as any).subTopicId || null
-        }
+          subTopicId: (resource as any).subTopicId || null,
+        },
       }));
-      
+
       // Sort initial resources to ensure consistent ordering
-      const sortedInitialResources = sortResourcesByDate(mappedInitialResources);
+      const sortedInitialResources = sortResourcesByDate(
+        mappedInitialResources
+      );
       setResources(sortedInitialResources);
       setFilteredResources(sortedInitialResources);
     }
@@ -340,7 +403,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
               variant="ghost"
               size="sm"
             >
-              <FontAwesomeIcon icon={faRefresh} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <FontAwesomeIcon
+                icon={faRefresh}
+                className={`mr-2 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
             {canUpload && (
@@ -356,32 +422,42 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           </div>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         {/* Anonymous User Info */}
         {!canUpload && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 text-amber-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="ml-3">
                 <p className="text-sm text-amber-800">
-                  <strong>Anonymous Member:</strong> You can view, but cannot upload new ones.
+                  <strong>Anonymous Member:</strong> You can view, but cannot
+                  upload new ones.
                 </p>
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Search and Filters */}
         <div className="space-y-4 mb-4">
           {/* Search */}
           <div className="relative">
-            <FontAwesomeIcon 
-              icon={faSearch} 
+            <FontAwesomeIcon
+              icon={faSearch}
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
             <Input
@@ -393,14 +469,14 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             <Select value={filterFileType} onValueChange={setFilterFileType}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-28">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {getUniqueFileTypes().map(type => (
+                {getUniqueFileTypes().map((type) => (
                   <SelectItem key={type} value={type}>
                     {type?.toUpperCase()}
                   </SelectItem>
@@ -410,12 +486,12 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
 
             {topics.length > 0 && (
               <Select value={filterTopic} onValueChange={setFilterTopic}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-28">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Topics</SelectItem>
-                  {topics.map(topic => (
+                  {topics.map((topic) => (
                     <SelectItem key={topic.id} value={topic.id}>
                       {topic.title}
                     </SelectItem>
@@ -446,23 +522,26 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         ) : filteredResources.length > 0 ? (
           <div className="space-y-3">
             {filteredResources.map((resource, index) => {
-              const fileName = resource.filePath.split('/').pop() || resource.filePath;
-              const fileType = resource.fileType || 'file';
-              
+              const fileName =
+                resource.filePath.split("/").pop() || resource.filePath;
+              const fileType = resource.fileType || "file";
+
               // Additional check: extract extension from filename if fileType is not helpful
-              const fileExtension = fileName.split('.').pop()?.toLowerCase();
-              const isVideo = isVideoFile(fileType) || (fileExtension && isVideoFile(fileExtension));
-              
+              const fileExtension = fileName.split(".").pop()?.toLowerCase();
+              const isVideo =
+                isVideoFile(fileType) ||
+                (fileExtension && isVideoFile(fileExtension));
+
               return (
-                <div 
-                  key={resource.id || index} 
+                <div
+                  key={resource.id || index}
                   className={`p-3 rounded-lg border hover:shadow-md transition-shadow`}
                 >
                   <div className="flex items-start gap-3">
                     {/* File Icon */}
                     <div className="flex-shrink-0 mt-1">
-                      <FontAwesomeIcon 
-                        icon={getFileTypeIcon(fileType)} 
+                      <FontAwesomeIcon
+                        icon={getFileTypeIcon(fileType)}
                         className="text-lg"
                       />
                     </div>
@@ -481,10 +560,14 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                       {/* Topic/Subtopic Info */}
                       {resource.linkedTo?.topicId && (
                         <div className="text-sm text-gray-600 mb-2">
-                          📚 Linked to: {getTopicName(resource.linkedTo.topicId)}
+                          📚 Linked to:{" "}
+                          {getTopicName(resource.linkedTo.topicId)}
                           {resource.linkedTo.subTopicId && (
                             <span className="text-gray-500">
-                              {` → ${getSubTopicName(resource.linkedTo.topicId, resource.linkedTo.subTopicId)}`}
+                              {` → ${getSubTopicName(
+                                resource.linkedTo.topicId,
+                                resource.linkedTo.subTopicId
+                              )}`}
                             </span>
                           )}
                         </div>
@@ -514,7 +597,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                               View
                             </Button>
                           )}
-                          
+
                           {/* Report Button - Only show for resources not owned by current user */}
                           {/* {resource.uploader?.id !== Number(userId) && (
                             <Button
@@ -527,10 +610,13 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                               <FontAwesomeIcon icon={faFlag} />
                             </Button>
                           )} */}
-                          
+
                           {/* Add uploader info */}
                           <span className="text-xs text-gray-500 ml-2">
-                            Uploaded by: <span className="font-medium">{resource.uploader?.username || 'Unknown'}</span>
+                            Uploaded by:{" "}
+                            <span className="font-medium">
+                              {resource.uploader?.username || "Unknown"}
+                            </span>
                           </span>
                         </div>
 
@@ -538,9 +624,18 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                         {resource.id && (
                           <LikeDislikeButton
                             resourceId={resource.id}
-                            initialLikesCount={resourceStatuses[resource.id]?.likesCount ?? (resource.likesCount || 0)}
-                            initialDislikesCount={resourceStatuses[resource.id]?.dislikesCount ?? (resource.dislikesCount || 0)}
-                            initialUserReaction={resourceStatuses[resource.id]?.userReaction ?? (resource.userReaction || null)}
+                            initialLikesCount={
+                              resourceStatuses[resource.id]?.likesCount ??
+                              (resource.likesCount || 0)
+                            }
+                            initialDislikesCount={
+                              resourceStatuses[resource.id]?.dislikesCount ??
+                              (resource.dislikesCount || 0)
+                            }
+                            initialUserReaction={
+                              resourceStatuses[resource.id]?.userReaction ??
+                              (resource.userReaction || null)
+                            }
                             onStatusUpdate={handleStatusUpdate}
                           />
                         )}
@@ -553,16 +648,19 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm || filterFileType !== 'all' || filterTopic !== 'all' || filterUploader !== 'all' ? (
+            {searchTerm ||
+            filterFileType !== "all" ||
+            filterTopic !== "all" ||
+            filterUploader !== "all" ? (
               <div>
                 <p>No resources match your filters.</p>
                 <Button
                   variant="link"
                   onClick={() => {
-                    setSearchTerm('');
-                    setFilterFileType('all');
-                    setFilterTopic('all');
-                    setFilterUploader('all');
+                    setSearchTerm("");
+                    setFilterFileType("all");
+                    setFilterTopic("all");
+                    setFilterUploader("all");
                   }}
                   className="text-blue-500"
                 >
@@ -570,7 +668,10 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
                 </Button>
               </div>
             ) : (
-              <p>No resources available. {canUpload && 'Upload some resources to get started!'}</p>
+              <p>
+                No resources available.{" "}
+                {canUpload && "Upload some resources to get started!"}
+              </p>
             )}
           </div>
         )}
