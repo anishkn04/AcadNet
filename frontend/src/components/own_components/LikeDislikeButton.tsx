@@ -73,9 +73,9 @@ export const LikeDislikeButton = ({
       if (status === 200 && data.success) {
         // Fetch updated status after like action
         await fetchAndUpdateStatus();
-        toast.success(data.message || 'Reaction updated successfully');
+        // toast.success(data.message || 'Reaction updated successfully');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to like resource:', error);
       toast.error('Failed to update reaction');
     } finally {
@@ -92,9 +92,9 @@ export const LikeDislikeButton = ({
       if (status === 200 && data.success) {
         // Fetch updated status after dislike action
         await fetchAndUpdateStatus();
-        toast.success(data.message || 'Reaction updated successfully');
+        // toast.success(data.message || 'Reaction updated successfully');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to dislike resource:', error);
       toast.error('Failed to update reaction');
     } finally {

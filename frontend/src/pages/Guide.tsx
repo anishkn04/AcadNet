@@ -119,7 +119,8 @@ const Guide = () => {
                 </p>
                 <a
                   className="inline-block bg-white text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors text-sm"
-                  href="#"
+                  href="https://gist.github.com/anishkn04/557c475490ed16b831c3e9c507dc0de1"
+                  target="_blank"
                 >
                   Link To Documentation
                 </a>
