@@ -183,3 +183,13 @@ Button{
 .slider::-moz-range-thumb:hover {
   background: #dc2626;
 }
+
+/* Toast modal progress bar animation */
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

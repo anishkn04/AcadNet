@@ -11,7 +11,7 @@ import {
   getReportedResourcesAPI,
   deleteGroupAPI,
 } from "@/services/UserServices";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 import type { Groups, member, topics, subTopics } from "@/models/User";
 import ComplaintsSection from "@/components/own_components/ComplaintsSection";
 import VideoPlayerModal from "@/components/own_components/VideoPlayerModal";
@@ -1120,16 +1120,6 @@ const GroupAdmin = () => {
                         onClick={() => setActiveTab("pending")}
                       >
                         Pending Approval ({pendingResources.length})
-                      </button>
-                      <button
-                        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                          activeTab === "reported"
-                            ? "border-red-500 text-red-600"
-                            : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-                        }`}
-                        onClick={() => setActiveTab("reported")}
-                      >
-                        Reported Resources ({reportedResources.length})
                       </button>
                     </nav>
                   </div>

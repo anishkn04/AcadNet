@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { useData } from '@/hooks/userInfoContext';
-import { toast } from 'react-toastify';
+import { toast } from "@/utils/toast";
 import { useNavigate } from 'react-router-dom';
 
 interface JoinByCodeDialogProps {

@@ -35,7 +35,7 @@ import FileViewerModal from "./FileViewerModal";
 // import ReportResourceModal from './ReportResourceModal';
 import { getGroupResourcesAPI } from "@/services/UserServices";
 import type { Resource, topics } from "@/models/User";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 import { useData } from "@/hooks/userInfoContext";
 
 interface ResourcesSectionProps {

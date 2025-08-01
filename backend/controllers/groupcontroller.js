@@ -507,7 +507,8 @@ export const editGroupDetailsController = async (req, res) => {
       description: description ? description.trim() : description
     });
 
-    jsonRes(res, 200, true, result);
+    // Return just the message, not the entire result object to avoid nested objects
+    jsonRes(res, 200, true, result.message);
   } catch (err) {
     jsonRes(res, err.code || 500, false, err.message || "Failed to edit group details.");
   }

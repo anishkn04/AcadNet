@@ -137,6 +137,23 @@ const StudyPlatform = () => {
         };
     }, [groupCode, userId, navigate]);
 
+    // Auto-redirect when groupData is null after 5 seconds
+    useEffect(() => {
+        if (groupData === null) {
+            // // Show toast notification
+            // toast.error("This group doesn't exist anymore or you may have been removed from it.", {
+            //     title: "Group Not Available",
+            //     autoCloseDelay: 4000
+            // });
+            
+            const timer = setTimeout(() => {
+                navigate('/join', { replace: true });
+            }, 3000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [groupData, navigate]);
+
     // Handler for showing leave dialog
     const handleLeaveGroupClick = () => {
         setShowLeaveDialog(true);
@@ -175,7 +192,10 @@ const StudyPlatform = () => {
     if (groupData === null) {
         return (
             <div className='flex justify-center items-center h-screen'>
-                <p>Loading group details or group not found...</p>
+                <div className='text-center space-y-4'>
+                    <h3 className="text-xl font-semibold text-gray-700">Group Not Found...</h3>
+                    <p className="text-gray-500">Redirecting you to find groups...</p>
+                </div>
             </div>
         );
     }
