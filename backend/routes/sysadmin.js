@@ -18,4 +18,5 @@ router.delete("/group/:groupId", sysadminMiddleware, csrfMiddleware, deleteGroup
 router.get("/search/user", sysadminMiddleware, csrfMiddleware, searchUserByUsername);
 router.get("/search/group", sysadminMiddleware, csrfMiddleware, searchGroupByName);
 
+
 export default router;
