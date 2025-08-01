@@ -7,7 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import type { CreateGroupInterface } from "@/models/User";
 import { useNavigate } from "react-router-dom";
 import { useData } from "@/hooks/userInfoContext";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 
 const CreateGroupForm: React.FC = () => {
   const methods = useForm<CreateGroupInterface>();

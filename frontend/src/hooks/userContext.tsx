@@ -12,7 +12,7 @@ import {
   refresTokenAPI,
   deleteAccountAPI,
 } from "@/services/AuthServices";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 import axios from "axios";
 
 type UserContextType = {

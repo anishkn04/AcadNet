@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFlag, faEye, faTimes, faExclamationTriangle, faRefresh, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { getGroupReportsAPI, updateReportStatusAPI } from '@/services/UserServices';
 import { useData } from '@/hooks/userInfoContext';
-import { toast } from 'react-toastify';
+import { toast } from "@/utils/toast";
 
 interface Report {
   id: number;

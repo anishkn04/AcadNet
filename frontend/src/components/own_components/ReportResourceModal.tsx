@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFlag } from '@fortawesome/free-solid-svg-icons';
 import { reportResourceAPI } from '@/services/UserServices';
-import { toast } from 'react-toastify';
+import { toast } from "@/utils/toast";
 
 interface ReportResourceModalProps {
   isOpen: boolean;

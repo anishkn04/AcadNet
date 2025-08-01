@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/userContext';
 import { useData } from '@/hooks/userInfoContext';
 import React, { useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/toast';
 
 type Props = { children: React.ReactNode };
 

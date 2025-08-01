@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import { likeResourceAPI, dislikeResourceAPI, getResourceStatusAPI } from '@/services/UserServices';
-import { toast } from 'react-toastify';
+import { toast } from "@/utils/toast";
 
 interface LikeDislikeButtonProps {
   resourceId: number;

@@ -175,7 +175,7 @@ const StudyPlatform = () => {
     if (groupData === null) {
         return (
             <div className='flex justify-center items-center h-screen'>
-                <p>Loading group details or group not found...</p>
+                <p>Group not found...</p>
             </div>
         );
     }

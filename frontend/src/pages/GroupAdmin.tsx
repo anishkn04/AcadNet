@@ -10,7 +10,7 @@ import {
   editGroupDetailsAPI,
   getReportedResourcesAPI,
 } from "@/services/UserServices";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 import type { Groups, member, topics, subTopics } from "@/models/User";
 import ComplaintsSection from "@/components/own_components/ComplaintsSection";
 import VideoPlayerModal from "@/components/own_components/VideoPlayerModal";

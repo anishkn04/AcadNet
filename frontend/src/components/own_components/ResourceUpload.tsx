@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload, faFile, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-toastify";
+import { toast } from "@/utils/toast";
 import { addGroupResourcesAPI } from "@/services/UserServices";
 import type { topics } from "@/models/User";
 
