@@ -38,7 +38,6 @@ const SysAdmin = () => {
         loadStats();
       } catch (error: any) {
         console.error('Admin access denied:', error);
-        toast.error('Access denied: Admin privileges required');
       }
     };
 

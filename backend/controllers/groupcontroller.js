@@ -1,4 +1,4 @@
-import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource } from "../services/groupservices.js";
+import { getAllGroups, createStudyGroupWithSyllabus, getGroupOverviewList, getGroupDetailsByCode, getGroupDetailsById, getGroupOverviewByCode, likeResource, dislikeResource, getResourceLikeStatus, getGroupAdditionalResources, addAdditionalResources, checkUserProfileCompleteness, reportUserInGroup as reportUserInGroupService, getGroupReports, getPendingResources, approveResource, rejectResource, editGroupSyllabus, deleteApprovedResource, reportResource, editGroupDetails } from "../services/groupservices.js";
 import * as groupServices from "../services/groupservices.js";
 import jsonRes from "../utils/response.js"
 import fs from 'fs'
@@ -489,3 +489,27 @@ export const reportResourceController = async (req, res) => {
     jsonRes(res, err.code || 500, false, err.message || "Failed to report resource.");
   }
 };
+
+// Edit group details (name and description)
+export const editGroupDetailsController = async (req, res) => {
+  try {
+    const userId = req.id;
+    const { groupCode } = req.params;
+    const { name, description } = req.body;
+
+    // Validate input
+    if (!name || name.trim() === '') {
+      return jsonRes(res, 400, false, "Group name is required.");
+    }
+
+    const result = await groupServices.editGroupDetails(userId, groupCode, {
+      name: name.trim(),
+      description: description ? description.trim() : description
+    });
+
+    jsonRes(res, 200, true, result);
+  } catch (err) {
+    jsonRes(res, err.code || 500, false, err.message || "Failed to edit group details.");
+  }
+};
+

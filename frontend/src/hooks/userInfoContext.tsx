@@ -17,6 +17,7 @@ type UserInfoType ={
     demoteGroupMember: (groupCode: string, userId: number) => Promise<{ success: boolean, message: string }>
     user : string,
     userId:Number | undefined,
+    userProfile: UserProfileData | null,
 }
 
 type Props = {children:ReactNode}
@@ -27,6 +28,7 @@ const UserInfoContext = createContext<UserInfoType>({} as UserInfoType)
 export const UserInfoProvider = ({children}:Props) =>{
     const [user,setUser] = useState<string>("")
     const[userId,setUserId] = useState<Number>()
+    const [userProfile, setUserProfile] = useState<UserProfileData | null>(null)
     const {isAuthenticated} = useAuth()
     //fetch the user info
     const getInfo = async():Promise<UserProfileData | null> =>{
@@ -59,6 +61,7 @@ export const UserInfoProvider = ({children}:Props) =>{
             const data = await getInfo();
             setUser(data?.username ?? '')
             setUserId(data?.user_id ?? 0)
+            setUserProfile(data)
         }
         if(isAuthenticated){
             fetchUsername()
@@ -209,7 +212,7 @@ export const UserInfoProvider = ({children}:Props) =>{
 
 
     return (
-        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,leaveGroup,user,userId,removeGroupMember,promoteGroupMember,demoteGroupMember,retreiveGroupById,retreiveGroupByCode}}>
+        <UserInfoContext.Provider value = {{getInfo,updateProfile,createGroup,retreiveGroups,joinGroup,leaveGroup,user,userId,removeGroupMember,promoteGroupMember,demoteGroupMember,retreiveGroupById,retreiveGroupByCode,userProfile}}>
             {children}
         </UserInfoContext.Provider>
     )

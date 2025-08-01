@@ -12,6 +12,7 @@ import Privacy from "@/pages/Privacy";
 
 import UserLayout from "../layouts/UserLayout";
 import ProtectedRoutes from "./ProtectedRoutes";
+import SysAdminProtectedRoute from "./SysAdminProtectedRoute";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage ";
 import OtpFerification from "@/pages/OtpFerification";
 import UserProfile from "@/pages/UserProfile";
@@ -102,7 +103,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "sysadmin",
-        element: <SysAdmin />,
+        element: (
+          <SysAdminProtectedRoute>
+            <SysAdmin />
+          </SysAdminProtectedRoute>
+        ),
       },
     ],
   },
