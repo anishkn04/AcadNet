@@ -45,9 +45,9 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { user } = useData();
+  const { user, userProfile } = useData();
   // Determine if user is sysadmin
-  const isSysAdmin = user && (user.role === "sysadmin" || user.isSysAdmin);
+  const isSysAdmin = userProfile && userProfile.role === 'admin';
   const location = useLocation();
 
   const isActive = (url: string) => {
@@ -77,7 +77,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-2xl font-bold text-blue-500 flex justify-center py-8">
-            <p>{user && user.username ? user.username : user}</p>
+            <p>{userProfile?.username || user}</p>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

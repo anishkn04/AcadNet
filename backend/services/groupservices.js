@@ -1707,12 +1707,11 @@ export const reportResource = async (userId, groupCode, resourceId, reportData) 
         reporterId: userId,
         reportedUserId: resource.uploadedBy,
         studyGroupId: group.id,
-        reason: 'inappropriate_resource',
+        reason: reportData.reason,
         description: `Resource ID: ${resourceId}`
       },
       transaction
     });
-
     if (existingReport) {
       throwWithCode("You have already reported this resource.", 409);
     }
@@ -1746,6 +1745,93 @@ export const reportResource = async (userId, groupCode, resourceId, reportData) 
     throw error;
   }
 };
+
+// Edit group details (name and description) - Creator or admin only
+export const editGroupDetails = async (userId, groupCode, updatedDetails) => {
+  let transaction;
+
+  try {
+    transaction = await sequelize.transaction();
+
+    // Check if group exists
+    const group = await StudyGroup.findOne({
+      where: { groupCode },
+      transaction
+    });
+
+    if (!group) {
+      throwWithCode("Group not found.", 404);
+    }
+
+    // Check if user is group creator or admin
+    const membership = await Membership.findOne({
+      where: { 
+        userId: userId, 
+        studyGroupId: group.id 
+      },
+      transaction
+    });
+
+    const isCreator = group.creatorId === userId;
+    const isAdmin = membership && membership.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      throwWithCode("You don't have permission to edit group details.", 403);
+    }
+
+    // Validate input
+    const { name, description } = updatedDetails;
+    
+    if (!name || name.trim() === '') {
+      throwWithCode("Group name is required.", 400);
+    }
+
+    if (name.length > 255) {
+      throwWithCode("Group name must be 255 characters or less.", 400);
+    }
+
+    // Update group details
+    await group.update({
+      name: name.trim(),
+      description: description ? description.trim() : description
+    }, { transaction });
+
+    await transaction.commit();
+
+    // Return updated group data
+    const updatedGroup = await StudyGroup.findOne({
+      where: { groupCode },
+      include: [
+        {
+          model: UserModel,
+          attributes: ['username', 'fullName']
+        }
+      ]
+    });
+
+    return {
+      success: true,
+      message: "Group details updated successfully.",
+      group: {
+        id: updatedGroup.id,
+        name: updatedGroup.name,
+        description: updatedGroup.description,
+        groupCode: updatedGroup.groupCode,
+        isPrivate: updatedGroup.isPrivate,
+        createdAt: updatedGroup.created_at,
+        updatedAt: updatedGroup.updated_at
+      }
+    };
+
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    throw error;
+  }
+};
+
+
 
 
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '@/hooks/userInfoContext';
-import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI, editGroupSyllabusAPI, deleteApprovedResourceAPI } from '@/services/UserServices';
+import { getPendingResourcesAPI, approveResourceAPI, rejectResourceAPI, editGroupSyllabusAPI, deleteApprovedResourceAPI, editGroupDetailsAPI, getReportedResourcesAPI } from '@/services/UserServices';
 import { toast } from 'react-toastify';
 import type { Groups, member, topics, subTopics } from '@/models/User';
 import ComplaintsSection from '@/components/own_components/ComplaintsSection';
@@ -22,12 +22,15 @@ const GroupAdmin = () => {
   const [resourceSearchTerm, setResourceSearchTerm] = useState('');
   const [pendingResources, setPendingResources] = useState<any[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
-  const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
+  const [activeTab, setActiveTab] = useState<'approved' | 'pending' | 'reported'>('approved');
+  const [reportedResources, setReportedResources] = useState<any[]>([]);
+  const [loadingReported, setLoadingReported] = useState(false);
   
   // Syllabus state
   const [showSyllabusModal, setShowSyllabusModal] = useState(false);
   const [syllabusData, setSyllabusData] = useState<{ topics: topics[] }>({ topics: [] });
   const [isSavingSyllabus, setIsSavingSyllabus] = useState(false);
+  const [isSavingGroupDetails, setIsSavingGroupDetails] = useState(false);
   
   // Modal state for resource viewing
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -109,6 +112,32 @@ const GroupAdmin = () => {
     fetchPendingResources();
   }, [location.search]);
 
+  // Fetch reported resources
+  useEffect(() => {
+    const fetchReportedResources = async () => {
+      const params = new URLSearchParams(location.search);
+      const groupCode = params.get('code');
+      
+      if (groupCode && activeTab === 'reported') {
+        setLoadingReported(true);
+        try {
+          const { data } = await getReportedResourcesAPI(groupCode);
+          if (data.success) {
+            const reportedResourcesData = data.message?.reportedResources || data.reportedResources || [];
+            setReportedResources(reportedResourcesData);
+          }
+        } catch (error) {
+          console.error('Error fetching reported resources:', error);
+          toast.error('Failed to fetch reported resources');
+        } finally {
+          setLoadingReported(false);
+        }
+      }
+    };
+
+    fetchReportedResources();
+  }, [location.search, activeTab]);
+
   const handleApproveResource = async (resourceId: number, fileName: string) => {
     const params = new URLSearchParams(location.search);
     const groupCode = params.get('code');
@@ -182,9 +211,48 @@ const GroupAdmin = () => {
   };
 
   const handleEdit = () => setEditMode(true);
+  
   const handleSave = async () => {
-    setEditMode(false);
-    alert('Group settings updated! (Note: Backend update endpoint not implemented yet)');
+    if (!group?.groupCode) {
+      toast.error('Group code not found');
+      return;
+    }
+
+    // Validate group name
+    if (!groupName.trim()) {
+      toast.error('Group name is required');
+      return;
+    }
+
+    setIsSavingGroupDetails(true);
+    try {
+      const { data } = await editGroupDetailsAPI(group.groupCode, {
+        name: groupName.trim(),
+        description: groupDescription?.trim() || ''
+      });
+
+      if (data.success) {
+        // Update the local group state with the new data
+        setGroup(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            name: groupName.trim(),
+            description: groupDescription?.trim() || ''
+          };
+        });
+        
+        setEditMode(false);
+        toast.success(data.message || 'Group details updated successfully');
+      } else {
+        toast.error(data.message || 'Failed to update group details');
+      }
+    } catch (error: any) {
+      console.error('Error updating group details:', error);
+      toast.error(error.response?.data?.message || 'Failed to update group details');
+    } finally {
+      setIsSavingGroupDetails(false);
+    }
   };
 
   const handleRemoveMember = async (memberId: number, memberName: string) => {
@@ -314,7 +382,6 @@ const GroupAdmin = () => {
 
       const result = await editGroupSyllabusAPI(groupCode, syllabusWithOrder);
       if (result.data.success) {
-        toast.success('Syllabus updated successfully');
         setShowSyllabusModal(false);
         // Refresh the group data
         const updatedGroup = await retreiveGroupByCode(groupCode);
@@ -447,6 +514,18 @@ const GroupAdmin = () => {
             <div className="space-y-6 sm:space-y-8">
               {/* Group Settings Section */}
               <section>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 pb-4">
+                  <h2 className="text-slate-800 text-xl font-semibold leading-tight tracking-tight">Group Settings</h2>
+                  {isCreator && !editMode && (
+                    <button
+                      className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-blue-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-150"
+                      onClick={handleEdit}
+                    >
+                      <span className="material-icons-outlined text-lg mr-2">edit</span>
+                      <span className="truncate">Edit Details</span>
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-4 sm:space-y-6 max-w-full lg:max-w-xl">
                   <div>
                     <label className="block text-slate-700 text-sm font-medium leading-normal pb-1.5" htmlFor="groupName">Group Name</label>
@@ -471,23 +550,50 @@ const GroupAdmin = () => {
                       disabled={!editMode}
                     />
                   </div>
-                  <div className="flex justify-start">
-                    {editMode ? (
+                  {editMode && (
+                    <div className="flex justify-start gap-3">
                       <button
-                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-sky-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-sky-700 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-green-600 text-white text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={handleSave}
+                        disabled={isSavingGroupDetails}
                       >
-                        <span className="truncate">Save Changes</span>
+                        {isSavingGroupDetails ? (
+                          <>
+                            <span className="material-icons-outlined text-lg mr-2 animate-spin">sync</span>
+                            <span className="truncate">Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-icons-outlined text-lg mr-2">save</span>
+                            <span className="truncate">Save Changes</span>
+                          </>
+                        )}
                       </button>
-                    ) : (
                       <button
-                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-gray-300 text-slate-800 text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-gray-400 focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transition-colors duration-150"
-                        onClick={handleEdit}
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-9 sm:h-10 px-4 sm:px-5 bg-gray-300 text-slate-800 text-sm font-semibold leading-normal tracking-wide shadow-sm hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => {
+                          setEditMode(false);
+                          // Reset to original values
+                          setGroupName(group?.name || '');
+                          setGroupDescription(group?.description || '');
+                        }}
+                        disabled={isSavingGroupDetails}
                       >
-                        <span className="truncate">Edit</span>
+                        <span className="material-icons-outlined text-lg mr-2">cancel</span>
+                        <span className="truncate">Cancel</span>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                  {!isCreator && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start">
+                        <span className="material-icons-outlined text-blue-600 mr-2 mt-0.5">info</span>
+                        <p className="text-blue-800 text-sm">
+                          Only the group creator can edit the group name and description.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -708,6 +814,16 @@ const GroupAdmin = () => {
                       >
                         Pending Approval ({pendingResources.length})
                       </button>
+                      <button
+                        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                          activeTab === 'reported'
+                            ? 'border-red-500 text-red-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                        }`}
+                        onClick={() => setActiveTab('reported')}
+                      >
+                        Reported Resources ({reportedResources.length})
+                      </button>
                     </nav>
                   </div>
                 </div>
@@ -801,7 +917,7 @@ const GroupAdmin = () => {
                               </tr>
                             ))
                           )
-                        ) : (
+                        ) : activeTab === 'pending' ? (
                           /* Pending Resources */
                           loadingPending ? (
                             <tr>
@@ -873,6 +989,88 @@ const GroupAdmin = () => {
                                         onClick={() => handleViewResource(resource)}
                                       >
                                         <span className="material-icons-outlined text-lg">visibility</span>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                          )
+                        ) : (
+                          /* Reported Resources */
+                          loadingReported ? (
+                            <tr>
+                              <td colSpan={6} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
+                                Loading reported resources...
+                              </td>
+                            </tr>
+                          ) : reportedResources.filter(resource => {
+                            const resourceName = resource.fileName || '';
+                            return resourceName.toLowerCase().includes(resourceSearchTerm.toLowerCase()) ||
+                                   resource.fileType?.toLowerCase().includes(resourceSearchTerm.toLowerCase());
+                          }).length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-3 sm:px-4 py-6 text-center text-slate-500 text-sm">
+                                {resourceSearchTerm ? 'No reported resources found matching your search.' : 'No reported resources.'}
+                              </td>
+                            </tr>
+                          ) : (
+                            reportedResources
+                              .filter(resource => {
+                                const resourceName = resource.fileName || '';
+                                return resourceName.toLowerCase().includes(resourceSearchTerm.toLowerCase()) ||
+                                       resource.fileType?.toLowerCase().includes(resourceSearchTerm.toLowerCase());
+                              })
+                              .map((resource, index) => (
+                                <tr key={resource.id || index}>
+                                  <td className="px-3 sm:px-4 py-3 text-slate-800 text-sm">
+                                    <div className="truncate max-w-xs">
+                                      {resource.fileName || `Resource ${index + 1}`}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm">
+                                    <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                      {resource.fileType || 'Unknown'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden sm:table-cell">
+                                    <div className="truncate max-w-xs">
+                                      {resource.uploader?.username || 'Unknown'}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-3 text-slate-500 text-sm hidden md:table-cell">
+                                    {new Date(resource.uploadedAt).toLocaleDateString()}
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-3">
+                                    <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                      resource.report.status === 'pending' ? 'bg-red-100 text-red-800' :
+                                      resource.report.status === 'reviewed' ? 'bg-yellow-100 text-yellow-800' :
+                                      resource.report.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {resource.report.status === 'pending' ? 'Pending Review' :
+                                       resource.report.status === 'reviewed' ? 'Under Review' :
+                                       resource.report.status === 'resolved' ? 'Resolved' :
+                                       resource.report.status === 'dismissed' ? 'Dismissed' :
+                                       resource.report.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-3">
+                                    <div className="flex space-x-1">
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        title="View Resource"
+                                        onClick={() => handleViewResource(resource)}
+                                      >
+                                        <span className="material-icons-outlined text-lg">visibility</span>
+                                      </button>
+                                      <button 
+                                        className="p-1 sm:p-1.5 text-slate-500 hover:text-green-600 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        title="View Report Details"
+                                        onClick={() => {
+                                          alert(`Report Details:\nReason: ${resource.report.reason}\nDescription: ${resource.report.description}\nReporter: ${resource.report.reporter.username}\nReported on: ${new Date(resource.report.createdAt).toLocaleDateString()}`);
+                                        }}
+                                      >
+                                        <span className="material-icons-outlined text-lg">info</span>
                                       </button>
                                     </div>
                                   </td>

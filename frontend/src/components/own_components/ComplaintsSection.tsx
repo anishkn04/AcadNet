@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFlag, faEye, faCheck, faTimes, faExclamationTriangle, faRefresh, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faFlag, faEye, faTimes, faExclamationTriangle, faRefresh, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { getGroupReportsAPI, updateReportStatusAPI } from '@/services/UserServices';
 import { useData } from '@/hooks/userInfoContext';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ interface Report {
   id: number;
   reason: string;
   description?: string;
-  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed' | 'removed';
   created_at: string;
   reporter: {
     user_id: number;
@@ -94,8 +94,8 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
     const statusConfig = {
       pending: { class: 'bg-yellow-100 text-yellow-800', text: 'Pending', icon: faExclamationTriangle },
       reviewed: { class: 'bg-blue-100 text-blue-800', text: 'Reviewed', icon: faEyeSlash },
-      resolved: { class: 'bg-green-100 text-green-800', text: 'Resolved', icon: faCheck },
-      dismissed: { class: 'bg-gray-100 text-gray-800', text: 'Ignored', icon: faEyeSlash }
+      dismissed: { class: 'bg-gray-100 text-gray-800', text: 'Ignored', icon: faEyeSlash },
+      resolved: { class: 'bg-red-100 text-red-800', text: 'Removed', icon: faTimes }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -141,11 +141,21 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
     try {
       const result = await removeGroupMember(groupCode, selectedReport.reportedUser.user_id);
       if (result.success) {
-        toast.success(`${selectedReport.reportedUser.username} has been removed from the group`);
-        setShowDetailModal(false);
-        setShowRemoveConfirmation(false);
-        // Refresh reports after removing user
-        fetchReports();
+        // Update the report status in the backend to 'resolved'
+        const updateResponse = await updateReportStatusAPI(selectedReport.id, 'resolved', 'User removed from group by admin');
+        if (updateResponse.data.success) {
+          toast.success(`${selectedReport.reportedUser.username} has been removed from the group`);
+          setShowDetailModal(false);
+          setShowRemoveConfirmation(false);
+          // Update the report status to 'resolved' in local state
+          setReports(prev => prev.map(report => 
+            report.id === selectedReport.id 
+              ? { ...report, status: 'resolved' as const }
+              : report
+          ));
+        } else {
+          toast.error('User removed but failed to update report status');
+        }
       } else {
         toast.error(result.message);
       }
@@ -183,6 +193,7 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
   const filteredReports = reports.filter(report => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'ignored') return report.status === 'dismissed';
+    if (statusFilter === 'removed') return report.status === 'resolved';
     return report.status === statusFilter;
   });
 
@@ -191,6 +202,7 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
     pending: reports.filter(r => r.status === 'pending').length,
     ignored: reports.filter(r => r.status === 'dismissed').length,
     resolved: reports.filter(r => r.status === 'resolved').length,
+    removed: reports.filter(r => r.status === 'resolved').length,
   };
 
   if (loading) {
@@ -276,6 +288,12 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
             <div className="text-xs sm:text-sm text-gray-600">Ignored</div>
           </CardContent>
         </Card>
+        <Card className="border-l-4 border-l-red-500 hover:shadow-md transition-shadow">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{reportStats.removed}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Removed</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filter Tabs */}
@@ -285,7 +303,8 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
             {[
               { key: 'all', label: `All Reports (${reportStats.total})` },
               { key: 'pending', label: `Pending (${reportStats.pending})` },
-              { key: 'ignored', label: `Ignored (${reportStats.ignored})` }
+              { key: 'ignored', label: `Ignored (${reportStats.ignored})` },
+              { key: 'removed', label: `Removed Users (${reportStats.removed})` }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -315,6 +334,8 @@ const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({ groupCode }) => {
               <p className="text-gray-500 max-w-sm mx-auto text-sm sm:text-base px-4">
                 {statusFilter === 'all' 
                   ? 'No user reports have been submitted for this group yet. This is a good sign that your community is respectful!'
+                  : statusFilter === 'removed'
+                  ? 'No users have been removed based on reports yet.'
                   : `No reports with status "${statusFilter}" found.`
                 }
               </p>

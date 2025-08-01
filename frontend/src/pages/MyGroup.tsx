@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useData } from '@/hooks/userInfoContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, Calendar, User } from 'lucide-react';
+import { Plus, Search, Users, User } from 'lucide-react';
 import type { Groups } from '@/models/User';
 
 const MyGroup = () => {
@@ -187,10 +187,6 @@ const MyGroup = () => {
                       <div className="flex items-center gap-1.5">
                         <Users className="h-4 w-4" />
                         <span>{Array.isArray(group.members) ? group.members.length : 0} members</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-4 w-4" />
-                        <span>Created {new Date(group.createdAt).toLocaleDateString()}</span>
                       </div>
                       {group.groupCode && (
                         <div className="flex items-center gap-1.5">
