@@ -5,7 +5,7 @@
   "main": "frontend/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
-    "start": "node --env-file=.env ./backend/server.js",
+    "start": "node ./backend/server.js",
     "dev": "cd frontend && vite",
     "build": "cd frontend && tsc -b && vite build",
     "lint": "cd frontend && eslint .",
