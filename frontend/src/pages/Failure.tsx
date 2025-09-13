@@ -1,9 +1,7 @@
-import React from 'react'
-
-type Props = {}
-
-const Failure = (props: Props) => {
+const Failure = () => {
   return (
     <div>Failure</div>
   )
 }
+
+export default Failure;

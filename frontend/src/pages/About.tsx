@@ -1,4 +1,3 @@
-import React from "react";
 import { teamData } from "@/data/data";
 import { TeamMemberCard } from "@/components/own_components/TeamMemberCard";
 
